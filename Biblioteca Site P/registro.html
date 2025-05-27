@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Registro - Biblioteca Arco-Íris</title>
+  <link rel="icon" href="favicon.ico">
+  <link rel="stylesheet" href="CSS/styles.css">
+</head>
+<body>
+  <div class="container">
+    <div class="form-container">
+      <div class="arco-iris">
+        <span>B</span><span>I</span><span>B</span><span>L</span><span>I</span><span>O</span><span>T</span><span>E</span><span>C</span><span>A</span>
+        <br>
+        <span>A</span><span>R</span><span>C</span><span>O</span><span>-</span><span>Í</span><span>R</span><span>I</span><span>S</span>
+      </div>
+      <form class="form-box" id="registroForm">
+        <div class="input-group">
+          <span class="icon">📚</span>
+          <input type="text" name="cpf" placeholder="CPF (somente números)" pattern="\d*" maxlength="11" required>
+        </div>
+        <div class="input-group">
+          <span class="icon">📞</span>
+          <input type="tel" name="telefone" placeholder="Telefone" required>
+        </div>
+        <div class="input-group">
+          <span class="icon">🔒</span>
+          <input type="password" name="senha" placeholder="Senha" required>
+        </div>
+        <div class="input-group">
+          <span class="icon">👤</span>
+          <input type="text" name="nome" placeholder="Nome" required>
+        </div>
+        <button type="submit" class="btn">REGISTRAR</button>
+        <div class="links" style="display: flex; justify-content: center;">
+          <a href="login.html" class="btn">VOLTAR</a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('registroForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const formData = new FormData(this);
+      
+      if (formData.get('cpf') && formData.get('telefone') && 
+          formData.get('senha') && formData.get('nome')) {
+        // Aqui você adicionaria a lógica de registro com o backend
+        alert('Registro realizado com sucesso!');
+        window.location.href = 'login.html';
+      } else {
+        alert('Por favor, preencha todos os campos!');
+      }
+    });
+  </script>
+</body>
+</html> 

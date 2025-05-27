@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Biblioteca Arco-Íris - Gerenciar Usuários</title>
+    <link rel="icon" href="favicon.ico">
+    <link rel="stylesheet" href="CSS/usuarios.css">
+    <style>
+       
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-title">
+            <img src="IMG/logo.png" alt="Logo" style="height: 30px;">
+            <span>Biblioteca Arco-Íris - Gerenciar Usuários</span>
+        </div>
+        <div class="header-buttons">
+            <a href="inicio-admin.html" class="header-btn">Voltar</a>
+            <a href="index.html" class="header-btn">Sair</a>
+        </div>
+    </header>
+
+    <div class="users-container">
+        <div class="users-grid">
+            <div class="search-bar">
+                <input type="text" class="search-input" placeholder="Pesquisar usuários..." id="searchInput">
+                <div class="filter-buttons">
+                    <button class="filter-btn" onclick="filterUsers('all')" id="filterAll">Todos</button>
+                    <button class="filter-btn" onclick="filterUsers('admin')" id="filterAdmin">Administradores</button>
+                    <button class="filter-btn" onclick="filterUsers('debt')" id="filterDebt">Com Multa</button>
+                </div>
+            </div>
+            <table class="users-table">
+                <thead>
+                    <tr>
+                        <th>Status</th>
+                        <th>Nome</th>
+                        <th>CPF</th>
+                        <th>Telefone</th>
+                        <th>Tipo</th>
+                        <th>Situação</th>
+                        <th>Doação Pendente</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="usersTableBody">
+                    <!-- Os usuários serão inseridos aqui via JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Modal para editar usuário -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal()">&times;</span>
+            <h2 class="modal-title">Editar Usuário</h2>
+            <form id="editForm" class="modal-form">
+                <input type="hidden" id="editUserId">
+                <div class="form-group">
+                    <label for="editName">Nome</label>
+                    <input type="text" id="editName" required pattern="[A-Za-zÀ-ÿ\s]+" title="Apenas letras são permitidas">
+                </div>
+                <div class="form-group">
+                    <label for="editPhone">Telefone</label>
+                    <input type="tel" id="editPhone" required pattern="[0-9]+" maxlength="11" title="Apenas números são permitidos">
+                </div>
+                <button type="submit">Salvar Alterações</button>
+            </form>
+            <div class="loans-section">
+                <h3 class="loans-title">Empréstimos Ativos</h3>
+                <table class="loans-table">
+                    <thead>
+                        <tr>
+                            <th>Livro</th>
+                            <th>Data Empréstimo</th>
+                            <th>Data Devolução</th>
+                            <th>Status</th>
+                            <th>Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Os empréstimos serão inseridos aqui via JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Função para formatar telefone (formato: (47) XXXXX-XXXX)
+        function formatPhone(phone) {
+            // Garantir que o número tenha 11 dígitos e comece com 47
+            const cleanNumber = phone.replace(/\D/g, '').slice(-9);
+            return `(47) ${cleanNumber.slice(0, 5)}-${cleanNumber.slice(5)}`;
+        }
+
+        // Função para gerar telefone aleatório (agora começando com 47)
+        function generatePhone() {
+            return '479' + Array.from({length: 8}, () => Math.floor(Math.random() * 10)).join('');
+        }
+
+        // Função para gerar CPF aleatório
+        function generateCPF() {
+            const num = Array.from({length: 9}, () => Math.floor(Math.random() * 10)).join('');
+            return num + '00';
+        }
+
+        // Lista de nomes para gerar usuários aleatórios
+        const firstNames = ['Ana', 'Pedro', 'Lucas', 'Julia', 'Carlos', 'Mariana', 'Rafael', 'Beatriz', 'Fernando', 'Isabela', 'Gabriel', 'Laura', 'Thiago', 'Sofia', 'Daniel', 'Valentina', 'Leonardo', 'Helena', 'Matheus', 'Alice'];
+        const lastNames = ['Silva', 'Santos', 'Oliveira', 'Souza', 'Rodrigues', 'Ferreira', 'Alves', 'Pereira', 'Lima', 'Gomes', 'Costa', 'Ribeiro', 'Martins', 'Carvalho', 'Almeida', 'Lopes', 'Soares', 'Fernandes', 'Vieira', 'Barbosa'];
+
+        // Lista inicial com os administradores fixos
+        const users = [
+            { 
+                id: 1, 
+                name: 'Admin Principal', 
+                cpf: '99999999999', 
+                phone: '47912345678', 
+                type: 'Admin',
+                status: 'Ativo',
+                isAdmin: true,
+                hasDebt: false,
+                hasPendingDonation: false
+            },
+            {
+                id: 2,
+                name: 'Carlos Oliveira',
+                cpf: '88888888888',
+                phone: '47977777777',
+                type: 'Admin',
+                status: 'Ativo',
+                isAdmin: true,
+                hasDebt: false,
+                hasPendingDonation: false
+            },
+            {
+                id: 3,
+                name: 'Ana Rodrigues',
+                cpf: '77777777777',
+                phone: '47966666666',
+                type: 'Admin',
+                status: 'Ativo',
+                isAdmin: true,
+                hasDebt: false,
+                hasPendingDonation: false
+            },
+            { 
+                id: 4, 
+                name: 'João Silva', 
+                cpf: '12345678901', 
+                phone: '47999999999', 
+                type: 'Usuário', 
+                status: 'Ativo',
+                isAdmin: false,
+                hasDebt: false,
+                hasPendingDonation: false
+            },
+            { 
+                id: 5, 
+                name: 'Maria Santos', 
+                cpf: '98765432101', 
+                phone: '47988888888', 
+                type: 'Usuário', 
+                status: 'Ativo',
+                isAdmin: false,
+                hasDebt: true,
+                hasPendingDonation: false
+            }
+        ];
+
+        // Gerar 200 usuários adicionais
+        for (let i = 0; i < 200; i++) {
+            const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
+            const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
+            
+            // IDs específicos para usuários com doação pendente (25, 50 e 75)
+            const hasDonation = [25, 50, 75].includes(i + 6);
+            
+            users.push({
+                id: i + 6, // Começando do ID 6 pois já temos 5 usuários fixos
+                name: `${firstName} ${lastName}`,
+                cpf: generateCPF(),
+                phone: generatePhone(),
+                type: 'Usuário',
+                status: Math.random() > 0.1 ? 'Ativo' : 'Bloqueado', // 10% chance de estar bloqueado
+                isAdmin: false,
+                hasDebt: Math.random() > 0.8, // 20% chance de ter dívida
+                hasPendingDonation: hasDonation
+            });
+        }
+
+        // Adicionar array de empréstimos após a lista de usuários
+        const loans = [
+            {
+                id: 1,
+                userId: 4, // João Silva
+                bookTitle: "O Pequeno Príncipe",
+                loanDate: "2024-03-01",
+                dueDate: "2024-03-15",
+                returned: false
+            },
+            {
+                id: 2,
+                userId: 4, // João Silva
+                bookTitle: "Dom Casmurro",
+                loanDate: "2024-03-05",
+                dueDate: "2024-03-19",
+                returned: false
+            },
+            {
+                id: 3,
+                userId: 5, // Maria Santos
+                bookTitle: "Harry Potter e a Pedra Filosofal",
+                loanDate: "2024-02-15",
+                dueDate: "2024-03-01",
+                returned: false
+            }
+        ];
+
+        // Função para verificar se um empréstimo está atrasado
+        function isLoanLate(dueDate) {
+            return new Date(dueDate) < new Date();
+        }
+
+        // Função para formatar data
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('pt-BR');
+        }
+
+        // Função para obter a classe e texto do status do usuário
+        function getUserStatusInfo(user) {
+            if (user.isAdmin) {
+                return {
+                    circleClass: 'status-admin',
+                    typeClass: 'type-admin',
+                    text: 'Administrador'
+                };
+            }
+            if (user.hasDebt) {
+                return {
+                    circleClass: 'status-debt',
+                    typeClass: 'type-debt',
+                    text: 'Multa Pendente'
+                };
+            }
+            return {
+                circleClass: 'status-user',
+                typeClass: 'type-user',
+                text: 'Usuário'
+            };
+        }
+
+        let currentFilter = 'all';
+
+        function filterUsers(filterType) {
+            currentFilter = filterType;
+            
+            // Atualizar estilo dos botões
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById('filter' + filterType.charAt(0).toUpperCase() + filterType.slice(1)).classList.add('active');
+            
+            updateUsersTable(document.getElementById('searchInput').value);
+        }
+
+        // Função para formatar CPF (formato: XXX.***.***-XX)
+        function formatCPF(cpf) {
+            return `${cpf.substring(0, 3)}.***.***-${cpf.substring(9, 11)}`;
+        }
+
+        // Função atualizada para filtrar usuários
+        function updateUsersTable(searchTerm = '') {
+            const tbody = document.getElementById('usersTableBody');
+            let filteredUsers = users;
+
+            // Aplicar filtro selecionado
+            if (currentFilter === 'admin') {
+                filteredUsers = users.filter(user => user.isAdmin);
+            } else if (currentFilter === 'debt') {
+                filteredUsers = users.filter(user => user.hasDebt);
+            }
+
+            // Aplicar termo de busca
+            if (searchTerm) {
+                filteredUsers = filteredUsers.filter(user => 
+                    Object.values(user).some(value => 
+                        value.toString().toLowerCase().includes(searchTerm.toLowerCase())
+                    )
+                );
+            }
+
+            // Ordenar usuários: admins primeiro, depois usuários com multa, depois os demais
+            filteredUsers.sort((a, b) => {
+                // Se um é admin e outro não, o admin vem primeiro
+                if (a.isAdmin && !b.isAdmin) return -1;
+                if (!a.isAdmin && b.isAdmin) return 1;
+                
+                // Se nenhum é admin, verificar multas
+                if (!a.isAdmin && !b.isAdmin) {
+                    if (a.hasDebt && !b.hasDebt) return -1;
+                    if (!a.hasDebt && b.hasDebt) return 1;
+                }
+                
+                // Por fim, ordenar por nome
+                return a.name.localeCompare(b.name);
+            });
+
+            tbody.innerHTML = filteredUsers.map(user => {
+                const statusInfo = getUserStatusInfo(user);
+                const rowClass = user.isAdmin ? 'admin-row' : (user.hasDebt ? 'debt-row' : '');
+                
+                return `
+                    <tr class="${rowClass}">
+                        <td>
+                            <div class="user-status">
+                                <span class="status-circle ${statusInfo.circleClass}"></span>
+                                <span class="user-type ${statusInfo.typeClass}">${statusInfo.text}</span>
+                            </div>
+                        </td>
+                        <td>${user.name}</td>
+                        <td>${formatCPF(user.cpf)}</td>
+                        <td>${formatPhone(user.phone)}</td>
+                        <td>${user.type}</td>
+                        <td class="status-${user.status.toLowerCase()}">${user.status}</td>
+                        <td style="text-align:center;">
+                            ${user.hasPendingDonation ? '<span title="Doação pendente" style="color:#ff9000;font-size:18px;">&#x1F381;</span>' : '<span style="color:#aaa;">—</span>'}
+                        </td>
+                        <td class="user-actions">
+                            <button class="user-btn btn-edit" onclick="editUser(${user.id})">Editar</button>
+                            <button class="user-btn btn-block" onclick="toggleUserStatus(${user.id})">
+                                ${user.status === 'Ativo' ? 'Bloquear' : 'Desbloquear'}
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Função para mostrar o modal de edição
+        function editUser(id) {
+            const user = users.find(u => u.id === id);
+            if (user) {
+                document.getElementById('editUserId').value = user.id;
+                document.getElementById('editName').value = user.name;
+                document.getElementById('editPhone').value = user.phone;
+                
+                // Buscar empréstimos do usuário
+                const userLoans = loans.filter(loan => loan.userId === user.id && !loan.returned);
+                
+                // Atualizar a seção de empréstimos
+                const loansHtml = userLoans.length > 0 
+                    ? `
+                        <table class="loans-table">
+                            <thead>
+                                <tr>
+                                    <th>Livro</th>
+                                    <th>Data Empréstimo</th>
+                                    <th>Data Devolução</th>
+                                    <th>Status</th>
+                                    <th>Ação</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${userLoans.map(loan => `
+                                    <tr>
+                                        <td>${loan.bookTitle}</td>
+                                        <td>${formatDate(loan.loanDate)}</td>
+                                        <td>${formatDate(loan.dueDate)}</td>
+                                        <td class="${isLoanLate(loan.dueDate) ? 'status-late' : 'status-ontime'}">
+                                            ${isLoanLate(loan.dueDate) ? 'Atrasado' : 'Em dia'}
+                                        </td>
+                                        <td>
+                                            <button class="return-btn" onclick="returnBook(${loan.id})">
+                                                Dar Baixa
+                                            </button>
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    `
+                    : '<div class="no-loans">Nenhum empréstimo ativo</div>';
+
+                // Atualizar o conteúdo do modal
+                document.getElementById('editModal').innerHTML = `
+                    <div class="modal-content">
+                        <span class="close-modal" onclick="closeModal()">&times;</span>
+                        <h2 class="modal-title">Editar Usuário</h2>
+                        <form id="editForm" class="modal-form">
+                            <input type="hidden" id="editUserId">
+                            <div class="form-group">
+                                <label for="editName">Nome</label>
+                                <input type="text" id="editName" required pattern="[A-Za-zÀ-ÿ\s]+" title="Apenas letras são permitidas">
+                            </div>
+                            <div class="form-group">
+                                <label for="editPhone">Telefone</label>
+                                <input type="tel" id="editPhone" required pattern="[0-9]+" maxlength="11" title="Apenas números são permitidos">
+                            </div>
+                            <button type="submit">Salvar Alterações</button>
+                        </form>
+                        <div class="loans-section">
+                            <h3 class="loans-title">Empréstimos Ativos</h3>
+                            ${loansHtml}
+                        </div>
+                    </div>
+                `;
+
+                document.getElementById('editModal').style.display = 'block';
+                
+                // Recriar os event listeners do formulário
+                document.getElementById('editForm').addEventListener('submit', handleEditFormSubmit);
+            }
+        }
+
+        // Função para dar baixa em um livro
+        function returnBook(loanId) {
+            const loanIndex = loans.findIndex(loan => loan.id === loanId);
+            if (loanIndex !== -1) {
+                loans[loanIndex].returned = true;
+                
+                // Atualizar o modal com a lista atualizada de empréstimos
+                const userId = parseInt(document.getElementById('editUserId').value);
+                editUser(userId);
+            }
+        }
+
+        // Função para lidar com o submit do formulário
+        function handleEditFormSubmit(e) {
+            e.preventDefault();
+            const id = parseInt(document.getElementById('editUserId').value);
+            const name = document.getElementById('editName').value;
+            const phone = document.getElementById('editPhone').value;
+
+            if (!/^[A-Za-zÀ-ÿ\s]+$/.test(name)) {
+                alert('O nome deve conter apenas letras');
+                return;
+            }
+
+            if (!/^\d+$/.test(phone)) {
+                alert('O telefone deve conter apenas números');
+                return;
+            }
+
+            const userIndex = users.findIndex(u => u.id === id);
+            if (userIndex !== -1) {
+                users[userIndex].name = name;
+                users[userIndex].phone = phone;
+                updateUsersTable(document.getElementById('searchInput').value);
+                closeModal();
+            }
+        }
+
+        // Função para fechar modal
+        function closeModal() {
+            document.getElementById('editModal').style.display = 'none';
+        }
+
+        // Função para validar entrada de nome (apenas letras e espaços)
+        document.getElementById('editName').addEventListener('input', function(e) {
+            this.value = this.value.replace(/[^A-Za-zÀ-ÿ\s]/g, '');
+        });
+
+        // Função para validar entrada de telefone (apenas números)
+        document.getElementById('editPhone').addEventListener('input', function(e) {
+            this.value = this.value.replace(/\D/g, '').substring(0, 11);
+        });
+
+        // Atualizar event listener da pesquisa
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            updateUsersTable(e.target.value);
+        });
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('editModal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        }
+
+        // Inicialização
+        window.addEventListener('load', () => {
+            document.getElementById('filterAll').classList.add('active');
+            updateUsersTable();
+        });
+
+        // Adicionar estilo para destacar linhas de administradores e usuários com multa
+        const style = document.createElement('style');
+        style.textContent = `
+            .admin-row {
+                background-color: rgba(76, 175, 80, 0.1) !important;
+            }
+            .admin-row:hover {
+                background-color: rgba(76, 175, 80, 0.2) !important;
+            }
+            .debt-row {
+                background-color: rgba(244, 67, 54, 0.1) !important;
+            }
+            .debt-row:hover {
+                background-color: rgba(244, 67, 54, 0.2) !important;
+            }
+            .users-table tr:nth-child(even):not(.admin-row):not(.debt-row) {
+                background-color: rgba(0, 0, 0, 0.02);
+            }
+            .users-table tr:hover:not(.admin-row):not(.debt-row) {
+                background-color: rgba(0, 0, 0, 0.05);
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Função para alternar o status do usuário
+        function toggleUserStatus(id) {
+            const userIndex = users.findIndex(u => u.id === id);
+            if (userIndex !== -1) {
+                users[userIndex].status = users[userIndex].status === 'Ativo' ? 'Bloqueado' : 'Ativo';
+                updateUsersTable(document.getElementById('searchInput').value);
+            }
+        }
+    </script>
+</body>
+</html> 

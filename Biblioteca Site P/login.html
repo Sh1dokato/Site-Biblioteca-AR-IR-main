@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Login - Biblioteca Arco-Íris</title>
+  <link rel="icon" href="favicon.ico">
+  <link rel="stylesheet" href="CSS/styles.css">
+  <style>
+
+  </style>
+</head>
+<body>
+  <button class="help-btn" onclick="showHelpModal()">?</button>
+
+  <div id="helpModal" class="help-modal">
+    <div class="help-modal-content">
+      <span class="close-help" onclick="closeHelpModal()">&times;</span>
+      <h2>Precisa de ajuda?</h2>
+      <p class="help-text">
+        Se você está tendo problemas para acessar o sistema ou tem alguma dúvida,
+        entre em contato conosco através do e-mail:
+        <br><br>
+        <a href="mailto:suporte@bibliotecaarcoiris.com" class="help-email">
+          suporte@bibliotecaarcoiris.com
+        </a>
+      </p>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="form-container">
+      <div class="arco-iris">
+        <span>B</span><span>I</span><span>B</span><span>L</span><span>I</span><span>O</span><span>T</span><span>E</span><span>C</span><span>A</span>
+        <br>
+        <span>A</span><span>R</span><span>C</span><span>O</span><span>-</span><span>Í</span><span>R</span><span>I</span><span>S</span>
+      </div>
+      <form class="form-box" id="loginForm">
+        <div class="input-group">
+          <span class="icon">📚</span>
+          <input type="text" name="cpf" placeholder="CPF (somente números)" pattern="\d*" maxlength="11" required>
+        </div>
+        <div class="input-group">
+          <span class="icon">🔒</span>
+          <input type="password" name="senha" placeholder="Senha" required>
+        </div>
+        <div class="input-group">
+          <span class="icon">📞</span>
+          <input type="tel" name="telefone" placeholder="Telefone" required>
+        </div>
+        <div class="links">
+          <a href="recuperar-senha.html">Esqueceu a senha?</a>
+          <button type="submit" class="btn">Entrar</button>
+        </div>
+        <div class="links" style="display: flex; justify-content: center; gap: 20px;">
+          <a href="#" class="btn" id="btnVisitante">ENTRAR COMO VISITANTE</a>
+          <a href="registro.html" class="btn">REGISTRAR</a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // Funções do modal de ajuda
+    function showHelpModal() {
+      document.getElementById('helpModal').style.display = 'block';
+    }
+
+    function closeHelpModal() {
+      document.getElementById('helpModal').style.display = 'none';
+    }
+
+    // Fechar modal ao clicar fora dele
+    window.onclick = function(event) {
+      const modal = document.getElementById('helpModal');
+      if (event.target === modal) {
+        closeHelpModal();
+      }
+    }
+
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const cpf = this.querySelector('input[name="cpf"]').value;
+      const senha = this.querySelector('input[name="senha"]').value;
+      const telefone = this.querySelector('input[name="telefone"]').value;
+      
+      // Verificar se é um admin
+      const admins = [
+        { cpf: '99999999999', telefone: '12345' }, // Admin Principal
+        { cpf: '88888888888', telefone: '47977777777' }, // Carlos Oliveira
+        { cpf: '77777777777', telefone: '47966666666' }  // Ana Rodrigues
+      ];
+
+      const isAdmin = admins.some(admin => admin.cpf === cpf && admin.telefone === telefone);
+      
+      if (cpf && senha && telefone) {
+        // Limpar dados anteriores
+        localStorage.removeItem('usuarioLogado');
+        
+        // Salvar usuário logado no localStorage
+        localStorage.setItem('usuarioLogado', JSON.stringify({
+          username: cpf,
+          telefone: telefone,
+          isAdmin: isAdmin
+        }));
+        
+        // Redirecionar baseado no tipo de usuário
+        if (isAdmin) {
+          window.location.href = 'inicio-admin.html';
+        } else {
+          window.location.href = 'usuario.html';
+        }
+      } else {
+        alert('Por favor, preencha todos os campos.');
+      }
+    });
+
+    // Botão de visitante
+    document.getElementById('btnVisitante').addEventListener('click', function(e) {
+      e.preventDefault();
+      // Redirecionar para a página de visitante
+      window.location.href = 'pagina-visitante.html';
+    });
+  </script>
+</body>
+</html> 

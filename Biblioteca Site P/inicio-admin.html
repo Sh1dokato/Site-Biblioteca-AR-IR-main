@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Biblioteca Arco-Íris - Administração</title>
+    <link rel="icon" href="favicon.ico">
+    <link rel="stylesheet" href="CSS/inicioadmin.css">
+    <style>
+       
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-title">
+            <img src="IMG/logo.png" alt="Logo" style="height: 30px;">
+            <span>Biblioteca Arco-Íris - Painel Administrativo</span>
+        </div>
+        <div class="header-buttons">
+            <button class="donations-btn" onclick="toggleDonationsPanel()">
+                <span>Doações Pendentes</span>
+                <span id="donationsCount" style="background: white; color: #ff9000; padding: 2px 6px; border-radius: 10px; font-size: 12px;">0</span>
+            </button>
+            <button class="donations-btn" onclick="toggleDevolucoesPanel()">
+                <span>Devoluções Pendentes</span>
+                <span id="devolucoesCount" style="background: white; color: #ff9000; padding: 2px 6px; border-radius: 10px; font-size: 12px;">0</span>
+            </button>
+            <a href="usuarios.html" class="header-btn">Usuários</a>
+            <a href="index.html" class="header-btn">Sair</a>
+        </div>
+    </header>
+
+    <div class="admin-container">
+        <div class="books-section">
+            <div class="books-header">
+                <h2 class="books-title">Livros Disponíveis</h2>
+                <button class="action-btn" onclick="showAddBookModal()">+ Adicionar Novo Livro</button>
+            </div>
+            <div class="books-grid" id="booksGrid">
+                <!-- Os livros serão inseridos aqui via JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para adicionar/editar livro -->
+    <div id="bookModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal()">&times;</span>
+            <h2 id="modalTitle">Adicionar Novo Livro</h2>
+            <form id="bookForm" class="modal-form">
+                <input type="hidden" id="bookId">
+                <input type="text" id="bookTitle" placeholder="Título do livro" required>
+                <input type="text" id="bookImage" placeholder="URL da imagem" required>
+                <input type="number" id="bookEstoque" placeholder="Quantidade em estoque" min="0" required>
+                <input type="text" id="bookAutor" placeholder="Autor do livro" required>
+                <input type="number" id="bookAno" placeholder="Ano de publicação" min="1000" max="2024" required>
+                <input type="number" id="bookPaginas" placeholder="Número de páginas" min="1" required>
+                <input type="text" id="bookCategoria" placeholder="Categoria do livro" required>
+                <textarea id="bookDescription" placeholder="Sinopse do livro" rows="4" required></textarea>
+                <button type="submit">Salvar</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="donations-panel" id="donationsPanel">
+        <div class="donations-header">
+            <h2 class="donations-title">Doações Pendentes</h2>
+            <button class="close-donations" onclick="toggleDonationsPanel()">&times;</button>
+        </div>
+        <div id="donationsList">
+            <!-- As doações pendentes serão inseridas aqui via JavaScript -->
+        </div>
+    </div>
+
+    <div class="devolucoes-panel" id="devolucoesPanel">
+        <div class="devolucoes-header">
+            <h2 class="devolucoes-title">Devoluções Pendentes</h2>
+            <button class="close-devolucoes" onclick="toggleDevolucoesPanel()">&times;</button>
+        </div>
+        <div id="devolucoesList">
+            <!-- As devoluções pendentes serão inseridas aqui via JavaScript -->
+        </div>
+    </div>
+
+    <script>
+        // Verificar se o usuário está logado e é admin
+        window.addEventListener('load', function() {
+            const usuarioLogado = JSON.parse(localStorage.getItem('usuarioLogado'));
+            if (!usuarioLogado || !usuarioLogado.isAdmin) {
+                window.location.href = 'login.html';
+                return;
+            }
+        });
+
+        // Função para fazer logout
+        document.querySelector('a[href="index.html"]').addEventListener('click', function(e) {
+            e.preventDefault();
+            localStorage.removeItem('usuarioLogado');
+            window.location.href = 'index.html';
+        });
+
+        // Lista de livros
+        const books = JSON.parse(localStorage.getItem('livros') || '[]');
+
+        // Função para atualizar a grade de livros
+        function updateBooksGrid() {
+            const grid = document.getElementById('booksGrid');
+            grid.innerHTML = books.map(book => `
+                <div class="book-card">
+                    <img src="${book.image}" alt="${book.title}" class="book-thumb">
+                    <div class="book-title">${book.title}</div>
+                    <div class="book-actions">
+                        <button class="book-btn btn-edit" onclick="editBook(${book.id})">Editar</button>
+                        <button class="book-btn btn-delete" onclick="deleteBook(${book.id})">Excluir</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Funções do modal
+        function showAddBookModal() {
+            document.getElementById('modalTitle').textContent = 'Adicionar Novo Livro';
+            document.getElementById('bookForm').reset();
+            document.getElementById('bookId').value = '';
+            document.getElementById('bookModal').style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('bookModal').style.display = 'none';
+        }
+
+        // Função para editar livro
+        function editBook(id) {
+            const book = books.find(b => b.id === id);
+            if (book) {
+                document.getElementById('modalTitle').textContent = 'Editar Livro';
+                document.getElementById('bookId').value = book.id;
+                document.getElementById('bookTitle').value = book.title;
+                document.getElementById('bookImage').value = book.image;
+                document.getElementById('bookEstoque').value = book.estoque;
+                document.getElementById('bookAutor').value = book.autor;
+                document.getElementById('bookAno').value = book.ano;
+                document.getElementById('bookPaginas').value = book.paginas;
+                document.getElementById('bookCategoria').value = book.categoria;
+                document.getElementById('bookDescription').value = book.descricao;
+                document.getElementById('bookModal').style.display = 'block';
+            }
+        }
+
+        // Função para excluir livro
+        function deleteBook(id) {
+            if (confirm('Tem certeza que deseja excluir este livro?')) {
+                const index = books.findIndex(b => b.id === id);
+                if (index !== -1) {
+                    books.splice(index, 1);
+                    localStorage.setItem('livros', JSON.stringify(books));
+                    updateBooksGrid();
+                }
+            }
+        }
+
+        // Event listener para o formulário do livro
+        document.getElementById('bookForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const id = document.getElementById('bookId').value;
+            const title = document.getElementById('bookTitle').value;
+            const image = document.getElementById('bookImage').value;
+            const estoque = parseInt(document.getElementById('bookEstoque').value);
+            const autor = document.getElementById('bookAutor').value;
+            const ano = parseInt(document.getElementById('bookAno').value);
+            const paginas = parseInt(document.getElementById('bookPaginas').value);
+            const categoria = document.getElementById('bookCategoria').value;
+            const descricao = document.getElementById('bookDescription').value;
+
+            if (id) {
+                // Editando livro existente
+                const index = books.findIndex(b => b.id === parseInt(id));
+                if (index !== -1) {
+                    books[index] = {
+                        ...books[index],
+                        title,
+                        image,
+                        estoque,
+                        autor,
+                        ano,
+                        paginas,
+                        categoria,
+                        descricao
+                    };
+                }
+            } else {
+                // Adicionando novo livro
+                const newId = books.length > 0 ? Math.max(...books.map(b => b.id)) + 1 : 1;
+                books.push({ 
+                    id: newId, 
+                    title, 
+                    image, 
+                    estoque,
+                    autor,
+                    ano,
+                    paginas,
+                    categoria,
+                    descricao
+                });
+            }
+
+            // Salvar no localStorage
+            localStorage.setItem('livros', JSON.stringify(books));
+            updateBooksGrid();
+            closeModal();
+        });
+
+        // Função para atualizar a lista de doações
+        function updateDonationsList() {
+            const donationsList = document.getElementById('donationsList');
+            const pendingDonations = JSON.parse(localStorage.getItem('pendingDonations') || '[]');
+            const donationsCount = document.getElementById('donationsCount');
+
+            // Atualiza o contador
+            donationsCount.textContent = pendingDonations.length;
+
+            if (pendingDonations.length === 0) {
+                donationsList.innerHTML = '<div class="empty-donations">Nenhuma doação pendente</div>';
+                return;
+            }
+
+            donationsList.innerHTML = pendingDonations.map(donation => `
+                <div class="donation-card" data-id="${donation.id}">
+                    <div class="donation-info">
+                        <strong>Usuário:</strong> ${donation.user}<br>
+                        <strong>Livro:</strong> ${donation.book}<br>
+                        <strong>Data:</strong> ${donation.date}
+                    </div>
+                    <div class="donation-actions">
+                        <button class="donation-btn btn-confirm" onclick="confirmDonation('${donation.id}')">Confirmar</button>
+                        <button class="donation-btn btn-reject" onclick="rejectDonation('${donation.id}')">Rejeitar</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function confirmDonation(id) {
+            const pendingDonations = JSON.parse(localStorage.getItem('pendingDonations') || '[]');
+            const donationIndex = pendingDonations.findIndex(d => d.id === id);
+            
+            if (donationIndex !== -1) {
+                pendingDonations.splice(donationIndex, 1);
+                localStorage.setItem('pendingDonations', JSON.stringify(pendingDonations));
+                updateDonationsList();
+                alert('Doação confirmada com sucesso!');
+            }
+        }
+
+        function rejectDonation(id) {
+            const pendingDonations = JSON.parse(localStorage.getItem('pendingDonations') || '[]');
+            const donationIndex = pendingDonations.findIndex(d => d.id === id);
+            
+            if (donationIndex !== -1) {
+                pendingDonations.splice(donationIndex, 1);
+                localStorage.setItem('pendingDonations', JSON.stringify(pendingDonations));
+                updateDonationsList();
+                alert('Doação rejeitada.');
+            }
+        }
+
+        // Função para alternar o painel de doações
+        function toggleDonationsPanel() {
+            const panel = document.getElementById('donationsPanel');
+            panel.classList.toggle('active');
+        }
+
+        // Fechar o painel ao clicar fora dele
+        document.addEventListener('click', function(event) {
+            const panel = document.getElementById('donationsPanel');
+            const donationsBtn = document.querySelector('.donations-btn');
+            
+            if (!panel.contains(event.target) && !donationsBtn.contains(event.target) && panel.classList.contains('active')) {
+                panel.classList.remove('active');
+            }
+        });
+
+        // Função para atualizar a lista de devoluções
+        function updateDevolucoesList() {
+            const devolucoesList = document.getElementById('devolucoesList');
+            const solicitacoesDevolucao = JSON.parse(localStorage.getItem('solicitacoesDevolucao') || '[]');
+            const devolucoesCount = document.getElementById('devolucoesCount');
+
+            // Atualiza o contador
+            devolucoesCount.textContent = solicitacoesDevolucao.length;
+
+            if (solicitacoesDevolucao.length === 0) {
+                devolucoesList.innerHTML = '<div class="empty-devolucoes">Nenhuma devolução pendente</div>';
+                return;
+            }
+
+            devolucoesList.innerHTML = solicitacoesDevolucao.map(solicitacao => `
+                <div class="devolucao-card" data-id="${solicitacao.id}">
+                    <div class="devolucao-info">
+                        <strong>Livro:</strong> ${solicitacao.titulo}<br>
+                        <strong>Data da Solicitação:</strong> ${solicitacao.dataSolicitacao}
+                    </div>
+                    <div class="devolucao-actions">
+                        <button class="devolucao-btn btn-confirmar-devolucao" onclick="confirmarDevolucao('${solicitacao.id}')">Confirmar</button>
+                        <button class="devolucao-btn btn-rejeitar-devolucao" onclick="rejeitarDevolucao('${solicitacao.id}')">Rejeitar</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function confirmarDevolucao(id) {
+            const solicitacoesDevolucao = JSON.parse(localStorage.getItem('solicitacoesDevolucao') || '[]');
+            const solicitacao = solicitacoesDevolucao.find(s => s.id === parseInt(id));
+            
+            if (solicitacao) {
+                // Atualizar status do empréstimo
+                const emprestimos = JSON.parse(localStorage.getItem('emprestimos') || '[]');
+                const emprestimo = emprestimos.find(e => e.id === solicitacao.emprestimoId);
+                
+                if (emprestimo) {
+                    emprestimo.status = 'devolvido';
+                    localStorage.setItem('emprestimos', JSON.stringify(emprestimos));
+
+                    // Atualizar estoque do livro
+                    const livros = JSON.parse(localStorage.getItem('livros') || '[]');
+                    const livro = livros.find(l => l.title === emprestimo.titulo);
+                    if (livro) {
+                        livro.estoque++;
+                        localStorage.setItem('livros', JSON.stringify(livros));
+                    }
+                }
+
+                // Remover solicitação
+                const index = solicitacoesDevolucao.findIndex(s => s.id === parseInt(id));
+                solicitacoesDevolucao.splice(index, 1);
+                localStorage.setItem('solicitacoesDevolucao', JSON.stringify(solicitacoesDevolucao));
+                
+                updateDevolucoesList();
+                alert('Devolução confirmada com sucesso!');
+            }
+        }
+
+        function rejeitarDevolucao(id) {
+            const solicitacoesDevolucao = JSON.parse(localStorage.getItem('solicitacoesDevolucao') || '[]');
+            const solicitacao = solicitacoesDevolucao.find(s => s.id === parseInt(id));
+            
+            if (solicitacao) {
+                // Atualizar status do empréstimo
+                const emprestimos = JSON.parse(localStorage.getItem('emprestimos') || '[]');
+                const emprestimo = emprestimos.find(e => e.id === solicitacao.emprestimoId);
+                
+                if (emprestimo) {
+                    emprestimo.status = 'emprestado';
+                    localStorage.setItem('emprestimos', JSON.stringify(emprestimos));
+                }
+
+                // Remover solicitação
+                const index = solicitacoesDevolucao.findIndex(s => s.id === parseInt(id));
+                solicitacoesDevolucao.splice(index, 1);
+                localStorage.setItem('solicitacoesDevolucao', JSON.stringify(solicitacoesDevolucao));
+                
+                updateDevolucoesList();
+                alert('Devolução rejeitada.');
+            }
+        }
+
+        // Função para alternar o painel de devoluções
+        function toggleDevolucoesPanel() {
+            const panel = document.getElementById('devolucoesPanel');
+            panel.classList.toggle('active');
+        }
+
+        // Fechar o painel ao clicar fora dele
+        document.addEventListener('click', function(event) {
+            const panel = document.getElementById('devolucoesPanel');
+            const devolucoesBtn = document.querySelector('.donations-btn:nth-child(2)');
+            
+            if (!panel.contains(event.target) && !devolucoesBtn.contains(event.target) && panel.classList.contains('active')) {
+                panel.classList.remove('active');
+            }
+        });
+
+        // Inicialização
+        window.addEventListener('load', () => {
+            // Carregar livros do localStorage
+            const livrosExistentes = JSON.parse(localStorage.getItem('livros') || '[]');
+            if (livrosExistentes.length > 0) {
+                books.length = 0; // Limpar array existente
+                books.push(...livrosExistentes); // Adicionar livros do localStorage
+            }
+
+            // Adicionar uma doação pendente de exemplo
+            const exampleDonation = {
+                id: 'donation1',
+                user: 'Maria Silva',
+                book: 'O Senhor dos Anéis',
+                date: new Date().toLocaleDateString('pt-BR')
+            };
+
+            // Verificar se já existem doações
+            const pendingDonations = JSON.parse(localStorage.getItem('pendingDonations') || '[]');
+            
+            // Adicionar a doação apenas se não houver nenhuma
+            if (pendingDonations.length === 0) {
+                pendingDonations.push(exampleDonation);
+                localStorage.setItem('pendingDonations', JSON.stringify(pendingDonations));
+            }
+
+            updateBooksGrid();
+            updateDonationsList();
+            updateDevolucoesList();
+        });
+
+        // Fechar modal quando clicar fora dele
+        window.onclick = function(event) {
+            const modal = document.getElementById('bookModal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        }
+    </script>
+</body>
+</html> 
