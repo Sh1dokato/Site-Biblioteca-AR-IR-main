@@ -6,7 +6,212 @@
     <link rel="icon" href="favicon.ico">
     <link rel="stylesheet" href="CSS/inicioadmin.css">
     <style>
-       
+        .donations-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: #ff9000;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .donations-btn:hover {
+            background: #e67e00;
+            transform: translateY(-1px);
+        }
+
+        .donations-btn span:last-child {
+            background: white;
+            color: #ff9000;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+            min-width: 20px;
+            text-align: center;
+        }
+
+        .devolucoes-panel {
+            position: fixed;
+            top: 0;
+            right: -400px;
+            width: 400px;
+            height: 100vh;
+            background: #ffffff;
+            box-shadow: -2px 0 10px rgba(0,0,0,0.1);
+            transition: right 0.3s ease;
+            z-index: 1000;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .devolucoes-panel.active {
+            right: 0;
+        }
+
+        .devolucoes-header {
+            background: #ff9000;
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1;
+        }
+
+        .devolucoes-title {
+            margin: 0;
+            font-size: 1.2em;
+            font-weight: 600;
+        }
+
+        .close-devolucoes {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background-color 0.3s ease;
+        }
+
+        .close-devolucoes:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        #devolucoesList {
+            padding: 20px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .devolucao-card {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            border: 1px solid #eee;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .devolucao-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+        }
+
+        .devolucao-card .book-thumb {
+            width: 60px;
+            height: 90px;
+            object-fit: cover;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .devolucao-info {
+            flex: 1;
+            min-width: 0; /* Permite que o texto quebre corretamente */
+        }
+
+        .devolucao-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .devolucao-user {
+            font-size: 14px;
+            color: #666;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .devolucao-actions {
+            display: flex;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        .devolucao-btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            white-space: nowrap;
+        }
+
+        .btn-confirm {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .btn-confirm:hover {
+            background-color: #388E3C;
+            transform: translateY(-1px);
+        }
+
+        .btn-reject {
+            background-color: #f44336;
+            color: white;
+        }
+
+        .btn-reject:hover {
+            background-color: #d32f2f;
+            transform: translateY(-1px);
+        }
+
+        .empty-devolucoes {
+            text-align: center;
+            padding: 40px 20px;
+            color: #666;
+            font-size: 16px;
+            background: #f9f9f9;
+            border-radius: 8px;
+            margin: 20px;
+        }
+
+        /* Adicionar scrollbar personalizada */
+        .devolucoes-panel::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .devolucoes-panel::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        .devolucoes-panel::-webkit-scrollbar-thumb {
+            background: #ff9000;
+            border-radius: 4px;
+        }
+
+        .devolucoes-panel::-webkit-scrollbar-thumb:hover {
+            background: #e67e00;
+        }
     </style>
 </head>
 <body>
@@ -280,85 +485,114 @@
 
         // Função para atualizar a lista de devoluções
         function updateDevolucoesList() {
-            const devolucoesList = document.getElementById('devolucoesList');
-            const solicitacoesDevolucao = JSON.parse(localStorage.getItem('solicitacoesDevolucao') || '[]');
-            const devolucoesCount = document.getElementById('devolucoesCount');
+            try {
+                const devolucoesList = document.getElementById('devolucoesList');
+                const devolucoesCount = document.getElementById('devolucoesCount');
+                
+                // Obter solicitações de devolução
+                let solicitacoesDevolucao = [];
+                try {
+                    const solicitacoesSalvas = localStorage.getItem('solicitacoesDevolucao');
+                    if (solicitacoesSalvas) {
+                        solicitacoesDevolucao = JSON.parse(solicitacoesSalvas);
+                    }
+                } catch (error) {
+                    console.error('Erro ao ler solicitações de devolução:', error);
+                }
 
-            // Atualiza o contador
-            devolucoesCount.textContent = solicitacoesDevolucao.length;
+                // Atualizar contador
+                devolucoesCount.textContent = solicitacoesDevolucao.length;
 
-            if (solicitacoesDevolucao.length === 0) {
-                devolucoesList.innerHTML = '<div class="empty-devolucoes">Nenhuma devolução pendente</div>';
-                return;
+                // Atualizar lista
+                if (solicitacoesDevolucao.length === 0) {
+                    devolucoesList.innerHTML = '<div class="empty-devolucoes">Nenhuma devolução pendente</div>';
+                    return;
+                }
+
+                devolucoesList.innerHTML = solicitacoesDevolucao.map(solicitacao => `
+                    <div class="devolucao-card" data-id="${solicitacao.id}">
+                        <img src="${solicitacao.imagem}" alt="${solicitacao.titulo}" class="book-thumb">
+                        <div class="devolucao-info">
+                            <div class="devolucao-title">${solicitacao.titulo}</div>
+                            <div class="devolucao-user">${solicitacao.usuario.nome}</div>
+                        </div>
+                        <div class="devolucao-actions">
+                            <button class="devolucao-btn btn-confirm" onclick="confirmarDevolucao(${solicitacao.id})">Confirmar</button>
+                            <button class="devolucao-btn btn-reject" onclick="rejeitarDevolucao(${solicitacao.id})">Rejeitar</button>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Erro ao atualizar lista de devoluções:', error);
             }
-
-            devolucoesList.innerHTML = solicitacoesDevolucao.map(solicitacao => `
-                <div class="devolucao-card" data-id="${solicitacao.id}">
-                    <div class="devolucao-info">
-                        <strong>Livro:</strong> ${solicitacao.titulo}<br>
-                        <strong>Data da Solicitação:</strong> ${solicitacao.dataSolicitacao}
-                    </div>
-                    <div class="devolucao-actions">
-                        <button class="devolucao-btn btn-confirmar-devolucao" onclick="confirmarDevolucao('${solicitacao.id}')">Confirmar</button>
-                        <button class="devolucao-btn btn-rejeitar-devolucao" onclick="rejeitarDevolucao('${solicitacao.id}')">Rejeitar</button>
-                    </div>
-                </div>
-            `).join('');
         }
 
         function confirmarDevolucao(id) {
-            const solicitacoesDevolucao = JSON.parse(localStorage.getItem('solicitacoesDevolucao') || '[]');
-            const solicitacao = solicitacoesDevolucao.find(s => s.id === parseInt(id));
-            
-            if (solicitacao) {
-                // Atualizar status do empréstimo
+            try {
+                // Obter dados necessários
+                const solicitacoesDevolucao = JSON.parse(localStorage.getItem('solicitacoesDevolucao') || '[]');
                 const emprestimos = JSON.parse(localStorage.getItem('emprestimos') || '[]');
-                const emprestimo = emprestimos.find(e => e.id === solicitacao.emprestimoId);
+                const livros = JSON.parse(localStorage.getItem('livros') || '[]');
                 
+                const solicitacao = solicitacoesDevolucao.find(s => s.id === id);
+                if (!solicitacao) {
+                    throw new Error('Solicitação não encontrada');
+                }
+
+                // Atualizar status do empréstimo
+                const emprestimo = emprestimos.find(e => e.id === solicitacao.emprestimoId);
                 if (emprestimo) {
                     emprestimo.status = 'devolvido';
                     localStorage.setItem('emprestimos', JSON.stringify(emprestimos));
+                }
 
-                    // Atualizar estoque do livro
-                    const livros = JSON.parse(localStorage.getItem('livros') || '[]');
-                    const livro = livros.find(l => l.title === emprestimo.titulo);
-                    if (livro) {
-                        livro.estoque++;
-                        localStorage.setItem('livros', JSON.stringify(livros));
-                    }
+                // Atualizar estoque do livro
+                const livro = livros.find(l => l.title === solicitacao.titulo);
+                if (livro) {
+                    livro.estoque++;
+                    localStorage.setItem('livros', JSON.stringify(livros));
                 }
 
                 // Remover solicitação
-                const index = solicitacoesDevolucao.findIndex(s => s.id === parseInt(id));
-                solicitacoesDevolucao.splice(index, 1);
-                localStorage.setItem('solicitacoesDevolucao', JSON.stringify(solicitacoesDevolucao));
+                const solicitacoesAtualizadas = solicitacoesDevolucao.filter(s => s.id !== id);
+                localStorage.setItem('solicitacoesDevolucao', JSON.stringify(solicitacoesAtualizadas));
                 
                 updateDevolucoesList();
+                updateBooksGrid();
                 alert('Devolução confirmada com sucesso!');
+            } catch (error) {
+                console.error('Erro ao confirmar devolução:', error);
+                alert('Erro ao confirmar devolução. Por favor, tente novamente.');
             }
         }
 
         function rejeitarDevolucao(id) {
-            const solicitacoesDevolucao = JSON.parse(localStorage.getItem('solicitacoesDevolucao') || '[]');
-            const solicitacao = solicitacoesDevolucao.find(s => s.id === parseInt(id));
-            
-            if (solicitacao) {
-                // Atualizar status do empréstimo
+            try {
+                // Obter dados necessários
+                const solicitacoesDevolucao = JSON.parse(localStorage.getItem('solicitacoesDevolucao') || '[]');
                 const emprestimos = JSON.parse(localStorage.getItem('emprestimos') || '[]');
-                const emprestimo = emprestimos.find(e => e.id === solicitacao.emprestimoId);
                 
+                const solicitacao = solicitacoesDevolucao.find(s => s.id === id);
+                if (!solicitacao) {
+                    throw new Error('Solicitação não encontrada');
+                }
+
+                // Reverter status do empréstimo
+                const emprestimo = emprestimos.find(e => e.id === solicitacao.emprestimoId);
                 if (emprestimo) {
                     emprestimo.status = 'emprestado';
                     localStorage.setItem('emprestimos', JSON.stringify(emprestimos));
                 }
 
                 // Remover solicitação
-                const index = solicitacoesDevolucao.findIndex(s => s.id === parseInt(id));
-                solicitacoesDevolucao.splice(index, 1);
-                localStorage.setItem('solicitacoesDevolucao', JSON.stringify(solicitacoesDevolucao));
+                const solicitacoesAtualizadas = solicitacoesDevolucao.filter(s => s.id !== id);
+                localStorage.setItem('solicitacoesDevolucao', JSON.stringify(solicitacoesAtualizadas));
                 
                 updateDevolucoesList();
                 alert('Devolução rejeitada.');
+            } catch (error) {
+                console.error('Erro ao rejeitar devolução:', error);
+                alert('Erro ao rejeitar devolução. Por favor, tente novamente.');
             }
         }
 
@@ -366,17 +600,19 @@
         function toggleDevolucoesPanel() {
             const panel = document.getElementById('devolucoesPanel');
             panel.classList.toggle('active');
+            if (panel.classList.contains('active')) {
+                updateDevolucoesList();
+            }
         }
 
-        // Fechar o painel ao clicar fora dele
-        document.addEventListener('click', function(event) {
-            const panel = document.getElementById('devolucoesPanel');
-            const devolucoesBtn = document.querySelector('.donations-btn:nth-child(2)');
-            
-            if (!panel.contains(event.target) && !devolucoesBtn.contains(event.target) && panel.classList.contains('active')) {
-                panel.classList.remove('active');
-            }
+        // Atualizar lista de devoluções ao carregar a página
+        window.addEventListener('load', function() {
+            updateDevolucoesList();
+            updateBooksGrid();
         });
+
+        // Atualizar lista periodicamente
+        setInterval(updateDevolucoesList, 5000);
 
         // Inicialização
         window.addEventListener('load', () => {
@@ -385,23 +621,6 @@
             if (livrosExistentes.length > 0) {
                 books.length = 0; // Limpar array existente
                 books.push(...livrosExistentes); // Adicionar livros do localStorage
-            }
-
-            // Adicionar uma doação pendente de exemplo
-            const exampleDonation = {
-                id: 'donation1',
-                user: 'Maria Silva',
-                book: 'O Senhor dos Anéis',
-                date: new Date().toLocaleDateString('pt-BR')
-            };
-
-            // Verificar se já existem doações
-            const pendingDonations = JSON.parse(localStorage.getItem('pendingDonations') || '[]');
-            
-            // Adicionar a doação apenas se não houver nenhuma
-            if (pendingDonations.length === 0) {
-                pendingDonations.push(exampleDonation);
-                localStorage.setItem('pendingDonations', JSON.stringify(pendingDonations));
             }
 
             updateBooksGrid();

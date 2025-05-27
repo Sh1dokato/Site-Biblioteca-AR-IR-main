@@ -46,12 +46,51 @@
       
       if (formData.get('cpf') && formData.get('telefone') && 
           formData.get('senha') && formData.get('nome')) {
-        // Aqui você adicionaria a lógica de registro com o backend
+        
+        // Criar objeto do usuário
+        const newUser = {
+          id: Date.now(), // Usar timestamp como ID único
+          name: formData.get('nome'),
+          cpf: formData.get('cpf'),
+          phone: formData.get('telefone'),
+          password: formData.get('senha'),
+          type: 'Usuário',
+          status: 'Ativo',
+          isAdmin: false,
+          hasDebt: false,
+          hasPendingDonation: false
+        };
+
+        // Obter usuários existentes do localStorage
+        let users = JSON.parse(localStorage.getItem('users')) || [];
+        
+        // Verificar se CPF já existe
+        if (users.some(user => user.cpf === newUser.cpf)) {
+          alert('Este CPF já está cadastrado!');
+          return;
+        }
+
+        // Adicionar novo usuário
+        users.push(newUser);
+        
+        // Salvar no localStorage
+        localStorage.setItem('users', JSON.stringify(users));
+
         alert('Registro realizado com sucesso!');
         window.location.href = 'login.html';
       } else {
         alert('Por favor, preencha todos os campos!');
       }
+    });
+
+    // Validação do CPF (apenas números)
+    document.querySelector('input[name="cpf"]').addEventListener('input', function(e) {
+      this.value = this.value.replace(/\D/g, '');
+    });
+
+    // Validação do telefone (apenas números)
+    document.querySelector('input[name="telefone"]').addEventListener('input', function(e) {
+      this.value = this.value.replace(/\D/g, '');
     });
   </script>
 </body>

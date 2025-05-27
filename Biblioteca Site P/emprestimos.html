@@ -235,40 +235,67 @@
     }
 
     // Função para devolver empréstimo
-    function devolverEmprestimo(id) {
-      const emprestimos = JSON.parse(localStorage.getItem('emprestimos') || '[]');
-      const emprestimo = emprestimos.find(e => e.id === id);
-      
-      if (emprestimo) {
-        // Criar solicitação de devolução
-        const solicitacoesDevolucao = JSON.parse(localStorage.getItem('solicitacoesDevolucao') || '[]');
+    function devolverEmprestimo(emprestimoId) {
+      try {
+        // Obter dados necessários
+        const emprestimos = JSON.parse(localStorage.getItem('emprestimos') || '[]');
+        const emprestimo = emprestimos.find(e => e.id === emprestimoId);
+        const usuarioLogado = JSON.parse(localStorage.getItem('usuarioLogado'));
+
+        if (!emprestimo || !usuarioLogado) {
+          alert('Erro ao processar a devolução. Por favor, tente novamente.');
+          return;
+        }
+
+        // Criar nova solicitação de devolução
         const novaSolicitacao = {
           id: Date.now(),
-          emprestimoId: id,
+          emprestimoId: emprestimoId,
           titulo: emprestimo.titulo,
-          dataSolicitacao: new Date().toLocaleDateString()
+          imagem: emprestimo.imagem,
+          dataEmprestimo: emprestimo.dataEmprestimo,
+          dataDevolucao: emprestimo.dataDevolucao,
+          usuario: {
+            nome: usuarioLogado.name,
+            cpf: usuarioLogado.cpf,
+            telefone: usuarioLogado.phone
+          },
+          dataSolicitacao: new Date().toLocaleDateString('pt-BR'),
+          status: 'pendente'
         };
-        
-        solicitacoesDevolucao.push(novaSolicitacao);
-        localStorage.setItem('solicitacoesDevolucao', JSON.stringify(solicitacoesDevolucao));
+
+        // Obter lista atual de solicitações
+        let solicitacoesAtuais = [];
+        try {
+          const solicitacoesSalvas = localStorage.getItem('solicitacoesDevolucao');
+          if (solicitacoesSalvas) {
+            solicitacoesAtuais = JSON.parse(solicitacoesSalvas);
+          }
+        } catch (error) {
+          console.error('Erro ao ler solicitações existentes:', error);
+        }
+
+        // Adicionar nova solicitação
+        solicitacoesAtuais.push(novaSolicitacao);
+
+        // Salvar lista atualizada
+        localStorage.setItem('solicitacoesDevolucao', JSON.stringify(solicitacoesAtuais));
 
         // Atualizar status do empréstimo
         emprestimo.status = 'pendente_devolucao';
         localStorage.setItem('emprestimos', JSON.stringify(emprestimos));
 
-        // Atualizar interface
-        const card = document.querySelector(`[data-id="${id}"]`);
-        if (card) {
-          const status = card.querySelector('.status');
-          const btnDevolver = card.querySelector('.btn-devolver');
-          
-          status.textContent = 'Pendente Devolução';
-          status.classList.add('pendente');
-          btnDevolver.classList.add('pendente');
-          btnDevolver.disabled = true;
+        // Verificar se a solicitação foi salva corretamente
+        const solicitacoesVerificadas = JSON.parse(localStorage.getItem('solicitacoesDevolucao') || '[]');
+        if (solicitacoesVerificadas.some(s => s.id === novaSolicitacao.id)) {
+          alert('Solicitação de devolução enviada com sucesso! Aguarde a confirmação do administrador.');
+          location.reload();
+        } else {
+          throw new Error('Falha ao salvar a solicitação de devolução');
         }
-
-        alert('Solicitação de devolução enviada. Aguarde a confirmação do administrador.');
+      } catch (error) {
+        console.error('Erro ao processar devolução:', error);
+        alert('Ocorreu um erro ao processar a devolução. Por favor, tente novamente.');
       }
     }
 
@@ -442,6 +469,79 @@
       emprestimos.push(novoEmprestimo);
       localStorage.setItem('emprestimos', JSON.stringify(emprestimos));
     }
+
+    // Função para carregar empréstimos
+    function carregarEmprestimos() {
+      const emprestimos = JSON.parse(localStorage.getItem('emprestimos') || '[]');
+      const usuarioLogado = JSON.parse(localStorage.getItem('usuarioLogado'));
+      
+      if (!usuarioLogado) {
+        window.location.href = 'login.html';
+        return;
+      }
+
+      // Filtrar empréstimos do usuário atual
+      const emprestimosUsuario = emprestimos.filter(e => e.usuarioId === usuarioLogado.id);
+      const emprestimosAtivos = emprestimosUsuario.filter(emprestimo => emprestimo.status !== 'devolvido');
+      
+      const emprestimosContainer = document.querySelector('.emprestimos-container');
+      const emptyState = document.querySelector('.empty-state');
+
+      if (emprestimosAtivos.length === 0) {
+        emptyState.style.display = 'block';
+        return;
+      }
+
+      emptyState.style.display = 'none';
+      emprestimosContainer.innerHTML = '';
+
+      emprestimosAtivos.forEach(emprestimo => {
+        const card = document.createElement('div');
+        card.className = 'emprestimo-card';
+        card.setAttribute('data-id', emprestimo.id);
+        
+        const status = getStatus(emprestimo);
+        
+        card.innerHTML = `
+          <img src="${emprestimo.imagem}" alt="${emprestimo.titulo}" class="book-thumb">
+          <div class="book-info">
+            <h3>${emprestimo.titulo}</h3>
+            <p>Data do empréstimo: ${emprestimo.dataEmprestimo}</p>
+            <p>Data de devolução: ${emprestimo.dataDevolucao}</p>
+            <p class="status ${status.toLowerCase()}">Status: ${status}</p>
+            ${emprestimo.status === 'multa' ? `
+              <div class="multa-info">
+                <p>Valor da multa: R$ ${emprestimo.multa.toFixed(2)}</p>
+                <p>Dias em atraso: ${emprestimo.diasAtraso}</p>
+                <p>Vencimento: ${emprestimo.dataVencimento}</p>
+                <button class="btn-pagar-multa" onclick="abrirModalPagamento(${emprestimo.id})">Pagar Multa</button>
+              </div>
+            ` : ''}
+            ${emprestimo.status === 'pendente_devolucao' ? 
+              '<p class="status-info">Aguardando confirmação do administrador</p>' :
+              `${status === 'Em dia' ? '<button class="btn-renovar">Renovar</button>' : ''}
+              <button class="btn-devolver">Devolver</button>`
+            }
+          </div>
+        `;
+
+        // Adicionar eventos aos botões
+        const renovarBtn = card.querySelector('.btn-renovar');
+        if (renovarBtn) {
+          renovarBtn.addEventListener('click', () => renovarEmprestimo(emprestimo.id));
+        }
+
+        const devolverBtn = card.querySelector('.btn-devolver');
+        if (devolverBtn) {
+          devolverBtn.addEventListener('click', () => devolverEmprestimo(emprestimo.id));
+        }
+
+        emprestimosContainer.appendChild(card);
+      });
+    }
+
+    // Carregar empréstimos ao iniciar a página
+    window.addEventListener('load', carregarEmprestimos);
   </script>
 </body>
 </html> 

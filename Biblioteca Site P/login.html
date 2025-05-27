@@ -85,34 +85,77 @@
       const telefone = this.querySelector('input[name="telefone"]').value;
       
       // Verificar se é um admin
-      const admins = [
-        { cpf: '99999999999', telefone: '12345' }, // Admin Principal
-        { cpf: '88888888888', telefone: '47977777777' }, // Carlos Oliveira
-        { cpf: '77777777777', telefone: '47966666666' }  // Ana Rodrigues
-      ];
+      const adminPrincipal = { 
+        cpf: '99999999999', 
+        telefone: '12345',
+        senha: 'admin',
+        isAdmin: true,
+        name: 'Admin Principal'
+      };
 
-      const isAdmin = admins.some(admin => admin.cpf === cpf && admin.telefone === telefone);
-      
-      if (cpf && senha && telefone) {
-        // Limpar dados anteriores
-        localStorage.removeItem('usuarioLogado');
-        
-        // Salvar usuário logado no localStorage
+      // Verificar se é o admin principal
+      if (cpf === adminPrincipal.cpf && 
+          telefone === adminPrincipal.telefone && 
+          senha === adminPrincipal.senha) {
         localStorage.setItem('usuarioLogado', JSON.stringify({
-          username: cpf,
-          telefone: telefone,
-          isAdmin: isAdmin
+          id: 1,
+          name: adminPrincipal.name,
+          cpf: adminPrincipal.cpf,
+          telefone: adminPrincipal.telefone,
+          isAdmin: true
         }));
-        
-        // Redirecionar baseado no tipo de usuário
-        if (isAdmin) {
-          window.location.href = 'inicio-admin.html';
-        } else {
-          window.location.href = 'usuario.html';
-        }
-      } else {
-        alert('Por favor, preencha todos os campos.');
+        window.location.href = 'inicio-admin.html';
+        return;
       }
+
+      // Buscar usuários registrados no localStorage
+      const usuarios = JSON.parse(localStorage.getItem('users') || '[]');
+      
+      // Procurar o usuário pelo CPF
+      const usuario = usuarios.find(u => u.cpf === cpf);
+      
+      if (!usuario) {
+        alert('Usuário não encontrado. Por favor, verifique seu CPF ou registre-se.');
+        return;
+      }
+
+      // Verificar se o telefone e senha correspondem
+      if (usuario.phone !== telefone) {
+        alert('Telefone incorreto. Por favor, verifique seus dados.');
+        return;
+      }
+
+      if (usuario.password !== senha) {
+        alert('Senha incorreta. Por favor, verifique seus dados.');
+        return;
+      }
+
+      // Verificar se o usuário está bloqueado
+      if (usuario.status === 'Bloqueado') {
+        alert('Sua conta está bloqueada. Entre em contato com o administrador.');
+        return;
+      }
+
+      // Login bem-sucedido
+      localStorage.setItem('usuarioLogado', JSON.stringify({
+        id: usuario.id,
+        name: usuario.name,
+        cpf: usuario.cpf,
+        telefone: usuario.phone,
+        isAdmin: false
+      }));
+
+      window.location.href = 'usuario.html';
+    });
+
+    // Validação do CPF (apenas números)
+    document.querySelector('input[name="cpf"]').addEventListener('input', function(e) {
+      this.value = this.value.replace(/\D/g, '');
+    });
+
+    // Validação do telefone (apenas números)
+    document.querySelector('input[name="telefone"]').addEventListener('input', function(e) {
+      this.value = this.value.replace(/\D/g, '');
     });
 
     // Botão de visitante
