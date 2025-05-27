@@ -123,73 +123,8 @@
                 isAdmin: true,
                 hasDebt: false,
                 hasPendingDonation: false
-            },
-            {
-                id: 2,
-                name: 'Carlos Oliveira',
-                cpf: '88888888888',
-                phone: '47977777777',
-                type: 'Admin',
-                status: 'Ativo',
-                isAdmin: true,
-                hasDebt: false,
-                hasPendingDonation: false
-            },
-            {
-                id: 3,
-                name: 'Ana Rodrigues',
-                cpf: '77777777777',
-                phone: '47966666666',
-                type: 'Admin',
-                status: 'Ativo',
-                isAdmin: true,
-                hasDebt: false,
-                hasPendingDonation: false
-            },
-            { 
-                id: 4, 
-                name: 'João Silva', 
-                cpf: '12345678901', 
-                phone: '47999999999', 
-                type: 'Usuário', 
-                status: 'Ativo',
-                isAdmin: false,
-                hasDebt: false,
-                hasPendingDonation: false
-            },
-            { 
-                id: 5, 
-                name: 'Maria Santos', 
-                cpf: '98765432101', 
-                phone: '47988888888', 
-                type: 'Usuário', 
-                status: 'Ativo',
-                isAdmin: false,
-                hasDebt: true,
-                hasPendingDonation: false
             }
         ];
-
-        // Gerar 200 usuários adicionais
-        for (let i = 0; i < 200; i++) {
-            const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
-            const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
-            
-            // IDs específicos para usuários com doação pendente (25, 50 e 75)
-            const hasDonation = [25, 50, 75].includes(i + 6);
-            
-            users.push({
-                id: i + 6, // Começando do ID 6 pois já temos 5 usuários fixos
-                name: `${firstName} ${lastName}`,
-                cpf: generateCPF(),
-                phone: generatePhone(),
-                type: 'Usuário',
-                status: Math.random() > 0.1 ? 'Ativo' : 'Bloqueado', // 10% chance de estar bloqueado
-                isAdmin: false,
-                hasDebt: Math.random() > 0.8, // 20% chance de ter dívida
-                hasPendingDonation: hasDonation
-            });
-        }
 
         // Adicionar array de empréstimos após a lista de usuários
         const loans = [
