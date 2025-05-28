@@ -1,0 +1,422 @@
+body {
+    background: url('../IMG/fundo.png') no-repeat center center fixed !important;
+    background-size: cover !important;
+    margin: 0;
+    font-family: Arial, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+  
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.1);
+    z-index: 0;
+  }
+  
+  .container {
+    width: 100%;
+    max-width: 600px;
+    padding: 20px;
+    position: relative;
+    z-index: 1;
+  }
+  
+body {
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    background: #f5f5f5;
+    font-family: Arial, sans-serif;
+}
+
+.header {
+    background: #333;
+    padding: 10px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+}
+
+.header-title {
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.header-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.header-btn {
+    background: #ff9000;
+    color: white;
+    padding: 8px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    text-decoration: none;
+    font-size: 14px;
+    transition: background-color 0.3s;
+}
+
+.header-btn:hover {
+    background: #ffaa33;
+}
+
+.users-container {
+    margin-top: 70px;
+    padding: 20px;
+    position: relative;
+    z-index: 1;
+}
+
+.users-grid {
+    background: #ff9000;
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.search-bar {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.filter-buttons {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.filter-btn {
+    padding: 8px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s;
+    background: #ff9000;
+    color: white;
+}
+
+.filter-btn:hover {
+    background: #ffaa33;
+}
+
+.filter-btn.active {
+    background: #4CAF50;
+}
+
+.search-input {
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    font-size: 14px;
+    width: 100%;
+}
+
+.users-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative;
+}
+
+.users-table th,
+.users-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+    position: relative;
+}
+
+.users-table th {
+    background: #ffb347;
+    color: white;
+    font-weight: bold;
+}
+
+.users-table tr:hover {
+    background: #f5f5f5;
+}
+
+.user-actions {
+    display: flex;
+    gap: 5px;
+    position: relative;
+    z-index: 2;
+}
+
+.user-btn {
+    padding: 5px 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: background-color 0.3s;
+    position: relative;
+    z-index: 2;
+}
+
+.btn-edit {
+    background: #4CAF50;
+    color: white;
+}
+
+.btn-block {
+    background: #f44336;
+    color: white;
+}
+
+.btn-edit:hover {
+    background: #45a049;
+}
+
+.btn-block:hover {
+    background: #da190b;
+}
+
+.status-active {
+    color: #4CAF50;
+    font-weight: bold;
+}
+
+.status-blocked {
+    color: #f44336;
+    font-weight: bold;
+}
+
+/* Modal styles */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+}
+
+.modal-content {
+    position: relative;
+    background: white;
+    margin: 10% auto;
+    padding: 20px;
+    width: 90%;
+    max-width: 700px;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.close-modal {
+    position: absolute;
+    right: 15px;
+    top: 10px;
+    font-size: 24px;
+    cursor: pointer;
+    color: #666;
+}
+
+.close-modal:hover {
+    color: #333;
+}
+
+.modal-title {
+    margin: 0 0 20px 0;
+    color: #333;
+    font-size: 20px;
+}
+
+.modal-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.form-group label {
+    font-weight: bold;
+    color: #666;
+}
+
+.form-group input {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: #ff9000;
+}
+
+.modal-form button {
+    background: #4CAF50;
+    color: white;
+    padding: 12px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s;
+}
+
+.modal-form button:hover {
+    background: #45a049;
+}
+
+.user-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.status-circle {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.status-admin {
+    background-color: #4CAF50;
+}
+
+.status-user {
+    background-color: #808080;
+}
+
+.status-debt {
+    background-color: #f44336;
+}
+
+.user-type {
+    font-weight: bold;
+}
+
+.type-admin {
+    color: #4CAF50;
+}
+
+.type-user {
+    color: #808080;
+}
+
+.type-debt {
+    color: #f44336;
+}
+
+/* Estilo para a seção de empréstimos */
+.loans-section {
+    margin-top: 20px;
+    border-top: 1px solid #ddd;
+    padding-top: 20px;
+}
+
+.loans-title {
+    font-size: 18px;
+    color: #333;
+    margin-bottom: 15px;
+}
+
+.loans-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+.loans-table th,
+.loans-table td {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+
+.loans-table th {
+    background: #f5f5f5;
+    font-weight: bold;
+    color: #333;
+}
+
+.return-btn {
+    background: #4CAF50;
+    color: white;
+    padding: 5px 10px;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.return-btn:hover {
+    background: #45a049;
+}
+
+.no-loans {
+    text-align: center;
+    color: #666;
+    font-style: italic;
+    padding: 20px;
+}
+
+.status-late {
+    color: #f44336;
+    font-weight: bold;
+}
+
+.status-ontime {
+    color: #4CAF50;
+    font-weight: bold;
+}
+
+@media (max-width: 768px) {
+    .filter-buttons {
+        flex-direction: column;
+    }
+
+    .filter-btn {
+        width: 100%;
+    }
+}
+
+/* Adicionar estilo para destacar linhas de administradores */
+.admin-row {
+    background-color: rgba(76, 175, 80, 0.1) !important;
+}
+.admin-row:hover {
+    background-color: rgba(76, 175, 80, 0.2) !important;
+}
+.users-table tr:nth-child(even) {
+    background-color: rgba(0, 0, 0, 0.02);
+}
+.users-table tr:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
