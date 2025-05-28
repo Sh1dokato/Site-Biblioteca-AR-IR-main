@@ -319,12 +319,12 @@
             id: Date.now(),
             userId: user.id,
             usuario: {
-              nome: user.name,
+              nome: user.nome,
               cpf: user.cpf,
-              telefone: user.phone
+              telefone: user.telefone
             },
-            titulo: emprestimo.bookTitle,
-            imagem: emprestimo.image,
+            titulo: emprestimo.bookTitle || emprestimo.titulo,
+            imagem: emprestimo.bookImage || emprestimo.imagem,
             emprestimoId: emprestimo.id,
             dataEmprestimo: emprestimo.loanDate,
             dataDevolucao: emprestimo.dueDate,
@@ -338,7 +338,14 @@
 
           // Atualizar status do empréstimo
           emprestimo.status = 'pendente_devolucao';
-          localStorage.setItem('users', JSON.stringify(users));
+          
+          // Atualizar usuário no localStorage
+          const userIndex = users.findIndex(u => u.id === user.id);
+          if (userIndex !== -1) {
+            users[userIndex] = user;
+            localStorage.setItem('users', JSON.stringify(users));
+            localStorage.setItem('usuarioLogado', JSON.stringify(user));
+          }
 
           alert('Solicitação de devolução enviada com sucesso!');
           location.reload();

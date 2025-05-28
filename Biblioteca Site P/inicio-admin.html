@@ -509,21 +509,34 @@
                     return;
                 }
 
-                devolucoesList.innerHTML = solicitacoesDevolucao.map(solicitacao => `
-                    <div class="devolucao-card" data-id="${solicitacao.id}">
-                        <img src="${solicitacao.imagem}" alt="${solicitacao.titulo}" class="book-thumb">
-                        <div class="devolucao-info">
-                            <div class="devolucao-title">${solicitacao.titulo}</div>
-                            <div class="devolucao-user">${solicitacao.usuario.nome}</div>
+                // Obter lista de livros para garantir que temos as imagens corretas
+                const livros = JSON.parse(localStorage.getItem('livros') || '[]');
+
+                devolucoesList.innerHTML = solicitacoesDevolucao.map(solicitacao => {
+                    // Tentar encontrar o livro correspondente para garantir que temos a imagem correta
+                    const livro = livros.find(l => l.title === solicitacao.titulo);
+                    const imagemLivro = livro ? livro.image : (solicitacao.imagem || 'IMG/default-book.jpg');
+
+                    return `
+                        <div class="devolucao-card" data-id="${solicitacao.id}">
+                            <img src="${imagemLivro}" alt="${solicitacao.titulo}" class="book-thumb">
+                            <div class="devolucao-info">
+                                <div class="devolucao-title">${solicitacao.titulo}</div>
+                                <div class="devolucao-user">${solicitacao.usuario.nome}</div>
+                                <div class="devolucao-date">
+                                    Empréstimo: ${new Date(solicitacao.dataEmprestimo).toLocaleDateString('pt-BR')}
+                                </div>
+                            </div>
+                            <div class="devolucao-actions">
+                                <button class="devolucao-btn btn-confirm" onclick="confirmarDevolucao(${solicitacao.id})">Confirmar</button>
+                                <button class="devolucao-btn btn-reject" onclick="rejeitarDevolucao(${solicitacao.id})">Rejeitar</button>
+                            </div>
                         </div>
-                        <div class="devolucao-actions">
-                            <button class="devolucao-btn btn-confirm" onclick="confirmarDevolucao(${solicitacao.id})">Confirmar</button>
-                            <button class="devolucao-btn btn-reject" onclick="rejeitarDevolucao(${solicitacao.id})">Rejeitar</button>
-                        </div>
-                    </div>
-                `).join('');
+                    `;
+                }).join('');
             } catch (error) {
                 console.error('Erro ao atualizar lista de devoluções:', error);
+                devolucoesList.innerHTML = '<div class="empty-devolucoes">Erro ao carregar devoluções</div>';
             }
         }
 
