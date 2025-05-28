@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Registro - Biblioteca Arco-Íris</title>
+  <link rel="icon" href="favicon.ico">
+  <link rel="stylesheet" href="CSS/styles.css">
+</head>
+<body>
+  <div class="container">
+    <div class="form-container">
+      <div class="arco-iris">
+        <span>B</span><span>I</span><span>B</span><span>L</span><span>I</span><span>O</span><span>T</span><span>E</span><span>C</span><span>A</span>
+        <br>
+        <span>A</span><span>R</span><span>C</span><span>O</span><span>-</span><span>Í</span><span>R</span><span>I</span><span>S</span>
+      </div>
+      <form class="form-box" id="registroForm">
+        <div class="input-group">
+          <span class="icon">📚</span>
+          <input type="text" name="cpf" placeholder="CPF (somente números)" pattern="\d*" maxlength="11" required>
+        </div>
+        <div class="input-group">
+          <span class="icon">📞</span>
+          <input type="tel" name="telefone" placeholder="Telefone" required>
+        </div>
+        <div class="input-group">
+          <span class="icon">🔒</span>
+          <input type="password" name="senha" placeholder="Senha" required>
+        </div>
+        <div class="input-group">
+          <span class="icon">👤</span>
+          <input type="text" name="nome" placeholder="Nome" required>
+        </div>
+        <button type="submit" class="btn">REGISTRAR</button>
+        <div class="links" style="display: flex; justify-content: center;">
+          <a href="login.html" class="btn">VOLTAR</a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('registroForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const formData = new FormData(this);
+      
+      if (formData.get('cpf') && formData.get('telefone') && 
+          formData.get('senha') && formData.get('nome')) {
+        
+        // Criar objeto do usuário
+        const newUser = {
+          id: Date.now(), // Usar timestamp como ID único
+          name: formData.get('nome'),
+          cpf: formData.get('cpf'),
+          phone: formData.get('telefone'),
+          senha: formData.get('senha'),
+          type: 'Usuário',
+          status: 'Ativo',
+          isAdmin: false,
+          hasDebt: false,
+          hasPendingDonation: false
+        };
+
+        // Obter usuários existentes do localStorage
+        let users = JSON.parse(localStorage.getItem('users')) || [];
+        
+        // Verificar se CPF já existe
+        if (users.some(user => user.cpf === newUser.cpf)) {
+          alert('Este CPF já está cadastrado!');
+          return;
+        }
+
+        // Adicionar novo usuário
+        users.push(newUser);
+        
+        // Salvar no localStorage
+        localStorage.setItem('users', JSON.stringify(users));
+
+        alert('Registro realizado com sucesso!');
+        window.location.href = 'login.html';
+      } else {
+        alert('Por favor, preencha todos os campos!');
+      }
+    });
+
+    // Validação do CPF (apenas números)
+    document.querySelector('input[name="cpf"]').addEventListener('input', function(e) {
+      this.value = this.value.replace(/\D/g, '');
+    });
+
+    // Validação do telefone (apenas números)
+    document.querySelector('input[name="telefone"]').addEventListener('input', function(e) {
+      this.value = this.value.replace(/\D/g, '');
+    });
+  </script>
+</body>
+</html> 
