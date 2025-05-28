@@ -6,18 +6,160 @@
   <link rel="icon" href="favicon.ico">
   <link rel="stylesheet" href="CSS/emprestimo.css">
   <style>
-    
+    .emprestimos-container {
+      max-width: 1200px;
+      margin: 80px auto 20px;
+      padding: 20px;
+    }
+
+    .emprestimo-card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      display: flex;
+      gap: 20px;
+      align-items: center;
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeInUp 0.5s ease forwards;
+    }
+
+    @keyframes fadeInUp {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .emprestimo-card.atrasado {
+      border: 2px solid #f44336;
+    }
+
+    .book-image {
+      width: 120px;
+      height: 180px;
+      object-fit: cover;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      background-color: #f5f5f5;
+    }
+
+    .emprestimo-info {
+      flex: 1;
+    }
+
+    .emprestimo-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      align-items: flex-end;
+    }
+
+    .emprestimo-info h3 {
+      margin: 0 0 10px 0;
+      color: #333;
+      font-size: 18px;
+    }
+
+    .emprestimo-info p {
+      margin: 5px 0;
+      color: #666;
+    }
+
+    .status {
+      font-weight: bold;
+    }
+
+    .multa {
+      color: #f44336 !important;
+      font-weight: bold;
+    }
+
+    .devolver-btn {
+      background: #4CAF50;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.3s ease;
+    }
+
+    .devolver-btn:hover {
+      background: #388E3C;
+      transform: translateY(-2px);
+    }
+
+    .devolver-btn.pendente {
+      background: #d17400;
+      cursor: not-allowed;
+      opacity: 0.8;
+    }
+
+    .devolver-btn.pendente:hover {
+      transform: none;
+      background: #d17400;
+    }
+
+    .pagar-multa-btn {
+      background: #f44336;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      margin-top: 10px;
+      width: 100%;
+    }
+
+    .pagar-multa-btn:hover {
+      background: #d32f2f;
+      transform: translateY(-2px);
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px;
+      background: #f9f9f9;
+      border-radius: 12px;
+      margin-top: 20px;
+    }
+
+    .empty-state h2 {
+      color: #666;
+      margin-bottom: 20px;
+    }
+
+    .header-btn {
+      background: #ff9000;
+      color: white;
+      text-decoration: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      transition: all 0.3s ease;
+    }
+
+    .header-btn:hover {
+      background: #e67e00;
+      transform: translateY(-2px);
+    }
   </style>
 </head>
 <body>
   <header class="header">
     <div class="header-title">
-      <img src="IMG/logo.png" alt="Logo" style="height: 30px;">
+      <img src="./IMG/logo.png" alt="Logo" style="height: 30px;">
       <span>Biblioteca Arco-Íris</span>
     </div>
     <div class="header-buttons">
       <div class="user-info">
-        <span class="user-name">Bem-vindo(a)!</span>
+        <span id="userName" class="user-name">Bem-vindo(a)!</span>
         <a href="usuario.html" class="header-btn">Voltar</a>
         <a href="index.html" class="header-btn">Sair</a>
       </div>
@@ -68,360 +210,201 @@
         window.location.href = 'login.html';
         return;
       }
+
+      // Atualizar nome do usuário
+      document.getElementById('userName').textContent = `Bem-vindo(a), ${usuarioLogado.nome}!`;
+
+      // Carregar empréstimos do usuário
+      const users = JSON.parse(localStorage.getItem('users')) || [];
+      const user = users.find(u => u.id === usuarioLogado.id);
+      
+      if (user) {
+        const emprestimosDiv = document.getElementById('emprestimosList');
+        const emprestimos = user.loans || [];
+
+        if (emprestimos.length === 0) {
+          document.querySelector('.empty-state').style.display = 'block';
+          emprestimosDiv.style.display = 'none';
+        } else {
+          document.querySelector('.empty-state').style.display = 'none';
+          emprestimosDiv.style.display = 'block';
+
+          // Ordenar empréstimos: atrasados primeiro, depois por data de empréstimo
+          const emprestimosOrdenados = emprestimos.sort((a, b) => {
+            if (a.status === 'atrasado' && b.status !== 'atrasado') return -1;
+            if (a.status !== 'atrasado' && b.status === 'atrasado') return 1;
+            return new Date(b.loanDate) - new Date(a.loanDate);
+          });
+          
+          emprestimosDiv.innerHTML = emprestimosOrdenados.map((emprestimo, index) => {
+            // Verificar se o empréstimo está atrasado
+            const hoje = new Date();
+            const dataDevolucao = new Date(emprestimo.dueDate);
+            if (!emprestimo.returned && dataDevolucao < hoje && emprestimo.status !== 'pendente_devolucao') {
+              emprestimo.status = 'atrasado';
+              // Calcular multa (R$ 1 por dia de atraso)
+              const diasAtraso = Math.floor((hoje - dataDevolucao) / (1000 * 60 * 60 * 24));
+              emprestimo.debtAmount = diasAtraso * 1;
+            }
+
+            const bookImage = emprestimo.bookImage || emprestimo.imagem;
+            
+            return `
+              <div class="emprestimo-card ${emprestimo.status === 'atrasado' ? 'atrasado' : ''}" 
+                   style="animation-delay: ${index * 0.1}s">
+                <img src="${bookImage}" 
+                     alt="${emprestimo.bookTitle || emprestimo.titulo}" 
+                     class="book-image">
+                <div class="emprestimo-info">
+                  <h3>${emprestimo.bookTitle || emprestimo.titulo}</h3>
+                  <p>Data do Empréstimo: ${formatDate(emprestimo.loanDate)}</p>
+                  <p>Data de Devolução: ${formatDate(emprestimo.dueDate)}</p>
+                  <p class="status">Status: ${getStatusText(emprestimo)}</p>
+                  ${emprestimo.status === 'atrasado' ? 
+                    `<p class="multa">Multa: R$ ${emprestimo.debtAmount.toFixed(2)}</p>` : ''}
+                </div>
+                ${!emprestimo.returned ? `
+                  <div class="emprestimo-actions">
+                    <button class="devolver-btn ${emprestimo.status === 'pendente_devolucao' ? 'pendente' : ''}" 
+                            onclick="solicitarDevolucao(${emprestimo.id})"
+                            ${emprestimo.status === 'pendente_devolucao' ? 'disabled' : ''}>
+                      ${emprestimo.status === 'pendente_devolucao' ? 'Devolução Solicitada' : 'Solicitar Devolução'}
+                    </button>
+                    ${emprestimo.status === 'atrasado' ? `
+                      <button class="pagar-multa-btn" onclick="abrirModalPagamento(${emprestimo.id})">
+                        Pagar Multa
+                      </button>
+                    ` : ''}
+                  </div>
+                ` : ''}
+              </div>
+            `;
+          }).join('');
+
+          // Salvar as alterações se houve atualização de status ou multas
+          if (emprestimos.some(e => e.status === 'atrasado')) {
+            const userIndex = users.findIndex(u => u.id === user.id);
+            if (userIndex !== -1) {
+              users[userIndex] = user;
+              localStorage.setItem('users', JSON.stringify(users));
+              localStorage.setItem('usuarioLogado', JSON.stringify(user));
+            }
+          }
+        }
+      }
     });
 
-    // Carregar empréstimos e agendamentos
-    const emprestimos = JSON.parse(localStorage.getItem('emprestimos') || '[]');
-    const agendamentos = JSON.parse(localStorage.getItem('agendamentos') || '[]');
-    const emprestimosContainer = document.querySelector('.emprestimos-container');
-
-    // Filtrar apenas empréstimos ativos (não devolvidos)
-    const emprestimosAtivos = emprestimos.filter(emprestimo => emprestimo.status !== 'devolvido');
-    const agendamentosAtivos = agendamentos.filter(agendamento => agendamento.status === 'busca_pendente');
-
-    if (emprestimosAtivos.length === 0 && agendamentosAtivos.length === 0) {
-      document.querySelector('.empty-state').style.display = 'block';
-    } else {
-      // Mostrar empréstimos
-      emprestimosAtivos.forEach(emprestimo => {
-        const card = document.createElement('div');
-        card.className = 'emprestimo-card';
-        card.setAttribute('data-id', emprestimo.id);
-        
-        const status = getStatus(emprestimo);
-        
-        card.innerHTML = `
-          <img src="${emprestimo.imagem}" alt="${emprestimo.titulo}" class="book-thumb">
-          <div class="book-info">
-            <h3>${emprestimo.titulo}</h3>
-            ${emprestimo.status !== 'agendado' ? `
-              <p>Data do empréstimo: ${emprestimo.dataEmprestimo}</p>
-              <p>Data de devolução: ${emprestimo.dataDevolucao}</p>
-            ` : ''}
-            <p class="status ${status.toLowerCase()}">Status: ${status}</p>
-            ${emprestimo.status === 'multa' ? `
-              <div class="multa-info">
-                <p>Valor da multa: R$ ${emprestimo.multa.toFixed(2)}</p>
-                <p>Dias em atraso: ${emprestimo.diasAtraso}</p>
-                <p>Vencimento: ${emprestimo.dataVencimento}</p>
-                <button class="btn-pagar-multa" onclick="abrirModalPagamento(${emprestimo.id})">Pagar Multa</button>
-              </div>
-            ` : ''}
-            ${emprestimo.status === 'agendado' ? 
-              '<button class="btn-cancelar">Cancelar Agendamento</button>' : 
-              `${status === 'Em dia' ? '<button class="btn-renovar">Renovar</button>' : ''}
-              <button class="btn-devolver">Devolver</button>`
-            }
-          </div>
-        `;
-
-        // Adicionar evento de renovação
-        const renovarBtn = card.querySelector('.btn-renovar');
-        if (renovarBtn) {
-          renovarBtn.addEventListener('click', () => {
-            renovarEmprestimo(emprestimo.id);
-          });
-        }
-
-        // Adicionar evento de devolução
-        const devolverBtn = card.querySelector('.btn-devolver');
-        if (devolverBtn) {
-          devolverBtn.addEventListener('click', () => {
-            devolverEmprestimo(emprestimo.id);
-          });
-        }
-
-        // Adicionar evento de cancelamento
-        const cancelarBtn = card.querySelector('.btn-cancelar');
-        if (cancelarBtn) {
-          cancelarBtn.addEventListener('click', () => {
-            cancelarAgendamento(emprestimo.id);
-          });
-        }
-
-        emprestimosContainer.appendChild(card);
-      });
-
-      // Mostrar agendamentos pendentes
-      agendamentosAtivos.forEach(agendamento => {
-        const card = document.createElement('div');
-        card.className = 'emprestimo-card';
-        card.setAttribute('data-id', agendamento.id);
-        
-        card.innerHTML = `
-          <img src="${agendamento.imagem}" alt="${agendamento.titulo}" class="book-thumb">
-          <div class="book-info">
-            <h3>${agendamento.titulo}</h3>
-            <p>Data do agendamento: ${agendamento.dataAgendamento}</p>
-            <p class="status busca_pendente">Status: Busca Pendente</p>
-            <p class="agendamento-info">Você será notificado quando o livro estiver disponível para retirada.</p>
-            <button class="btn-cancelar">Cancelar Agendamento</button>
-          </div>
-        `;
-
-        // Adicionar evento de cancelamento
-        const cancelarBtn = card.querySelector('.btn-cancelar');
-        if (cancelarBtn) {
-          cancelarBtn.addEventListener('click', () => {
-            if (confirm('Tem certeza que deseja cancelar o agendamento deste livro?')) {
-              // Remover agendamento
-              const agendamentosAtualizados = agendamentos.filter(a => a.id !== agendamento.id);
-              localStorage.setItem('agendamentos', JSON.stringify(agendamentosAtualizados));
-              
-              // Remover card com animação
-              card.classList.add('removendo');
-              setTimeout(() => {
-                card.remove();
-                
-                // Verificar se ainda existem empréstimos ou agendamentos
-                const emprestimosRestantes = document.querySelectorAll('.emprestimo-card').length;
-                if (emprestimosRestantes === 0) {
-                  document.querySelector('.empty-state').style.display = 'block';
-                }
-              }, 300);
-            }
-          });
-        }
-
-        emprestimosContainer.appendChild(card);
-      });
+    function formatDate(dateString) {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('pt-BR');
     }
 
-    // Função para obter o status do empréstimo
-    function getStatus(emprestimo) {
-      if (emprestimo.status === 'devolvido') {
-        return 'Devolvido';
-      }
-      
-      if (emprestimo.status === 'agendado') {
-        return 'Agendado';
-      }
-
-      if (emprestimo.status === 'pendente_devolucao') {
-        return 'Pendente Devolução';
-      }
-
-      if (emprestimo.status === 'multa') {
-        return 'Multa Pendente';
-      }
-      
-      const dataDevolucao = new Date(emprestimo.dataDevolucao.split('/').reverse().join('-'));
-      const hoje = new Date();
-      
-      if (hoje > dataDevolucao) {
-        return 'Atrasado';
-      }
-      
-      return 'Em dia';
+    function getStatusText(emprestimo) {
+      if (emprestimo.returned) return 'Devolvido';
+      if (emprestimo.status === 'atrasado') return 'Atrasado';
+      if (emprestimo.status === 'pendente_devolucao') return 'Devolução Pendente';
+      return 'Em Andamento';
     }
 
-    // Função para renovar empréstimo
-    function renovarEmprestimo(id) {
-      const emprestimos = JSON.parse(localStorage.getItem('emprestimos') || '[]');
-      const emprestimo = emprestimos.find(e => e.id === id);
+    function solicitarDevolucao(emprestimoId) {
+      const usuarioLogado = JSON.parse(localStorage.getItem('usuarioLogado'));
+      const users = JSON.parse(localStorage.getItem('users')) || [];
+      const user = users.find(u => u.id === usuarioLogado.id);
       
-      if (emprestimo && !emprestimo.renovado && emprestimo.status !== 'agendado') {
-        const dataDevolucao = new Date(emprestimo.dataDevolucao.split('/').reverse().join('-'));
-        dataDevolucao.setDate(dataDevolucao.getDate() + 15);
-        
-        emprestimo.dataDevolucao = dataDevolucao.toLocaleDateString('pt-BR');
-        emprestimo.renovado = true;
-        
-        localStorage.setItem('emprestimos', JSON.stringify(emprestimos));
-        location.reload();
-      } else {
-        alert('Este empréstimo não pode ser renovado.');
-      }
-    }
-
-    // Função para devolver empréstimo
-    function devolverEmprestimo(emprestimoId) {
-      try {
-        // Obter dados necessários
-        const emprestimos = JSON.parse(localStorage.getItem('emprestimos') || '[]');
-        const emprestimo = emprestimos.find(e => e.id === emprestimoId);
-        const usuarioLogado = JSON.parse(localStorage.getItem('usuarioLogado'));
-
-        if (!emprestimo || !usuarioLogado) {
-          alert('Erro ao processar a devolução. Por favor, tente novamente.');
-          return;
-        }
-
-        // Criar nova solicitação de devolução
-        const novaSolicitacao = {
-          id: Date.now(),
-          emprestimoId: emprestimoId,
-          titulo: emprestimo.titulo,
-          imagem: emprestimo.imagem,
-          dataEmprestimo: emprestimo.dataEmprestimo,
-          dataDevolucao: emprestimo.dataDevolucao,
-          usuario: {
-            nome: usuarioLogado.name,
-            cpf: usuarioLogado.cpf,
-            telefone: usuarioLogado.phone
-          },
-          dataSolicitacao: new Date().toLocaleDateString('pt-BR'),
-          status: 'pendente'
-        };
-
-        // Obter lista atual de solicitações
-        let solicitacoesAtuais = [];
-        try {
-          const solicitacoesSalvas = localStorage.getItem('solicitacoesDevolucao');
-          if (solicitacoesSalvas) {
-            solicitacoesAtuais = JSON.parse(solicitacoesSalvas);
-          }
-        } catch (error) {
-          console.error('Erro ao ler solicitações existentes:', error);
-        }
-
-        // Adicionar nova solicitação
-        solicitacoesAtuais.push(novaSolicitacao);
-
-        // Salvar lista atualizada
-        localStorage.setItem('solicitacoesDevolucao', JSON.stringify(solicitacoesAtuais));
-
-        // Atualizar status do empréstimo
-        emprestimo.status = 'pendente_devolucao';
-        localStorage.setItem('emprestimos', JSON.stringify(emprestimos));
-
-        // Verificar se a solicitação foi salva corretamente
-        const solicitacoesVerificadas = JSON.parse(localStorage.getItem('solicitacoesDevolucao') || '[]');
-        if (solicitacoesVerificadas.some(s => s.id === novaSolicitacao.id)) {
-          alert('Solicitação de devolução enviada com sucesso! Aguarde a confirmação do administrador.');
-          location.reload();
-        } else {
-          throw new Error('Falha ao salvar a solicitação de devolução');
-        }
-      } catch (error) {
-        console.error('Erro ao processar devolução:', error);
-        alert('Ocorreu um erro ao processar a devolução. Por favor, tente novamente.');
-      }
-    }
-
-    // Função para cancelar agendamento
-    function cancelarAgendamento(id) {
-      if (confirm('Tem certeza que deseja cancelar o agendamento deste livro?')) {
-        const emprestimos = JSON.parse(localStorage.getItem('emprestimos') || '[]');
-        const emprestimo = emprestimos.find(e => e.id === id);
-        
+      if (user) {
+        const emprestimo = user.loans.find(l => l.id === emprestimoId);
         if (emprestimo) {
-          // Encontrar o card do empréstimo
-          const card = document.querySelector(`[data-id="${id}"]`);
-          if (card) {
-            // Adicionar classe para animação de saída
-            card.classList.add('removendo');
-            
-            // Esperar a animação terminar antes de remover
-            setTimeout(() => {
-              card.remove();
-              
-              // Atualizar localStorage
-              emprestimo.status = 'devolvido';
-              localStorage.setItem('emprestimos', JSON.stringify(emprestimos));
-              
-              // Verificar se ainda existem empréstimos
-              const emprestimosRestantes = document.querySelectorAll('.emprestimo-card').length;
-              if (emprestimosRestantes === 0) {
-                document.querySelector('.empty-state').style.display = 'block';
-              }
-            }, 300);
-          }
+          // Criar solicitação de devolução
+          const solicitacao = {
+            id: Date.now(),
+            userId: user.id,
+            usuario: {
+              nome: user.name,
+              cpf: user.cpf,
+              telefone: user.phone
+            },
+            titulo: emprestimo.bookTitle,
+            imagem: emprestimo.image,
+            emprestimoId: emprestimo.id,
+            dataEmprestimo: emprestimo.loanDate,
+            dataDevolucao: emprestimo.dueDate,
+            status: 'pendente'
+          };
+
+          // Salvar solicitação
+          const solicitacoes = JSON.parse(localStorage.getItem('solicitacoesDevolucao') || '[]');
+          solicitacoes.push(solicitacao);
+          localStorage.setItem('solicitacoesDevolucao', JSON.stringify(solicitacoes));
+
+          // Atualizar status do empréstimo
+          emprestimo.status = 'pendente_devolucao';
+          localStorage.setItem('users', JSON.stringify(users));
+
+          alert('Solicitação de devolução enviada com sucesso!');
+          location.reload();
         }
       }
     }
 
-    // Função para abrir modal de pagamento
+    // Função para abrir o modal de pagamento
     function abrirModalPagamento(emprestimoId) {
-      const emprestimos = JSON.parse(localStorage.getItem('emprestimos') || '[]');
-      const emprestimo = emprestimos.find(e => e.id === emprestimoId);
+      const usuarioLogado = JSON.parse(localStorage.getItem('usuarioLogado'));
+      const users = JSON.parse(localStorage.getItem('users')) || [];
+      const user = users.find(u => u.id === usuarioLogado.id);
       
-      if (!emprestimo) return;
-      
-      const modal = document.getElementById('paymentModal');
-      modal.querySelector('.modal-title').textContent = 'Pagamento de Multa';
-      
-      const paymentOptions = modal.querySelector('.payment-options');
-      paymentOptions.innerHTML = `
-        <div class="payment-option" data-method="pix">
-          <img src="IMG/pix.png" alt="PIX">
-          <div>PIX</div>
-        </div>
-        <div class="payment-option" data-method="card">
-          <img src="IMG/card.png" alt="Cartão">
-          <div>Cartão</div>
-        </div>
-        <div class="payment-option" data-method="boleto">
-          <img src="IMG/boleto.png" alt="Boleto">
-          <div>Boleto</div>
-        </div>
-        ${emprestimo.multa >= 5.00 ? `
-          <div class="payment-option" data-method="doacao">
-            <img src="IMG/doacao.png" alt="Doação">
-            <div>Doar Item de Higiene</div>
-          </div>
-        ` : ''}
-      `;
-
-      // Configurar eventos dos botões de pagamento
-      const opcoesPagamento = modal.querySelectorAll('.payment-option');
-      opcoesPagamento.forEach(opcao => {
-        opcao.addEventListener('click', () => {
-          opcoesPagamento.forEach(o => o.classList.remove('selected'));
-          opcao.classList.add('selected');
-        });
-      });
-
-      // Configurar botão de confirmar pagamento
-      const btnConfirmar = modal.querySelector('.btn-confirmar');
-      btnConfirmar.onclick = () => {
-        const metodoSelecionado = modal.querySelector('.payment-option.selected');
-        if (!metodoSelecionado) {
-          alert('Por favor, selecione uma forma de pagamento.');
-          return;
-        }
-        
-        if (metodoSelecionado.dataset.method === 'doacao') {
-          if (confirm('Você confirma a doação de um item de higiene para quitar a multa?')) {
-            processarPagamento(emprestimoId, 'doacao');
-          }
-        } else {
-          processarPagamento(emprestimoId, metodoSelecionado.dataset.method);
-        }
-      };
-
-      modal.style.display = 'block';
-    }
-
-    // Função para processar o pagamento
-    function processarPagamento(emprestimoId, metodo) {
-      const emprestimos = JSON.parse(localStorage.getItem('emprestimos') || '[]');
-      const emprestimoIndex = emprestimos.findIndex(e => e.id === emprestimoId);
-      
-      if (emprestimoIndex !== -1) {
-        // Remover o empréstimo da lista
-        emprestimos.splice(emprestimoIndex, 1);
-        localStorage.setItem('emprestimos', JSON.stringify(emprestimos));
-        
-        // Atualizar a interface
-        const card = document.querySelector(`[data-id="${emprestimoId}"]`);
-        if (card) {
-          card.classList.add('removendo');
-          setTimeout(() => {
-            card.remove();
-            
-            // Verificar se ainda existem empréstimos
-            const emprestimosRestantes = document.querySelectorAll('.emprestimo-card').length;
-            if (emprestimosRestantes === 0) {
-              document.querySelector('.empty-state').style.display = 'block';
+      if (user) {
+        const emprestimo = user.loans.find(l => l.id === emprestimoId);
+        if (emprestimo && emprestimo.debtAmount) {
+          // Limpar seleção anterior
+          document.querySelectorAll('.payment-option').forEach(option => {
+            option.classList.remove('selected');
+          });
+          
+          // Mostrar o modal
+          document.getElementById('paymentModal').style.display = 'block';
+          
+          // Configurar o botão de confirmar
+          document.querySelector('.btn-confirmar').onclick = function() {
+            const selectedMethod = document.querySelector('.payment-option.selected');
+            if (!selectedMethod) {
+              alert('Por favor, selecione um método de pagamento.');
+              return;
             }
-          }, 300);
+            
+            // Processar o pagamento
+            emprestimo.debtAmount = 0;
+            emprestimo.status = 'emprestado';
+            localStorage.setItem('users', JSON.stringify(users));
+            
+            document.getElementById('paymentModal').style.display = 'none';
+            alert('Pagamento realizado com sucesso!');
+            location.reload();
+          };
         }
-        
-        alert('Pagamento realizado com sucesso!');
-        document.getElementById('paymentModal').style.display = 'none';
       }
     }
+
+    // Adicionar eventos aos métodos de pagamento
+    document.querySelectorAll('.payment-option').forEach(option => {
+      option.addEventListener('click', function() {
+        document.querySelectorAll('.payment-option').forEach(opt => {
+          opt.classList.remove('selected');
+        });
+        this.classList.add('selected');
+      });
+    });
+
+    // Fechar modal de pagamento
+    document.querySelector('.close-modal').addEventListener('click', function() {
+      document.getElementById('paymentModal').style.display = 'none';
+    });
+
+    window.addEventListener('click', function(event) {
+      const modal = document.getElementById('paymentModal');
+      if (event.target === modal) {
+        modal.style.display = 'none';
+      }
+    });
 
     // Função para fazer logout
     document.querySelector('a[href="index.html"]').addEventListener('click', function(e) {
@@ -429,119 +412,6 @@
       localStorage.removeItem('usuarioLogado');
       window.location.href = 'index.html';
     });
-
-    function inicializarEmprestimoComMulta() {
-      const emprestimos = JSON.parse(localStorage.getItem('emprestimos') || '[]');
-      const usuarioLogado = JSON.parse(localStorage.getItem('usuarioLogado'));
-      
-      // Verificar se já existe um empréstimo com multa
-      const emprestimoComMulta = emprestimos.find(e => e.status === 'multa');
-      if (emprestimoComMulta) return;
-
-      // Criar um novo empréstimo com multa
-      const dataEmprestimo = new Date();
-      dataEmprestimo.setDate(dataEmprestimo.getDate() - 30); // Emprestado há 30 dias
-      
-      const dataDevolucao = new Date(dataEmprestimo);
-      dataDevolucao.setDate(dataDevolucao.getDate() + 15); // Deveria ter sido devolvido há 15 dias
-      
-      const hoje = new Date();
-      const diasAtraso = Math.floor((hoje - dataDevolucao) / (1000 * 60 * 60 * 24));
-      const multa = Math.min(diasAtraso * 0.25, 5.00); // R$ 0,25 por dia, máximo R$ 5,00
-      
-      const dataVencimento = new Date();
-      dataVencimento.setDate(dataVencimento.getDate() + 7); // 7 dias para pagar
-      
-      const novoEmprestimo = {
-        id: Date.now(),
-        usuarioId: usuarioLogado.id,
-        titulo: 'Dom Quixote',
-        imagem: 'IMG/livros/dom-quixote.jpg',
-        dataEmprestimo: dataEmprestimo.toLocaleDateString('pt-BR'),
-        dataDevolucao: dataDevolucao.toLocaleDateString('pt-BR'),
-        status: 'multa',
-        multa: multa,
-        diasAtraso: diasAtraso,
-        dataVencimento: dataVencimento.toLocaleDateString('pt-BR'),
-        renovado: false
-      };
-      
-      emprestimos.push(novoEmprestimo);
-      localStorage.setItem('emprestimos', JSON.stringify(emprestimos));
-    }
-
-    // Função para carregar empréstimos
-    function carregarEmprestimos() {
-      const emprestimos = JSON.parse(localStorage.getItem('emprestimos') || '[]');
-      const usuarioLogado = JSON.parse(localStorage.getItem('usuarioLogado'));
-      
-      if (!usuarioLogado) {
-        window.location.href = 'login.html';
-        return;
-      }
-
-      // Filtrar empréstimos do usuário atual
-      const emprestimosUsuario = emprestimos.filter(e => e.usuarioId === usuarioLogado.id);
-      const emprestimosAtivos = emprestimosUsuario.filter(emprestimo => emprestimo.status !== 'devolvido');
-      
-      const emprestimosContainer = document.querySelector('.emprestimos-container');
-      const emptyState = document.querySelector('.empty-state');
-
-      if (emprestimosAtivos.length === 0) {
-        emptyState.style.display = 'block';
-        return;
-      }
-
-      emptyState.style.display = 'none';
-      emprestimosContainer.innerHTML = '';
-
-      emprestimosAtivos.forEach(emprestimo => {
-        const card = document.createElement('div');
-        card.className = 'emprestimo-card';
-        card.setAttribute('data-id', emprestimo.id);
-        
-        const status = getStatus(emprestimo);
-        
-        card.innerHTML = `
-          <img src="${emprestimo.imagem}" alt="${emprestimo.titulo}" class="book-thumb">
-          <div class="book-info">
-            <h3>${emprestimo.titulo}</h3>
-            <p>Data do empréstimo: ${emprestimo.dataEmprestimo}</p>
-            <p>Data de devolução: ${emprestimo.dataDevolucao}</p>
-            <p class="status ${status.toLowerCase()}">Status: ${status}</p>
-            ${emprestimo.status === 'multa' ? `
-              <div class="multa-info">
-                <p>Valor da multa: R$ ${emprestimo.multa.toFixed(2)}</p>
-                <p>Dias em atraso: ${emprestimo.diasAtraso}</p>
-                <p>Vencimento: ${emprestimo.dataVencimento}</p>
-                <button class="btn-pagar-multa" onclick="abrirModalPagamento(${emprestimo.id})">Pagar Multa</button>
-              </div>
-            ` : ''}
-            ${emprestimo.status === 'pendente_devolucao' ? 
-              '<p class="status-info">Aguardando confirmação do administrador</p>' :
-              `${status === 'Em dia' ? '<button class="btn-renovar">Renovar</button>' : ''}
-              <button class="btn-devolver">Devolver</button>`
-            }
-          </div>
-        `;
-
-        // Adicionar eventos aos botões
-        const renovarBtn = card.querySelector('.btn-renovar');
-        if (renovarBtn) {
-          renovarBtn.addEventListener('click', () => renovarEmprestimo(emprestimo.id));
-        }
-
-        const devolverBtn = card.querySelector('.btn-devolver');
-        if (devolverBtn) {
-          devolverBtn.addEventListener('click', () => devolverEmprestimo(emprestimo.id));
-        }
-
-        emprestimosContainer.appendChild(card);
-      });
-    }
-
-    // Carregar empréstimos ao iniciar a página
-    window.addEventListener('load', carregarEmprestimos);
   </script>
 </body>
 </html> 

@@ -523,21 +523,75 @@
         const firstNames = ['Ana', 'Pedro', 'Lucas', 'Julia', 'Carlos', 'Mariana', 'Rafael', 'Beatriz', 'Fernando', 'Isabela', 'Gabriel', 'Laura', 'Thiago', 'Sofia', 'Daniel', 'Valentina', 'Leonardo', 'Helena', 'Matheus', 'Alice'];
         const lastNames = ['Silva', 'Santos', 'Oliveira', 'Souza', 'Rodrigues', 'Ferreira', 'Alves', 'Pereira', 'Lima', 'Gomes', 'Costa', 'Ribeiro', 'Martins', 'Carvalho', 'Almeida', 'Lopes', 'Soares', 'Fernandes', 'Vieira', 'Barbosa'];
 
-        // Lista inicial com os administradores fixos
+        // Lista inicial com os administradores fixos e usuários especiais
         let users = [
             { 
                 id: 1, 
                 name: 'Admin Principal', 
                 cpf: '99999999999', 
-                phone: '47912345678', 
+                phone: '47912345678',
+                senha: 'admin123',
                 type: 'Admin',
                 status: 'Ativo',
                 isAdmin: true,
                 hasDebt: false,
                 hasPendingDonation: false,
-                loans: [] // Array de empréstimos do usuário
+                loans: []
+            },
+            {
+                id: 2,
+                name: 'João Silva',
+                cpf: '12345678900',
+                phone: '47987654321',
+                senha: 'joao123',
+                type: 'Usuário',
+                status: 'Ativo',
+                isAdmin: false,
+                hasDebt: true,
+                hasPendingDonation: false,
+                loans: [
+                    {
+                        id: 1,
+                        bookTitle: "Dom Casmurro",
+                        loanDate: "2024-02-01",
+                        dueDate: "2024-02-15",
+                        returned: false,
+                        status: 'atrasado',
+                        debtAmount: 25.00
+                    }
+                ]
+            },
+            {
+                id: 3,
+                name: 'Maria Oliveira',
+                cpf: '98765432100',
+                phone: '47976543210',
+                senha: 'maria123',
+                type: 'Usuário',
+                status: 'Ativo',
+                isAdmin: false,
+                hasDebt: false,
+                hasPendingDonation: true,
+                loans: []
             }
         ];
+
+        // Inicializar doações pendentes
+        const pendingDonations = [
+            {
+                id: 1,
+                user: "Maria Oliveira",
+                userId: 3,
+                book: "O Pequeno Príncipe",
+                date: "2024-03-10",
+                status: "pendente"
+            }
+        ];
+
+        // Salvar doações pendentes no localStorage se não existirem
+        if (!localStorage.getItem('pendingDonations')) {
+            localStorage.setItem('pendingDonations', JSON.stringify(pendingDonations));
+        }
 
         // Carregar usuários do localStorage
         function loadUsersFromStorage() {

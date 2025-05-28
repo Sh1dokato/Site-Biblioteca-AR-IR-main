@@ -256,22 +256,24 @@
     function processarEmprestimo(title, imgSrc) {
       const livros = JSON.parse(localStorage.getItem('livros') || '[]');
       const livro = livros.find(l => l.title === title);
+      const usuarioLogado = JSON.parse(localStorage.getItem('usuarioLogado'));
+      const users = JSON.parse(localStorage.getItem('users')) || [];
+      const user = users.find(u => u.id === usuarioLogado.id);
       
-      if (!livro) return;
+      if (!livro || !user) return;
 
       if (livro.estoque <= 0) {
         openAgendamentoModal(title, imgSrc);
       } else {
-        // Lógica existente de empréstimo
-        const emprestimos = JSON.parse(localStorage.getItem('emprestimos') || '[]');
-        const emprestimosAtivos = emprestimos.filter(e => e.status === 'emprestado');
+        // Verificar limite de empréstimos
+        const emprestimosAtivos = user.loans ? user.loans.filter(e => !e.returned) : [];
         
         if (emprestimosAtivos.length >= 5) {
           alert('Você deve devolver um livro para fazer o empréstimo de outro livro.');
           return;
         }
 
-        const livroJaEmprestado = emprestimosAtivos.some(e => e.titulo === title);
+        const livroJaEmprestado = emprestimosAtivos.some(e => e.bookTitle === title);
         if (livroJaEmprestado) {
           alert('Você já possui um exemplar deste livro emprestado.');
           return;
@@ -283,14 +285,22 @@
         
         const novoEmprestimo = {
           id: Date.now(),
+          userId: user.id,
           titulo: title,
+          bookTitle: title,
+          bookImage: imgSrc,
           imagem: imgSrc,
+          loanDate: hoje.toISOString(),
+          dueDate: dataDevolucao.toISOString(),
           dataEmprestimo: hoje.toLocaleDateString('pt-BR'),
           dataDevolucao: dataDevolucao.toLocaleDateString('pt-BR'),
           status: 'emprestado',
-          renovado: false
+          returned: false,
+          renovado: false,
+          debtAmount: 0
         };
         
+        // Atualizar estoque do livro
         livro.estoque--;
         const livrosAtualizados = JSON.parse(localStorage.getItem('livros') || '[]');
         const livroIndex = livrosAtualizados.findIndex(l => l.title === title);
@@ -299,8 +309,24 @@
           localStorage.setItem('livros', JSON.stringify(livrosAtualizados));
         }
         
+        // Salvar na lista geral de empréstimos
+        const emprestimos = JSON.parse(localStorage.getItem('emprestimos') || '[]');
         emprestimos.push(novoEmprestimo);
         localStorage.setItem('emprestimos', JSON.stringify(emprestimos));
+
+        // Salvar na lista de empréstimos do usuário
+        if (!user.loans) user.loans = [];
+        user.loans.push(novoEmprestimo);
+        
+        // Atualizar usuário no localStorage
+        const userIndex = users.findIndex(u => u.id === user.id);
+        if (userIndex !== -1) {
+          users[userIndex] = user;
+          localStorage.setItem('users', JSON.stringify(users));
+        }
+        
+        // Atualizar usuário logado
+        localStorage.setItem('usuarioLogado', JSON.stringify(user));
         
         alert(`Livro "${title}" emprestado com sucesso!\nVerifique seus empréstimos ativos.`);
         window.location.href = 'emprestimos.html';

@@ -37,15 +37,15 @@
       <form class="form-box" id="loginForm">
         <div class="input-group">
           <span class="icon">📚</span>
-          <input type="text" name="cpf" placeholder="CPF (somente números)" pattern="\d*" maxlength="11" required>
+          <input type="text" id="cpf" name="cpf" placeholder="CPF (somente números)" pattern="\d*" maxlength="11" required>
         </div>
         <div class="input-group">
           <span class="icon">🔒</span>
-          <input type="password" name="senha" placeholder="Senha" required>
+          <input type="password" id="senha" name="senha" placeholder="Senha" required>
         </div>
         <div class="input-group">
           <span class="icon">📞</span>
-          <input type="tel" name="telefone" placeholder="Telefone" required>
+          <input type="tel" id="telefone" name="telefone" placeholder="Telefone" required>
         </div>
         <div class="links">
           <a href="recuperar-senha.html">Esqueceu a senha?</a>
@@ -60,6 +60,78 @@
   </div>
 
   <script>
+    // Inicializar usuários padrão
+    const defaultUsers = [
+      { 
+        id: 1, 
+        name: 'Admin Principal', 
+        cpf: '99999999999', 
+        phone: '47912345678',
+        senha: 'admin123',
+        type: 'Admin',
+        status: 'Ativo',
+        isAdmin: true,
+        hasDebt: false,
+        hasPendingDonation: false,
+        loans: []
+      },
+      {
+        id: 2,
+        name: 'João Silva',
+        cpf: '12345678900',
+        phone: '47987654321',
+        senha: 'joao123',
+        type: 'Usuário',
+        status: 'Ativo',
+        isAdmin: false,
+        hasDebt: true,
+        hasPendingDonation: false,
+        loans: [
+          {
+            id: 1,
+            bookTitle: "Dom Casmurro",
+            bookImage: "./IMG/domcasmurro.webp",
+            loanDate: "2024-02-01",
+            dueDate: "2024-02-15",
+            returned: false,
+            status: 'atrasado',
+            debtAmount: 25.00
+          }
+        ]
+      },
+      {
+        id: 3,
+        name: 'Maria Oliveira',
+        cpf: '98765432100',
+        phone: '47976543210',
+        senha: 'maria123',
+        type: 'Usuário',
+        status: 'Ativo',
+        isAdmin: false,
+        hasDebt: false,
+        hasPendingDonation: true,
+        loans: []
+      }
+    ];
+
+    // Salvar usuários no localStorage ao carregar a página
+    localStorage.setItem('users', JSON.stringify(defaultUsers));
+
+    // Inicializar doações pendentes
+    const defaultDonations = [
+      {
+        id: 1,
+        user: "Maria Oliveira",
+        userId: 3,
+        book: "O Pequeno Príncipe",
+        date: "2024-03-10",
+        status: "pendente"
+      }
+    ];
+
+    // Salvar doações no localStorage
+    localStorage.setItem('pendingDonations', JSON.stringify(defaultDonations));
+
     // Funções do modal de ajuda
     function showHelpModal() {
       document.getElementById('helpModal').style.display = 'block';
@@ -77,91 +149,63 @@
       }
     }
 
+    // Função para fazer login
     document.getElementById('loginForm').addEventListener('submit', function(e) {
       e.preventDefault();
       
-      const cpf = this.querySelector('input[name="cpf"]').value;
-      const senha = this.querySelector('input[name="senha"]').value;
-      const telefone = this.querySelector('input[name="telefone"]').value;
-      
-      // Verificar se é um admin
-      const adminPrincipal = { 
-        cpf: '99999999999', 
-        telefone: '12345',
-        senha: 'admin',
-        isAdmin: true,
-        name: 'Admin Principal'
-      };
+      const cpf = document.querySelector('input[name="cpf"]').value.trim();
+      const senha = document.querySelector('input[name="senha"]').value.trim();
+      const telefone = document.querySelector('input[name="telefone"]').value.trim();
 
-      // Verificar se é o admin principal
-      if (cpf === adminPrincipal.cpf && 
-          telefone === adminPrincipal.telefone && 
-          senha === adminPrincipal.senha) {
+      // Carregar usuários do localStorage
+      const users = JSON.parse(localStorage.getItem('users'));
+      
+      // Procurar usuário
+      const user = users.find(u => {
+        return u.cpf === cpf && u.senha === senha && u.phone === telefone;
+      });
+
+      if (user) {
+        // Salvar informações do usuário logado
         localStorage.setItem('usuarioLogado', JSON.stringify({
-          id: 1,
-          name: adminPrincipal.name,
-          cpf: adminPrincipal.cpf,
-          telefone: adminPrincipal.telefone,
-          isAdmin: true
+          id: user.id,
+          nome: user.name,
+          cpf: user.cpf,
+          telefone: user.phone,
+          isAdmin: user.isAdmin,
+          hasDebt: user.hasDebt,
+          hasPendingDonation: user.hasPendingDonation,
+          loans: user.loans
         }));
-        window.location.href = 'inicio-admin.html';
-        return;
+
+        // Redirecionar com base no tipo de usuário
+        if (user.isAdmin) {
+          window.location.href = 'inicio-admin.html';
+        } else {
+          window.location.href = 'usuario.html';
+        }
+      } else {
+        alert('CPF, senha ou telefone inválidos!');
       }
-
-      // Buscar usuários registrados no localStorage
-      const usuarios = JSON.parse(localStorage.getItem('users') || '[]');
-      
-      // Procurar o usuário pelo CPF
-      const usuario = usuarios.find(u => u.cpf === cpf);
-      
-      if (!usuario) {
-        alert('Usuário não encontrado. Por favor, verifique seu CPF ou registre-se.');
-        return;
-      }
-
-      // Verificar se o telefone e senha correspondem
-      if (usuario.phone !== telefone) {
-        alert('Telefone incorreto. Por favor, verifique seus dados.');
-        return;
-      }
-
-      if (usuario.password !== senha) {
-        alert('Senha incorreta. Por favor, verifique seus dados.');
-        return;
-      }
-
-      // Verificar se o usuário está bloqueado
-      if (usuario.status === 'Bloqueado') {
-        alert('Sua conta está bloqueada. Entre em contato com o administrador.');
-        return;
-      }
-
-      // Login bem-sucedido
-      localStorage.setItem('usuarioLogado', JSON.stringify({
-        id: usuario.id,
-        name: usuario.name,
-        cpf: usuario.cpf,
-        telefone: usuario.phone,
-        isAdmin: false
-      }));
-
-      window.location.href = 'usuario.html';
     });
 
-    // Validação do CPF (apenas números)
+    // Função para formatar CPF
     document.querySelector('input[name="cpf"]').addEventListener('input', function(e) {
-      this.value = this.value.replace(/\D/g, '');
+      let value = e.target.value.replace(/\D/g, '');
+      if (value.length > 11) value = value.slice(0, 11);
+      e.target.value = value;
     });
 
-    // Validação do telefone (apenas números)
+    // Função para formatar telefone
     document.querySelector('input[name="telefone"]').addEventListener('input', function(e) {
-      this.value = this.value.replace(/\D/g, '');
+      let value = e.target.value.replace(/\D/g, '');
+      if (value.length > 11) value = value.slice(0, 11);
+      e.target.value = value;
     });
 
     // Botão de visitante
     document.getElementById('btnVisitante').addEventListener('click', function(e) {
       e.preventDefault();
-      // Redirecionar para a página de visitante
       window.location.href = 'pagina-visitante.html';
     });
   </script>
