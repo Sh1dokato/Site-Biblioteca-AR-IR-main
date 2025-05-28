@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Biblioteca Arco-Íris - Página do Usuário</title>
+  <link rel="icon" href="favicon.ico">
+  <link rel="stylesheet" href="CSS/usuario.css">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      background: #f5f5f5;
+      font-family: Arial, sans-serif;
+    }
+
+    .header {
+      background: #333;
+      color: white;
+      padding: 15px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+
+    .main-content {
+      margin-top: 80px;
+      padding: 20px;
+      min-height: calc(100vh - 80px);
+      display: flex;
+      justify-content: center;
+    }
+
+    .book-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 25px;
+      padding: 25px;
+      margin: 0;
+      background: #ff9000;
+      border-radius: 15px;
+      justify-content: center;
+      max-width: 1200px;
+      width: 100%;
+    }
+
+    .book-card {
+      background: white;
+      border-radius: 12px;
+      padding: 15px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      height: 380px;
+      position: relative;
+      width: 220px;
+      flex-shrink: 0;
+      margin-bottom: 0;
+    }
+
+    .book-card.indisponivel {
+      opacity: 0.7;
+    }
+
+    .book-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      cursor: pointer;
+    }
+
+    .book-thumb {
+      width: 180px;
+      height: 270px;
+      object-fit: cover;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .book-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #333;
+      text-align: center;
+      margin: 10px 0;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      height: 40px;
+      width: 100%;
+    }
+
+    .ver-mais-btn {
+      padding: 12px 24px;
+      background: #ff9000;
+      color: #ffffff;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 15px;
+      transition: all 0.3s ease;
+      margin-top: auto;
+      min-width: 160px;
+      text-align: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      display: inline-block;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .ver-mais-btn:hover {
+      background: #ffffff;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      color: #ff9000;
+      border: 2px solid #ff9000;
+    }
+
+    .estoque-info {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: rgba(0, 0, 0, 0.7);
+      color: white;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+
+    .search-container {
+      display: flex;
+      align-items: center;
+      background: #ff9000;
+      border-radius: 25px;
+      padding: 5px 15px;
+      margin: 0 20px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      border: 2px solid #ff9000;
+    }
+
+    .search-input {
+      border: none;
+      outline: none;
+      background: none;
+      padding: 8px;
+      width: 300px;
+      font-size: 14px;
+      color: #ffffff;
+    }
+
+    .search-button {
+      background: #ffffff;
+      color: #ff9000;
+      border: none;
+      border-radius: 20px;
+      padding: 8px 20px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      margin-left: 10px;
+    }
+
+    .search-button:hover {
+      background: #f5f5f5;
+      transform: translateY(-2px);
+    }
+
+    .search-input::placeholder {
+      color: #ffffff;
+      opacity: 0.8;
+    }
+
+    .no-results {
+      text-align: center;
+      padding: 40px;
+      background: #f9f9f9;
+      border-radius: 12px;
+      margin-top: 20px;
+      color: #333;
+    }
+
+    .no-results h3 {
+      color: #666;
+      margin-bottom: 10px;
+    }
+
+    .no-results p {
+      color: #999;
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="header-title">
+      <img src="IMG/logo.png" alt="Logo" style="height: 30px;">
+      <span>Biblioteca Arco-Íris</span>
+    </div>
+    <div class="search-container">
+      <input type="text" id="searchInput" placeholder="Pesquisar livros..." class="search-input">
+      <button id="searchButton" class="search-button">Buscar</button>
+    </div>
+    <div class="header-buttons">
+      <a href="emprestimos.html" class="header-btn">Meus Empréstimos</a>
+      <a href="index.html" class="header-btn">Sair</a>
+    </div>
+  </header>
+
+  <div class="main-content">
+    <div class="book-grid" id="bookGrid">
+      <!-- Os livros serão inseridos aqui via JavaScript -->
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div id="bookModal" class="modal">
+    <div class="modal-content">
+      <span class="close-modal">&times;</span>
+      <div class="modal-header">
+        <h2 class="modal-title"></h2>
+        <p class="modal-subtitle"></p>
+      </div>
+      <div class="modal-body">
+        <img class="modal-image" src="" alt="Capa do livro">
+        <div class="modal-info">
+          <div class="modal-description"></div>
+          <div class="modal-details">
+            <p class="modal-autor"></p>
+            <p class="modal-ano"></p>
+            <p class="modal-paginas"></p>
+            <p class="modal-categoria"></p>
+          </div>
+          <button class="emprestar-btn">Emprestar Livro</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Agendamento -->
+  <div id="agendamentoModal" class="agendamento-modal">
+    <div class="agendamento-content">
+      <span class="close-modal">&times;</span>
+      <h2>Agendar Retirada</h2>
+      <p>Selecione um horário disponível para retirar o livro:</p>
+      <div class="horarios-grid" id="horariosGrid">
+        <!-- Horários serão inseridos via JavaScript -->
+      </div>
+      <button class="btn-confirmar-agendamento" id="confirmarAgendamento">Confirmar Agendamento</button>
+    </div>
+  </div>
+
+  <script>
+    // Verificar se o usuário está logado
+    window.addEventListener('load', function() {
+      const usuarioLogado = JSON.parse(localStorage.getItem('usuarioLogado'));
+      if (!usuarioLogado) {
+        window.location.href = 'login.html';
+        return;
+      }
+
+      // Carregar e exibir os livros
+      carregarLivros();
+    });
+
+    // Função para carregar e exibir os livros
+    function carregarLivros() {
+      const livros = JSON.parse(localStorage.getItem('livros') || '[]');
+      const bookGrid = document.getElementById('bookGrid');
+      
+      // Limpar o grid
+      bookGrid.innerHTML = '';
+      
+      // Criar cards para cada livro
+      livros.forEach(livro => {
+        const card = document.createElement('div');
+        card.className = 'book-card';
+        if (livro.estoque <= 0) {
+          card.classList.add('indisponivel');
+        }
+        
+        card.innerHTML = `
+          <div class="book-content">
+            <img src="${livro.image}" alt="${livro.title}" class="book-thumb">
+            <div class="book-title">${livro.title}</div>
+          </div>
+          <button class="ver-mais-btn">Ver mais</button>
+          <div class="estoque-info">Disponíveis: ${livro.estoque}</div>
+        `;
+        
+        // Adicionar eventos aos botões
+        const verMaisBtn = card.querySelector('.ver-mais-btn');
+        const bookContent = card.querySelector('.book-content');
+        
+        verMaisBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          openModal(livro.title, livro.image);
+        });
+        
+        bookContent.addEventListener('click', () => {
+          openModal(livro.title, livro.image);
+        });
+        
+        bookGrid.appendChild(card);
+      });
+    }
+
+    // Função para processar o empréstimo
+    function processarEmprestimo(title, imgSrc) {
+      const livros = JSON.parse(localStorage.getItem('livros') || '[]');
+      const livro = livros.find(l => l.title === title);
+      const usuarioLogado = JSON.parse(localStorage.getItem('usuarioLogado'));
+      const users = JSON.parse(localStorage.getItem('users')) || [];
+      const user = users.find(u => u.id === usuarioLogado.id);
+      
+      if (!livro || !user) return;
+
+      // Verificar se o usuário tem multas pendentes
+      const emprestimosAtivos = user.loans ? user.loans.filter(e => !e.returned) : [];
+      const temMultaPendente = emprestimosAtivos.some(e => e.status === 'atrasado' && e.debtAmount > 0);
+      
+      if (temMultaPendente) {
+        alert('Você possui multas pendentes. Por favor, pague suas multas antes de fazer um novo empréstimo.');
+        window.location.href = 'emprestimos.html';
+        return;
+      }
+
+      if (livro.estoque <= 0) {
+        openAgendamentoModal(title, imgSrc);
+      } else {
+        // Verificar limite de empréstimos
+        if (emprestimosAtivos.length >= 5) {
+          alert('Você deve devolver um livro para fazer o empréstimo de outro livro.');
+          return;
+        }
+
+        const livroJaEmprestado = emprestimosAtivos.some(e => e.bookTitle === title);
+        if (livroJaEmprestado) {
+          alert('Você já possui um exemplar deste livro emprestado.');
+          return;
+        }
+        
+        const hoje = new Date();
+        const dataDevolucao = new Date(hoje);
+        dataDevolucao.setDate(hoje.getDate() + 15);
+        
+        const novoEmprestimo = {
+          id: Date.now(),
+          userId: user.id,
+          titulo: title,
+          bookTitle: title,
+          bookImage: imgSrc,
+          imagem: imgSrc,
+          loanDate: hoje.toISOString(),
+          dueDate: dataDevolucao.toISOString(),
+          dataEmprestimo: hoje.toLocaleDateString('pt-BR'),
+          dataDevolucao: dataDevolucao.toLocaleDateString('pt-BR'),
+          status: 'emprestado',
+          returned: false,
+          renovado: false,
+          debtAmount: 0
+        };
+        
+        // Atualizar estoque do livro
+        livro.estoque--;
+        const livrosAtualizados = JSON.parse(localStorage.getItem('livros') || '[]');
+        const livroIndex = livrosAtualizados.findIndex(l => l.title === title);
+        if (livroIndex !== -1) {
+          livrosAtualizados[livroIndex].estoque = livro.estoque;
+          localStorage.setItem('livros', JSON.stringify(livrosAtualizados));
+        }
+        
+        // Salvar na lista geral de empréstimos
+        const emprestimos = JSON.parse(localStorage.getItem('emprestimos') || '[]');
+        emprestimos.push(novoEmprestimo);
+        localStorage.setItem('emprestimos', JSON.stringify(emprestimos));
+
+        // Salvar na lista de empréstimos do usuário
+        if (!user.loans) user.loans = [];
+        user.loans.push(novoEmprestimo);
+        
+        // Atualizar usuário no localStorage
+        const userIndex = users.findIndex(u => u.id === user.id);
+        if (userIndex !== -1) {
+          users[userIndex] = user;
+          localStorage.setItem('users', JSON.stringify(users));
+        }
+        
+        // Atualizar usuário logado
+        localStorage.setItem('usuarioLogado', JSON.stringify(user));
+        
+        alert(`Livro "${title}" emprestado com sucesso!\nVerifique seus empréstimos ativos.`);
+        window.location.href = 'emprestimos.html';
+      }
+    }
+
+    // Função para abrir o modal
+    function openModal(title, imgSrc) {
+      const modal = document.getElementById('bookModal');
+      const livros = JSON.parse(localStorage.getItem('livros') || '[]');
+      const livro = livros.find(l => l.title === title) || {
+        autor: 'Informação não disponível',
+        ano: 'Informação não disponível',
+        paginas: 'Informação não disponível',
+        categoria: 'Informação não disponível',
+        descricao: 'Descrição em breve...',
+        estoque: 0
+      };
+
+      modal.querySelector('.modal-title').textContent = title;
+      modal.querySelector('.modal-subtitle').textContent = `por ${livro.autor}`;
+      modal.querySelector('.modal-image').src = imgSrc;
+      modal.querySelector('.modal-description').textContent = livro.descricao;
+      modal.querySelector('.modal-autor').textContent = `Autor: ${livro.autor}`;
+      modal.querySelector('.modal-ano').textContent = `Ano de Publicação: ${livro.ano}`;
+      modal.querySelector('.modal-paginas').textContent = `Número de Páginas: ${livro.paginas}`;
+      modal.querySelector('.modal-categoria').textContent = `Categoria: ${livro.categoria}`;
+      
+      const emprestarBtn = modal.querySelector('.emprestar-btn');
+      if (livro.estoque <= 0) {
+        emprestarBtn.textContent = 'Agendar Livro';
+        emprestarBtn.classList.add('agendar-btn');
+      } else {
+        emprestarBtn.textContent = 'Emprestar Livro';
+        emprestarBtn.classList.remove('agendar-btn');
+      }
+
+      // Remover evento antigo e adicionar novo
+      const newEmprestarBtn = emprestarBtn.cloneNode(true);
+      emprestarBtn.parentNode.replaceChild(newEmprestarBtn, emprestarBtn);
+      newEmprestarBtn.onclick = () => processarEmprestimo(title, imgSrc);
+      
+      modal.style.display = 'block';
+    }
+
+    // Fechar o modal
+    document.querySelector('.close-modal').addEventListener('click', () => {
+      document.getElementById('bookModal').style.display = 'none';
+    });
+
+    // Fechar o modal ao clicar fora dele
+    window.addEventListener('click', (e) => {
+      const modal = document.getElementById('bookModal');
+      if (e.target === modal) {
+        modal.style.display = 'none';
+      }
+    });
+
+    // Função para abrir o modal de agendamento
+    function openAgendamentoModal(title, imgSrc) {
+      const modal = document.getElementById('agendamentoModal');
+      const horariosGrid = document.getElementById('horariosGrid');
+      horariosGrid.innerHTML = '';
+
+      // Mostrar apenas os horários de funcionamento
+      const horariosFuncionamento = [
+        'Segunda a Sexta: 9h às 17h',
+        'Sábado: 9h às 13h',
+        'Domingo: Fechado'
+      ];
+
+      // Criar elementos para mostrar os horários
+      horariosFuncionamento.forEach(horario => {
+        const div = document.createElement('div');
+        div.className = 'horario-info';
+        div.textContent = horario;
+        div.style.padding = '10px';
+        div.style.marginBottom = '10px';
+        div.style.backgroundColor = '#f5f5f5';
+        div.style.borderRadius = '5px';
+        div.style.textAlign = 'center';
+        horariosGrid.appendChild(div);
+      });
+
+      // Configurar botão de confirmar
+      document.getElementById('confirmarAgendamento').onclick = () => {
+        const novoAgendamento = {
+          id: Date.now(),
+          titulo: title,
+          imagem: imgSrc,
+          dataAgendamento: new Date().toLocaleDateString('pt-BR'),
+          status: 'busca_pendente'
+        };
+
+        // Salvar agendamento
+        const agendamentos = JSON.parse(localStorage.getItem('agendamentos') || '[]');
+        agendamentos.push(novoAgendamento);
+        localStorage.setItem('agendamentos', JSON.stringify(agendamentos));
+
+        alert('Agendamento realizado com sucesso!\nVocê será notificado quando o livro estiver disponível.');
+        modal.style.display = 'none';
+        window.location.href = 'emprestimos.html';
+      };
+
+      modal.style.display = 'block';
+    }
+
+    // Fechar modal de agendamento
+    document.querySelector('.agendamento-modal .close-modal').addEventListener('click', () => {
+      document.getElementById('agendamentoModal').style.display = 'none';
+    });
+
+    // Fechar modal ao clicar fora
+    window.addEventListener('click', (e) => {
+      const modal = document.getElementById('agendamentoModal');
+      if (e.target === modal) {
+        modal.style.display = 'none';
+      }
+    });
+
+    // Adicionar evento de empréstimo/agendamento
+    document.querySelector('.emprestar-btn').addEventListener('click', function() {
+      const title = document.querySelector('.modal-title').textContent;
+      const imgSrc = document.querySelector('.modal-image').src;
+      const livro = livros.find(l => l.title === title);
+      
+      if (!livro) return;
+
+      // Verificar limite de empréstimos
+      const emprestimos = JSON.parse(localStorage.getItem('emprestimos') || '[]');
+      const emprestimosAtivos = emprestimos.filter(e => e.status !== 'devolvido');
+      
+      if (emprestimosAtivos.length >= 5) {
+        alert('Você deve devolver um livro para fazer o empréstimo de outro livro.');
+        return;
+      }
+
+      // Verificar se já tem o mesmo livro emprestado
+      const livroJaEmprestado = emprestimosAtivos.some(e => e.titulo === title);
+      if (livroJaEmprestado) {
+        alert('Você já possui um exemplar deste livro emprestado.');
+        return;
+      }
+      
+      const hoje = new Date();
+      const dataDevolucao = new Date(hoje);
+      dataDevolucao.setDate(hoje.getDate() + 15);
+      
+      const novoEmprestimo = {
+        id: Date.now(),
+        titulo: title,
+        imagem: imgSrc,
+        dataEmprestimo: hoje.toLocaleDateString('pt-BR'),
+        dataDevolucao: dataDevolucao.toLocaleDateString('pt-BR'),
+        status: livro.estoque <= 0 ? 'agendado' : 'emprestado',
+        renovado: false
+      };
+      
+      if (livro.estoque > 0) {
+        livro.estoque--;
+        // Atualizar estoque no localStorage para todas as páginas
+        const livrosAtualizados = JSON.parse(localStorage.getItem('livros') || '[]');
+        const livroIndex = livrosAtualizados.findIndex(l => l.title === title);
+        if (livroIndex !== -1) {
+          livrosAtualizados[livroIndex].estoque = livro.estoque;
+          localStorage.setItem('livros', JSON.stringify(livrosAtualizados));
+        }
+      }
+      
+      emprestimos.push(novoEmprestimo);
+      localStorage.setItem('emprestimos', JSON.stringify(emprestimos));
+      
+      const mensagem = livro.estoque <= 0 
+        ? `Livro "${title}" agendado com sucesso!\nVocê será notificado quando estiver disponível.`
+        : `Livro "${title}" emprestado com sucesso!\nVerifique seus empréstimos ativos.`;
+      
+      alert(mensagem);
+      window.location.href = 'emprestimos.html';
+    });
+
+    // Adicionar evento para fechar com ESC
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        document.getElementById('bookModal').style.display = 'none';
+      }
+    });
+
+    // Função para fazer logout
+    document.querySelector('a[href="index.html"]').addEventListener('click', function(e) {
+      e.preventDefault();
+      localStorage.removeItem('usuarioLogado');
+      window.location.href = 'index.html';
+    });
+
+    // Adicionar função de pesquisa
+    function pesquisarLivros(termo) {
+      const livros = JSON.parse(localStorage.getItem('livros') || '[]');
+      const bookGrid = document.getElementById('bookGrid');
+      
+      // Limpar o grid
+      bookGrid.innerHTML = '';
+      
+      // Filtrar livros que correspondem ao termo de pesquisa
+      const livrosFiltrados = livros.filter(livro => 
+        livro.title.toLowerCase().includes(termo.toLowerCase()) ||
+        (livro.autor && livro.autor.toLowerCase().includes(termo.toLowerCase())) ||
+        (livro.categoria && livro.categoria.toLowerCase().includes(termo.toLowerCase()))
+      );
+      
+      if (livrosFiltrados.length === 0) {
+        bookGrid.innerHTML = `
+          <div class="no-results">
+            <h3>Nenhum livro encontrado</h3>
+            <p>Tente pesquisar com outros termos</p>
+          </div>
+        `;
+        return;
+      }
+      
+      // Criar cards para cada livro filtrado
+      livrosFiltrados.forEach(livro => {
+        const card = document.createElement('div');
+        card.className = 'book-card';
+        if (livro.estoque <= 0) {
+          card.classList.add('indisponivel');
+        }
+        
+        card.innerHTML = `
+          <div class="book-content">
+            <img src="${livro.image}" alt="${livro.title}" class="book-thumb">
+            <div class="book-title">${livro.title}</div>
+          </div>
+          <button class="ver-mais-btn">Ver mais</button>
+          <div class="estoque-info">Disponíveis: ${livro.estoque}</div>
+        `;
+        
+        // Adicionar eventos aos botões
+        const verMaisBtn = card.querySelector('.ver-mais-btn');
+        const bookContent = card.querySelector('.book-content');
+        
+        verMaisBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          openModal(livro.title, livro.image);
+        });
+        
+        bookContent.addEventListener('click', () => {
+          openModal(livro.title, livro.image);
+        });
+        
+        bookGrid.appendChild(card);
+      });
+    }
+
+    // Adicionar eventos de pesquisa
+    document.getElementById('searchButton').addEventListener('click', () => {
+      const termo = document.getElementById('searchInput').value.trim();
+      if (termo) {
+        pesquisarLivros(termo);
+      } else {
+        carregarLivros(); // Se o campo estiver vazio, mostrar todos os livros
+      }
+    });
+
+    document.getElementById('searchInput').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        const termo = e.target.value.trim();
+        if (termo) {
+          pesquisarLivros(termo);
+        } else {
+          carregarLivros();
+        }
+      }
+    });
+
+    // Limpar pesquisa quando o campo for limpo
+    document.getElementById('searchInput').addEventListener('input', (e) => {
+      if (e.target.value.trim() === '') {
+        carregarLivros();
+      }
+    });
+  </script>
+</body>
+</html> 

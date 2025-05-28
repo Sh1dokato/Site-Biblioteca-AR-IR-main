@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Login - Biblioteca Arco-Íris</title>
+  <link rel="icon" href="favicon.ico">
+  <link rel="stylesheet" href="CSS/styles.css">
+  <style>
+
+  </style>
+</head>
+<body>
+  <button class="help-btn" onclick="showHelpModal()">?</button>
+
+  <div id="helpModal" class="help-modal">
+    <div class="help-modal-content">
+      <span class="close-help" onclick="closeHelpModal()">&times;</span>
+      <h2>Precisa de ajuda?</h2>
+      <p class="help-text">
+        Se você está tendo problemas para acessar o sistema ou tem alguma dúvida,
+        entre em contato conosco através do e-mail:
+        <br><br>
+        <a href="mailto:suporte@bibliotecaarcoiris.com" class="help-email">
+          suporte@bibliotecaarcoiris.com
+        </a>
+      </p>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="form-container">
+      <div class="arco-iris">
+        <span>B</span><span>I</span><span>B</span><span>L</span><span>I</span><span>O</span><span>T</span><span>E</span><span>C</span><span>A</span>
+        <br>
+        <span>A</span><span>R</span><span>C</span><span>O</span><span>-</span><span>Í</span><span>R</span><span>I</span><span>S</span>
+      </div>
+      <form class="form-box" id="loginForm">
+        <div class="input-group">
+          <span class="icon">📚</span>
+          <input type="text" id="cpf" name="cpf" placeholder="CPF (somente números)" pattern="\d*" maxlength="11" required>
+        </div>
+        <div class="input-group">
+          <span class="icon">🔒</span>
+          <input type="password" id="senha" name="senha" placeholder="Senha" required>
+        </div>
+        <div class="input-group">
+          <span class="icon">📞</span>
+          <input type="tel" id="telefone" name="telefone" placeholder="Telefone" required>
+        </div>
+        <div class="links">
+          <a href="recuperar-senha.html">Esqueceu a senha?</a>
+          <button type="submit" class="btn">Entrar</button>
+        </div>
+        <div class="links" style="display: flex; justify-content: center; gap: 20px;">
+          <a href="#" class="btn" id="btnVisitante">ENTRAR COMO VISITANTE</a>
+          <a href="registro.html" class="btn">REGISTRAR</a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // Inicializar usuários padrão
+    const defaultUsers = [
+      { 
+        id: 1, 
+        name: 'Admin Principal', 
+        cpf: '99999999999', 
+        phone: '47912345678',
+        senha: 'admin123',
+        type: 'Admin',
+        status: 'Ativo',
+        isAdmin: true,
+        hasDebt: false,
+        hasPendingDonation: false,
+        loans: []
+      },
+      {
+        id: 2,
+        name: 'João Silva',
+        cpf: '12345678900',
+        phone: '47987654321',
+        senha: 'joao123',
+        type: 'Usuário',
+        status: 'Ativo',
+        isAdmin: false,
+        hasDebt: true,
+        hasPendingDonation: false,
+        loans: [
+          {
+            id: 1,
+            bookTitle: "Dom Casmurro",
+            bookImage: "./IMG/domcasmurro.webp",
+            loanDate: "2024-02-01",
+            dueDate: "2024-02-15",
+            returned: false,
+            status: 'atrasado',
+            debtAmount: 25.00
+          }
+        ]
+      },
+      {
+        id: 3,
+        name: 'Maria Oliveira',
+        cpf: '98765432100',
+        phone: '47976543210',
+        senha: 'maria123',
+        type: 'Usuário',
+        status: 'Ativo',
+        isAdmin: false,
+        hasDebt: false,
+        hasPendingDonation: true,
+        loans: []
+      }
+    ];
+
+    // Salvar usuários no localStorage ao carregar a página
+    localStorage.setItem('users', JSON.stringify(defaultUsers));
+
+    // Inicializar doações pendentes
+    const defaultDonations = [
+      {
+        id: 1,
+        user: "Maria Oliveira",
+        userId: 3,
+        book: "O Pequeno Príncipe",
+        date: "2024-03-10",
+        status: "pendente"
+      }
+    ];
+
+    // Salvar doações no localStorage
+    localStorage.setItem('pendingDonations', JSON.stringify(defaultDonations));
+
+    // Funções do modal de ajuda
+    function showHelpModal() {
+      document.getElementById('helpModal').style.display = 'block';
+    }
+
+    function closeHelpModal() {
+      document.getElementById('helpModal').style.display = 'none';
+    }
+
+    // Fechar modal ao clicar fora dele
+    window.onclick = function(event) {
+      const modal = document.getElementById('helpModal');
+      if (event.target === modal) {
+        closeHelpModal();
+      }
+    }
+
+    // Função para fazer login
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const cpf = document.querySelector('input[name="cpf"]').value.trim();
+      const senha = document.querySelector('input[name="senha"]').value.trim();
+      const telefone = document.querySelector('input[name="telefone"]').value.trim();
+
+      // Carregar usuários do localStorage
+      const users = JSON.parse(localStorage.getItem('users'));
+      
+      // Procurar usuário
+      const user = users.find(u => {
+        return u.cpf === cpf && u.senha === senha && u.phone === telefone;
+      });
+
+      if (user) {
+        // Salvar informações do usuário logado
+        localStorage.setItem('usuarioLogado', JSON.stringify({
+          id: user.id,
+          nome: user.name,
+          cpf: user.cpf,
+          telefone: user.phone,
+          isAdmin: user.isAdmin,
+          hasDebt: user.hasDebt,
+          hasPendingDonation: user.hasPendingDonation,
+          loans: user.loans
+        }));
+
+        // Redirecionar com base no tipo de usuário
+        if (user.isAdmin) {
+          window.location.href = 'inicio-admin.html';
+        } else {
+          window.location.href = 'usuario.html';
+        }
+      } else {
+        alert('CPF, senha ou telefone inválidos!');
+      }
+    });
+
+    // Função para formatar CPF
+    document.querySelector('input[name="cpf"]').addEventListener('input', function(e) {
+      let value = e.target.value.replace(/\D/g, '');
+      if (value.length > 11) value = value.slice(0, 11);
+      e.target.value = value;
+    });
+
+    // Função para formatar telefone
+    document.querySelector('input[name="telefone"]').addEventListener('input', function(e) {
+      let value = e.target.value.replace(/\D/g, '');
+      if (value.length > 11) value = value.slice(0, 11);
+      e.target.value = value;
+    });
+
+    // Botão de visitante
+    document.getElementById('btnVisitante').addEventListener('click', function(e) {
+      e.preventDefault();
+      window.location.href = 'pagina-visitante.html';
+    });
+  </script>
+</body>
+</html> 
