@@ -1,0 +1,609 @@
+body {
+    background: url('../IMG/fundo.png') no-repeat center center fixed !important;
+    background-size: cover !important;
+    margin: 0;
+    font-family: Arial, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+  
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.1);
+    z-index: 0;
+  }
+  
+  .container {
+    width: 100%;
+    max-width: 600px;
+    padding: 20px;
+    position: relative;
+    z-index: 1;
+  }
+body {
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    background: #e0e0e0;
+    font-family: Arial, sans-serif;
+    position: relative;
+}
+
+.header {
+    background: #333;
+    padding: 10px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.header-title {
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.header-buttons {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.header-btn {
+    background: #f3a53f;
+    color: white;
+    padding: 8px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    text-decoration: none;
+    font-size: 14px;
+    transition: background-color 0.3s;
+}
+
+.header-btn:hover {
+    background: #f3a53f;
+}
+
+.donations-btn {
+    background: #f3a53f;
+    color: white;
+    padding: 8px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    text-decoration: none;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.donations-btn:hover {
+    background: #f3a53f;
+}
+
+.admin-container {
+    display: flex;
+    gap: 20px;
+    padding: 20px;
+    margin-top: 70px;
+    max-width: 1800px;
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.books-section {
+    flex: 1;
+    background: #ff9000;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    width: 100%;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+    background-color: #f3a53f;
+    background-image: none;
+    opacity: 1;
+}
+
+.books-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 15px;
+    position: relative;
+    z-index: 1;
+}
+
+.books-title {
+    color: #333;
+    font-size: 24px;
+    margin: 0;
+}
+
+.books-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 50px;
+    margin: 30px auto;
+    justify-content: space-between;
+    padding: 20px;
+    max-width: 1400px;
+}
+
+.book-card {
+    background: white;
+    border-radius: 8px;
+    padding: 15px;
+    text-align: center;
+    transition: transform 0.3s, box-shadow 0.3s;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 280px;
+    margin: 0 auto;
+    width: 100%;
+    max-width: 220px;
+}
+
+.book-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.book-thumb {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 6px;
+    margin-bottom: 12px;
+}
+
+.book-title {
+    color: #333;
+    font-weight: bold;
+    font-size: 14px;
+    margin-bottom: 15px;
+    height: 35px;
+    overflow: hidden;
+    display: -webkit-box;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    line-height: 1.3;
+}
+
+.book-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin-top: auto;
+}
+
+.book-btn {
+    flex: 1;
+    padding: 8px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 0.3s;
+    color: white;
+    max-width: 100px;
+}
+
+.btn-edit {
+    background: #4CAF50;
+}
+
+.btn-delete {
+    background: #f44336;
+}
+
+.btn-edit:hover {
+    background: #45a049;
+}
+
+.btn-delete:hover {
+    background: #da190b;
+}
+
+.action-btn {
+    background: #4CAF50;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s;
+    white-space: nowrap;
+    position: relative;
+    z-index: 1;
+}
+
+.action-btn:hover {
+    background: #45a049;
+}
+
+.side-panel {
+    width: 300px;
+    min-width: 300px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    position: relative;
+    z-index: 1;
+}
+
+.pending-donations {
+    background: #ff9000;
+    padding: 20px;
+    border-radius: 15px;
+    height: fit-content;
+    position: relative;
+    z-index: 1;
+}
+
+.pending-title {
+    color: white;
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+.donation-card {
+    background: #f8f8f8;
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 15px;
+    border: 1px solid #eee;
+}
+
+.donation-info {
+    color: #333;
+    margin-bottom: 15px;
+    line-height: 1.5;
+}
+
+.donation-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.donation-btn {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s;
+    color: white;
+}
+
+.btn-confirm {
+    background: #4CAF50;
+}
+
+.btn-reject {
+    background: #f44336;
+}
+
+.btn-confirm:hover {
+    background: #45a049;
+    transform: translateY(-2px);
+}
+
+.btn-reject:hover {
+    background: #da190b;
+    transform: translateY(-2px);
+}
+
+.empty-donations {
+    color: #666;
+    text-align: center;
+    padding: 40px 20px;
+    background: #f8f8f8;
+    border-radius: 10px;
+    font-size: 16px;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    overflow-y: auto;
+}
+
+.modal-content {
+    position: relative;
+    background: white;
+    margin: 15% auto;
+    padding: 20px;
+    width: 90%;
+    max-width: 500px;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.close-modal {
+    position: absolute;
+    right: 15px;
+    top: 10px;
+    font-size: 24px;
+    cursor: pointer;
+    color: #666;
+    z-index: 1;
+}
+
+.close-modal:hover {
+    color: #333;
+}
+
+.modal-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.modal-form input,
+.modal-form textarea {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 14px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.modal-form button {
+    background: #4CAF50;
+    color: white;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s;
+}
+
+.modal-form button:hover {
+    background: #45a049;
+}
+
+.donations-panel {
+    position: fixed;
+    top: 70px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90%;
+    max-width: 800px;
+    max-height: 80vh;
+    background: white;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    transition: all 0.3s ease;
+    z-index: 1000;
+    padding: 20px;
+    overflow-y: auto;
+    border-radius: 15px;
+    opacity: 0;
+    visibility: hidden;
+}
+
+.donations-panel.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.donations-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.donations-title {
+    font-size: 20px;
+    font-weight: bold;
+    color: #333;
+}
+
+.close-donations {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #666;
+}
+
+.close-donations:hover {
+    color: #333;
+}
+
+.devolucoes-panel {
+    position: fixed;
+    top: 70px;
+    right: 20px;
+    width: 300px;
+    max-height: 80vh;
+    background: white;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    transition: all 0.3s ease;
+    z-index: 1000;
+    padding: 20px;
+    overflow-y: auto;
+    border-radius: 15px;
+    opacity: 0;
+    visibility: hidden;
+}
+
+.devolucoes-panel.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.devolucoes-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.devolucoes-title {
+    font-size: 20px;
+    font-weight: bold;
+    color: #333;
+}
+
+.close-devolucoes {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #666;
+}
+
+.devolucao-card {
+    background: #f8f8f8;
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 15px;
+    border: 1px solid #eee;
+}
+
+.devolucao-info {
+    color: #333;
+    margin-bottom: 15px;
+    line-height: 1.5;
+}
+
+.devolucao-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.devolucao-btn {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s;
+    color: white;
+}
+
+.btn-confirmar-devolucao {
+    background: #4CAF50;
+}
+
+.btn-rejeitar-devolucao {
+    background: #f44336;
+}
+
+.btn-confirmar-devolucao:hover {
+    background: #45a049;
+    transform: translateY(-2px);
+}
+
+.btn-rejeitar-devolucao:hover {
+    background: #da190b;
+    transform: translateY(-2px);
+}
+
+.empty-devolucoes {
+    color: #666;
+    text-align: center;
+    padding: 40px 20px;
+    background: #f8f8f8;
+    border-radius: 10px;
+    font-size: 16px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1600px) {
+    .books-grid {
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 40px;
+        max-width: 1200px;
+    }
+}
+
+@media (max-width: 1200px) {
+    .books-grid {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 35px;
+        max-width: 1000px;
+    }
+}
+
+@media (max-width: 768px) {
+    .admin-container {
+        padding: 80px 15px 15px;
+    }
+
+    .books-section {
+        padding: 20px;
+    }
+
+    .books-grid {
+        grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+        gap: 25px;
+        padding: 15px;
+    }
+
+    .book-card {
+        padding: 10px;
+        min-height: 240px;
+    }
+
+    .book-thumb {
+        height: 160px;
+        margin-bottom: 10px;
+    }
+
+    .book-title {
+        font-size: 12px;
+        margin-bottom: 10px;
+        height: 30px;
+    }
+
+    .book-btn {
+        padding: 6px;
+        font-size: 12px;
+        max-width: 80px;
+    }
+}

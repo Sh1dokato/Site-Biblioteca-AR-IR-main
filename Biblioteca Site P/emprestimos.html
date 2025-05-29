@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Biblioteca Arco-Íris - Meus Empréstimos</title>
+  <link rel="icon" href="favicon.ico">
+  <link rel="stylesheet" href="CSS/emprestimo.css">
+  <style>
+    .emprestimos-container {
+      max-width: 1200px;
+      margin: 80px auto 20px;
+      padding: 20px;
+    }
+
+    .emprestimo-card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      display: flex;
+      gap: 20px;
+      align-items: center;
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeInUp 0.5s ease forwards;
+    }
+
+    @keyframes fadeInUp {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .emprestimo-card.atrasado {
+      border: 2px solid #f44336;
+    }
+
+    .book-image {
+      width: 120px;
+      height: 180px;
+      object-fit: cover;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      background-color: #f5f5f5;
+    }
+
+    .emprestimo-info {
+      flex: 1;
+    }
+
+    .emprestimo-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      align-items: flex-end;
+    }
+
+    .emprestimo-info h3 {
+      margin: 0 0 10px 0;
+      color: #333;
+      font-size: 18px;
+    }
+
+    .emprestimo-info p {
+      margin: 5px 0;
+      color: #666;
+    }
+
+    .status {
+      font-weight: bold;
+    }
+
+    .multa {
+      color: #f44336 !important;
+      font-weight: bold;
+    }
+
+    .devolver-btn {
+      background: #4CAF50;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.3s ease;
+    }
+
+    .devolver-btn:hover {
+      background: #388E3C;
+      transform: translateY(-2px);
+    }
+
+    .devolver-btn.pendente {
+      background: #d17400;
+      cursor: not-allowed;
+      opacity: 0.8;
+    }
+
+    .devolver-btn.pendente:hover {
+      transform: none;
+      background: #d17400;
+    }
+
+    .pagar-multa-btn {
+      background: #f44336;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      margin-top: 10px;
+      width: 100%;
+    }
+
+    .pagar-multa-btn:hover {
+      background: #d32f2f;
+      transform: translateY(-2px);
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px;
+      background: #f9f9f9;
+      border-radius: 12px;
+      margin-top: 20px;
+    }
+
+    .empty-state h2 {
+      color: #666;
+      margin-bottom: 20px;
+    }
+
+    .header-btn {
+      background: #ff9000;
+      color: white;
+      text-decoration: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      transition: all 0.3s ease;
+    }
+
+    .header-btn:hover {
+      background: #e67e00;
+      transform: translateY(-2px);
+    }
+
+    /* Estilos para o contêiner do QR code */
+    .qrcode-container {
+        display: none; /* Initially hidden */
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        padding: 20px;
+        border: 1px solid #eee;
+        border-radius: 8px;
+        margin-top: 20px;
+        background-color: #fff; /* Ensure it stands out if modal has background */
+    }
+
+    .qrcode-container h3 {
+        color: #333;
+        margin-top: 0;
+        margin-bottom: 15px;
+        font-size: 20px;
+    }
+
+    .qrcode-image {
+        max-width: 250px; /* Limit image size */
+        height: auto;
+        border: 1px solid #ddd;
+        padding: 5px;
+        background-color: white;
+        margin-bottom: 15px;
+    }
+
+    .qrcode-container p {
+        color: #555;
+        font-size: 16px;
+        margin-bottom: 20px;
+    }
+
+    .qrcode-container span {
+        font-weight: bold;
+        color: #ff4444; /* Use a color for the amount */
+    }
+
+    .btn-close-qrcode {
+        background-color: #6c757d; /* Gray color for close button */
+        color: white;
+        padding: 8px 15px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: background-color 0.3s ease;
+    }
+
+    .btn-close-qrcode:hover {
+        background-color: #5a6268;
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="header-title">
+      <img src="./IMG/logo.png" alt="Logo" style="height: 30px;">
+      <span>Biblioteca Arco-Íris</span>
+    </div>
+    <div class="header-buttons">
+      <div class="user-info">
+        <span id="userName" class="user-name">Bem-vindo(a)!</span>
+        <a href="usuario.html" class="header-btn">Voltar</a>
+        <a href="index.html" class="header-btn">Sair</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Modal de Pagamento -->
+  <div id="paymentModal" class="modal">
+    <div class="modal-content">
+      <span class="close-modal">&times;</span>
+      <h2 class="modal-title">Escolha a forma de pagamento</h2>
+      <div class="payment-options">
+        <div class="payment-option" data-method="pix">
+          <img src="IMG/pix.png" alt="PIX">
+          <div>PIX</div>
+        </div>
+        <div class="payment-option" data-method="card">
+          <img src="IMG/card.png" alt="Cartão">
+          <div>Cartão</div>
+        </div>
+        <div class="payment-option" data-method="boleto">
+          <img src="IMG/boleto.png" alt="Boleto">
+          <div>Boleto</div>
+        </div>
+        <div class="payment-option" data-method="doacao" style="display: none;">
+          <img src="IMG/doacao.png" alt="Doação">
+          <div>Doar Item Higiênico</div>
+        </div>
+      </div>
+      
+      <!-- QR Code container (initially hidden) -->
+      <div id="qrcodeContainer" class="qrcode-container">
+          <h3>Escanéie para Pagar com PIX</h3>
+          <img src="IMG/qrcode.png" alt="QR Code para Pagamento PIX" class="qrcode-image">
+          <p>Valor a Pagar: <span id="qrcodeDebtAmount"></span></p>
+          <button class="btn-close-qrcode" onclick="closeQrcode()">Fechar</button>
+      </div>
+
+      <button class="btn-confirmar">Confirmar</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="emprestimos-container">
+      <div id="emprestimosList">
+        <!-- Os empréstimos serão inseridos aqui via JavaScript -->
+      </div>
+      <!-- Exemplo de estado vazio -->
+      <div class="empty-state" style="display: none;">
+        <h2>Você não tem empréstimos ativos</h2>
+        <a href="usuario.html" class="header-btn">Emprestar um livro</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Verificar se o usuário está logado
+    window.addEventListener('load', function() {
+      const usuarioLogado = JSON.parse(localStorage.getItem('usuarioLogado'));
+      if (!usuarioLogado) {
+        window.location.href = 'login.html';
+        return;
+      }
+
+      // Carregar empréstimos do usuário
+      let users = JSON.parse(localStorage.getItem('users')) || []; // Use let to allow reassignment
+      
+      // --- START: SCRIPT PARA LIMPAR EMPRÉSTIMOS DE DEMONSTRAÇÃO DO JOÃO SILVA NO localStorage ---
+      const joaoSilva = users.find(user => user.cpf === '12345678900');
+
+      if (joaoSilva) {
+          // Filter out loans for "Dom Casmurro", "Livro com Multa 1" and "Livro com Multa 2"
+          joaoSilva.loans = (joaoSilva.loans || []).filter(loan => 
+              loan.bookTitle !== "Dom Casmurro" &&
+              loan.bookTitle !== "Livro com Multa 1" && 
+              loan.bookTitle !== "Livro com Multa 2"
+          );
+          // Also set hasDebt to false if no other overdue loans exist
+          joaoSilva.hasDebt = joaoSilva.loans.some(loan => loan.status === 'atrasado' && loan.debtAmount > 0);
+          
+          localStorage.setItem('users', JSON.stringify(users));
+          console.log('Empréstimos de demonstração do João Silva (incluindo Dom Casmurro) removidos do localStorage.');
+      }
+    // --- END: SCRIPT PARA LIMPEZA ---
+
+      const user = users.find(u => u.id === usuarioLogado.id);
+      
+      if (user) {
+        // --- START: SCRIPT PARA ADICIONAR LIVRO ATRASADO DE DEMONSTRAÇÃO PARA O USUÁRIO LOGADO ---
+        // Check if the demo loan already exists to avoid adding it multiple times on reload
+        const demoLoanExists = (user.loans || []).some(loan => loan.bookTitle === "Dom Casmurro" && loan.status === 'atrasado' && !loan.returned);
+
+        if (!demoLoanExists) {
+             const hoje = new Date();
+             const dataEmprestimo = new Date(hoje);
+             dataEmprestimo.setDate(hoje.getDate() - 30); // Loan date 30 days ago
+             const dataDevolucao = new Date(hoje);
+             dataDevolucao.setDate(hoje.getDate() - 15); // Due date 15 days ago
+             
+             const novoEmprestimoAtrasado = {
+               id: Date.now() + 500, // Use a unique ID
+               bookTitle: "Dom Casmurro", // Change title to Dom Casmurro
+               bookImage: "./IMG/domcasmurro.webp", // Corrected image path
+               loanDate: dataEmprestimo.toISOString(),
+               dueDate: dataDevolucao.toISOString(),
+               returned: false,
+               status: 'atrasado',
+               debtAmount: 5.00 // Example fine amount
+             };
+             
+             user.loans = user.loans || [];
+             user.loans.push(novoEmprestimoAtrasado);
+             user.hasDebt = true; // Mark user as having debt
+
+             // Update user data in the main users array in localStorage
+             const userIndex = users.findIndex(u => u.id === user.id);
+             if (userIndex !== -1) {
+                 users[userIndex] = user;
+                 localStorage.setItem('users', JSON.stringify(users));
+                 console.log('Livro "Dom Casmurro" atrasado de demonstração adicionado para o usuário logado no localStorage.');
+             }
+        }
+        // --- END: SCRIPT PARA ADICIONAR LIVRO ATRASADO DE DEMONSTRAÇÃO ---
+
+        // --- START: SCRIPT PARA LIMPAR EMPRÉSTIMOS DE DEMONSTRAÇÃO DO USUÁRIO LOGADO NO localStorage ---
+        const demoBookTitles = ["A Cabana", "A Culpa é das Estrelas", "Livro Atrasado Demo", "Livro Fictício com Multa"]; // Add "Livro Fictício com Multa" to the cleanup list
+        user.loans = (user.loans || []).filter(loan => 
+            !demoBookTitles.includes(loan.bookTitle)
+        );
+        // Update user data in the main users array
+        const userIndex = users.findIndex(u => u.id === user.id);
+        if (userIndex !== -1) {
+            users[userIndex] = user;
+            localStorage.setItem('users', JSON.stringify(users));
+            console.log('Empréstimos de demonstração antigos do usuário logado removidos do localStorage.');
+        }
+        // --- END: SCRIPT PARA LIMPEZA ---
+
+        // Atualizar mensagem de boas-vindas
+        document.getElementById('userName').textContent = 'Bem-vindo(a)!';
+
+        // --- START: Update usuarioLogado with the latest user data ---
+        localStorage.setItem('usuarioLogado', JSON.stringify(user));
+        // --- END: Update usuarioLogado with the latest user data ---
+
+        const emprestimosDiv = document.getElementById('emprestimosList');
+        const emprestimos = user.loans || [];
+
+        if (emprestimos.length === 0) {
+          document.querySelector('.empty-state').style.display = 'block';
+          emprestimosDiv.style.display = 'none';
+        } else {
+          document.querySelector('.empty-state').style.display = 'none';
+          emprestimosDiv.style.display = 'block';
+
+          // Ordenar empréstimos: atrasados primeiro, depois por data de empréstimo
+          const emprestimosOrdenados = emprestimos.sort((a, b) => {
+            if (a.status === 'atrasado' && b.status !== 'atrasado') return -1;
+            if (a.status !== 'atrasado' && b.status === 'atrasado') return 1;
+            return new Date(b.loanDate) - new Date(a.loanDate);
+          });
+          
+          emprestimosDiv.innerHTML = emprestimosOrdenados.map((emprestimo, index) => {
+            // Verificar se o empréstimo está atrasado
+            const hoje = new Date();
+            const dataDevolucao = new Date(emprestimo.dueDate);
+            if (!emprestimo.returned && dataDevolucao < hoje && emprestimo.status !== 'pendente_devolucao') {
+              emprestimo.status = 'atrasado';
+              // Calcular multa (R$ 1 por dia de atraso, máximo de R$ 5)
+              const diasAtraso = Math.floor((hoje - dataDevolucao) / (1000 * 60 * 60 * 24));
+              emprestimo.debtAmount = Math.min(diasAtraso * 1, 5);
+            }
+
+            const bookImage = emprestimo.bookImage || emprestimo.imagem;
+            
+            return `
+              <div class="emprestimo-card ${emprestimo.status === 'atrasado' ? 'atrasado' : ''}" 
+                   style="animation-delay: ${index * 0.1}s">
+                <img src="${bookImage}" 
+                     alt="${emprestimo.bookTitle || emprestimo.titulo}" 
+                     class="book-image">
+                <div class="emprestimo-info">
+                  <h3>${emprestimo.bookTitle || emprestimo.titulo}</h3>
+                  <p>Data do Empréstimo: ${formatDate(emprestimo.loanDate)}</p>
+                  <p>Data de Devolução: ${formatDate(emprestimo.dueDate)}</p>
+                  <p class="status">Status: ${getStatusText(emprestimo)}</p>
+                  ${emprestimo.status === 'atrasado' ? 
+                    `<p class="multa">Multa: R$ ${emprestimo.debtAmount.toFixed(2)}</p>` : ''}
+                </div>
+                ${!emprestimo.returned ? `
+                  <div class="emprestimo-actions">
+                    ${emprestimo.status !== 'atrasado' ? `
+                      <button class="devolver-btn ${emprestimo.status === 'pendente_devolucao' ? 'pendente' : ''}" 
+                              onclick="solicitarDevolucao(${emprestimo.id})"
+                              ${emprestimo.status === 'pendente_devolucao' ? 'disabled' : ''}>
+                        ${emprestimo.status === 'pendente_devolucao' ? 'Devolução Solicitada' : 'Solicitar Devolução'}
+                      </button>
+                    ` : ''}
+                    ${emprestimo.status === 'atrasado' ? `
+                      <button class="pagar-multa-btn" onclick="abrirModalPagamento(${emprestimo.id})">
+                        ${emprestimo.debtAmount >= 5 ? 'Pagar Multa ou Doar Item Higiênico' : 'Pagar Multa'}
+                      </button>
+                    ` : ''}
+                  </div>
+                ` : ''}
+              </div>
+            `;
+          }).join('');
+
+          // Salvar as alterações se houve atualização de status ou multas
+          if (emprestimos.some(e => e.status === 'atrasado')) {
+            const userIndex = users.findIndex(u => u.id === user.id);
+            if (userIndex !== -1) {
+              users[userIndex] = user;
+              localStorage.setItem('users', JSON.stringify(users));
+              localStorage.setItem('usuarioLogado', JSON.stringify(user));
+            }
+          }
+        }
+      }
+    });
+
+    function formatDate(dateString) {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('pt-BR');
+    }
+
+    function getStatusText(emprestimo) {
+      if (emprestimo.returned) return 'Devolvido';
+      if (emprestimo.status === 'atrasado') return 'Atrasado';
+      if (emprestimo.status === 'pendente_devolucao') return 'Devolução Pendente';
+      return 'Em Andamento';
+    }
+
+    function solicitarDevolucao(emprestimoId) {
+      const usuarioLogado = JSON.parse(localStorage.getItem('usuarioLogado'));
+      const users = JSON.parse(localStorage.getItem('users')) || [];
+      const user = users.find(u => u.id === usuarioLogado.id);
+      
+      if (user) {
+        const emprestimo = user.loans.find(l => l.id === emprestimoId);
+        if (emprestimo) {
+          // Criar solicitação de devolução
+          const solicitacao = {
+            id: Date.now(),
+            userId: user.id,
+            usuario: {
+              nome: user.nome,
+              cpf: user.cpf,
+              telefone: user.telefone
+            },
+            titulo: emprestimo.bookTitle || emprestimo.titulo,
+            imagem: emprestimo.bookImage || emprestimo.imagem,
+            emprestimoId: emprestimo.id,
+            dataEmprestimo: emprestimo.loanDate,
+            dataDevolucao: emprestimo.dueDate,
+            status: 'pendente'
+          };
+
+          // Salvar solicitação
+          const solicitacoes = JSON.parse(localStorage.getItem('solicitacoesDevolucao') || '[]');
+          solicitacoes.push(solicitacao);
+          localStorage.setItem('solicitacoesDevolucao', JSON.stringify(solicitacoes));
+
+          // Atualizar status do empréstimo
+          emprestimo.status = 'pendente_devolucao';
+          
+          // Atualizar usuário no localStorage
+          const userIndex = users.findIndex(u => u.id === user.id);
+          if (userIndex !== -1) {
+            users[userIndex] = user;
+            localStorage.setItem('users', JSON.stringify(users));
+            localStorage.setItem('usuarioLogado', JSON.stringify(user));
+          }
+
+          alert('Solicitação de devolução enviada com sucesso!');
+          location.reload();
+        }
+      }
+    }
+
+    // Função para abrir o modal de pagamento
+    function abrirModalPagamento(emprestimoId) {
+      const usuarioLogado = JSON.parse(localStorage.getItem('usuarioLogado'));
+      const users = JSON.parse(localStorage.getItem('users')) || [];
+      const user = users.find(u => u.id === usuarioLogado.id);
+      
+      if (user) {
+        const emprestimo = user.loans.find(l => l.id === emprestimoId);
+        if (emprestimo && emprestimo.debtAmount) {
+          // Mostrar ou esconder a opção de doação baseado no valor da multa
+          const doacaoOption = document.querySelector('.payment-option[data-method="doacao"]');
+          if (doacaoOption) {
+            doacaoOption.style.display = emprestimo.debtAmount >= 5 ? 'block' : 'none';
+          }
+          
+          // Limpar seleção anterior
+          document.querySelectorAll('.payment-option').forEach(option => {
+            option.classList.remove('selected');
+          });
+
+          // Store the current loan ID and debt amount in the modal for later use
+          document.getElementById('paymentModal').dataset.currentLoanId = emprestimo.id;
+          document.getElementById('qrcodeDebtAmount').textContent = emprestimo.debtAmount.toFixed(2);
+
+          // Hide QR code container and show payment options/confirm button initially
+          document.getElementById('qrcodeContainer').style.display = 'none';
+          document.querySelector('.payment-options').style.display = 'flex';
+          document.querySelector('.btn-confirmar').style.display = 'block';
+          
+          // Mostrar o modal
+          document.getElementById('paymentModal').style.display = 'block';
+        }
+      }
+    }
+
+    // Adicionar eventos aos métodos de pagamento
+    document.querySelectorAll('.payment-option').forEach(option => {
+      option.addEventListener('click', function() {
+        document.querySelectorAll('.payment-option').forEach(opt => {
+          opt.classList.remove('selected');
+        });
+        this.classList.add('selected');
+      });
+    });
+
+    // Configurar o botão de confirmar
+    document.querySelector('.btn-confirmar').onclick = function() {
+      const selectedMethod = document.querySelector('.payment-option.selected');
+      if (!selectedMethod) {
+        alert('Por favor, selecione um método de pagamento ou doação.');
+        return;
+      }
+
+      const method = selectedMethod.dataset.method;
+      const emprestimoId = parseInt(document.getElementById('paymentModal').dataset.currentLoanId);
+      
+      if (method === 'pix') {
+          // Show QR code for PIX
+          document.querySelector('.payment-options').style.display = 'none';
+          document.querySelector('.btn-confirmar').style.display = 'none';
+          document.getElementById('qrcodeContainer').style.display = 'flex';
+          // The debt amount is already set in abrirModalPagamento
+
+      } else if (method === 'doacao') {
+          // Processar a doação
+          processPaymentOrDonation(emprestimoId, 'doacao');
+
+      } else {
+          // Processar outros pagamentos (Cartão, Boleto)
+          // For now, we'll just treat them as paid and close the modal
+          processPaymentOrDonation(emprestimoId, method);
+      }
+    };
+
+    // Function to process payment or donation (extracted from the original confirm button handler)
+    function processPaymentOrDonation(emprestimoId, method) {
+        const usuarioLogado = JSON.parse(localStorage.getItem('usuarioLogado'));
+        const users = JSON.parse(localStorage.getItem('users')) || [];
+        const user = users.find(u => u.id === usuarioLogado.id);
+        
+        if (user) {
+            const emprestimo = user.loans.find(l => l.id === emprestimoId);
+            if (emprestimo) {
+                if (method === 'doacao' && emprestimo.debtAmount >= 5) {
+                    // Processar a doação
+                    emprestimo.debtAmount = 0;
+                    emprestimo.status = 'emprestado';
+                    
+                    // Registrar a doação
+                    const doacao = {
+                      id: Date.now(),
+                      userId: user.id,
+                      usuario: {
+                        nome: user.nome,
+                        cpf: user.cpf
+                      },
+                      tipo: 'higienico',
+                      data: new Date().toISOString(),
+                      status: 'pendente'
+                    };
+                    
+                    const doacoes = JSON.parse(localStorage.getItem('pendingDonations') || '[]');
+                    doacoes.push(doacao);
+                    localStorage.setItem('pendingDonations', JSON.stringify(doacoes));
+
+                    alert('Doação registrada com sucesso! Traga seu item higiênico na próxima visita.');
+                } else if (method !== 'pix') { // Process payment for card/boleto for now
+                    // Processar o pagamento normal (card, boleto)
+                    emprestimo.debtAmount = 0;
+                    emprestimo.status = 'emprestado'; // Assuming payment clears the atrasado status
+                    alert('Pagamento realizado com sucesso!');
+                } else if (method === 'pix') {
+                    // If this function is called with pix, it means payment is confirmed after showing QR code
+                    // We would typically have a backend process to confirm PIX payment.
+                    // For this simulation, let's assume payment is successful upon clicking 'Fechar' QR.
+                    // The actual status update will happen in closeQrcode for this demo.
+                    return; // Do not proceed with status update here for PIX
+                }
+                
+                // Update user data in localStorage after payment/donation (except initial pix click)
+                if (method !== 'pix') {
+                    localStorage.setItem('users', JSON.stringify(users));
+                    // Update usuarioLogado if it's the current user
+                    if (usuarioLogado.id === user.id) {
+                        localStorage.setItem('usuarioLogado', JSON.stringify(user));
+                    }
+                    document.getElementById('paymentModal').style.display = 'none';
+                    location.reload(); // Reload to update the displayed list
+                }
+            }
+        }
+    }
+
+    // Function to close the QR code view and show payment options again
+    function closeQrcode() {
+        document.getElementById('qrcodeContainer').style.display = 'none';
+        document.querySelector('.payment-options').style.display = 'flex';
+        document.querySelector('.btn-confirmar').style.display = 'block';
+
+        // For demo purposes, assume PIX payment is successful when closing the QR code view
+        const emprestimoId = parseInt(document.getElementById('paymentModal').dataset.currentLoanId);
+        processPaymentOrDonation(emprestimoId, 'pix'); // Process as if PIX payment was confirmed
+
+        // Close the main modal and reload after processing
+        document.getElementById('paymentModal').style.display = 'none';
+        location.reload();
+    }
+
+    // Adicionar eventos aos métodos de pagamento
+    document.querySelectorAll('.payment-option').forEach(option => {
+      option.addEventListener('click', function() {
+        document.querySelectorAll('.payment-option').forEach(opt => {
+          opt.classList.remove('selected');
+        });
+        this.classList.add('selected');
+      });
+    });
+
+    // Fechar modal de pagamento
+    document.querySelector('.close-modal').addEventListener('click', function() {
+      document.getElementById('paymentModal').style.display = 'none';
+      // Ensure payment options are visible if closed directly from main modal
+      document.querySelector('.payment-options').style.display = 'flex';
+      document.querySelector('.btn-confirmar').style.display = 'block';
+      document.getElementById('qrcodeContainer').style.display = 'none';
+    });
+
+    // Close modal when clicking outside
+    window.addEventListener('click', function(event) {
+      const modal = document.getElementById('paymentModal');
+      if (event.target === modal) {
+        document.getElementById('paymentModal').style.display = 'none';
+         // Ensure payment options are visible if closed by clicking outside
+        document.querySelector('.payment-options').style.display = 'flex';
+        document.querySelector('.btn-confirmar').style.display = 'block';
+        document.getElementById('qrcodeContainer').style.display = 'none';
+      }
+    });
+
+    // Função para fazer logout
+    document.querySelector('a[href="index.html"]').addEventListener('click', function(e) {
+      e.preventDefault();
+      localStorage.removeItem('usuarioLogado');
+      window.location.href = 'index.html';
+    });
+  </script>
+</body>
+</html> 
