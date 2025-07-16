@@ -167,6 +167,34 @@
       alert('Multa paga com sucesso!');
     };
 
+    // Função para solicitar devolução
+    window.devolverEmprestimo = function(id) {
+      const emprestimos = JSON.parse(localStorage.getItem('emprestimos') || '[]');
+      const emprestimo = emprestimos.find(e => e.id === id);
+      if (!emprestimo) return;
+      if (emprestimo.status === 'aguardando_devolucao') return;
+      emprestimo.status = 'aguardando_devolucao';
+      localStorage.setItem('emprestimos', JSON.stringify(emprestimos));
+
+      // Adicionar solicitação de devolução para o admin
+      const usuarioLogado = JSON.parse(localStorage.getItem('usuarioLogado'));
+      let solicitacoes = JSON.parse(localStorage.getItem('solicitacoesDevolucao') || '[]');
+      solicitacoes.push({
+        id: Date.now(),
+        emprestimoId: emprestimo.id,
+        userId: usuarioLogado.id,
+        titulo: emprestimo.bookTitle || emprestimo.titulo,
+        imagem: emprestimo.bookImage || emprestimo.imagem,
+        dataEmprestimo: emprestimo.dataEmprestimo || emprestimo.loanDate,
+        userName: usuarioLogado.nome,
+        userPhone: usuarioLogado.telefone
+      });
+      localStorage.setItem('solicitacoesDevolucao', JSON.stringify(solicitacoes));
+
+      carregarEmprestimos();
+      alert('Solicitação de devolução enviada. Aguarde aprovação do administrador.');
+    };
+
     // Fechar modal ao clicar fora
     window.onclick = function(event) {
       const modal = document.getElementById('modalMulta');

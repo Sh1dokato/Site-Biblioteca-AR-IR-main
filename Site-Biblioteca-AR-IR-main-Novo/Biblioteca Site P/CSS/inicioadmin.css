@@ -54,7 +54,7 @@ body {
 .header-title {
     color: white;
     display: flex;
-    margin-right: 280px;
+    margin-right: 140px;
     align-items: center;
     gap: 10px;
 }
@@ -78,13 +78,49 @@ body {
 }
 
 .header-btn:hover {
+    background: #fa9108;
+}
+
+.fornecedores {
+    background: #f3a53f;
+    color: white;
+    padding: 8px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    text-decoration: none;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.fornecedores:hover {
+    background: #f3a53f;
+}
+
+.graficos {
+    background: #f3a53f;
+    color: white;
+    padding: 8px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    text-decoration: none;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.graficos:hover {
     background: #f3a53f;
 }
 
 .donations-btn {
     background: #f3a53f;
     color: white;
-    padding: 8px 15px;
+    padding: 7px 10px;
     border: none;
     border-radius: 5px;
     cursor: pointer;
@@ -553,6 +589,19 @@ body {
     border-radius: 10px;
     font-size: 16px;
 }
+.voltar{
+    position: fixed;
+    top: 18px;
+    left: 8px;
+    color: white;
+    text-decoration: none;
+    font-size: 10px;
+    font-weight: bold;
+    background: #ffaa33;
+    transform: translateY(-2px);
+    border-radius: 25px;
+    padding: 4px 8px;
+    }
 
 /* Responsive adjustments */
 @media (max-width: 1600px) {
@@ -607,4 +656,45 @@ body {
         font-size: 12px;
         max-width: 80px;
     }
+}
+
+.menu{
+    position: relative;
+    display: inline-block;
+}
+.botao-for{
+    background-color: #f3a53f;
+    color: white;
+    padding: 7px 20px;
+    text-decoration: none;
+    font-size: 16px;
+    display: inline-block;
+    border-radius: 4px;
+}
+.dropdown{
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    min-width: 200px;
+    background-color: white;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+.dropdown a {
+    background-color: orange;
+    color: white;
+    padding: 10px 15px;
+    text-decoration: none;
+    display: block;
+    font-size: 15px;
+    border-bottom: 1px solid #ffb84d;
+    transition: background-color 0.3s;
+}
+
+.dropdown a:hover{
+    background-color: #fa9108;
+}
+
+.menu:hover .dropdown{
+    display: block;
 }

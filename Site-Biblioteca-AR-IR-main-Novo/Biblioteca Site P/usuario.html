@@ -2,494 +2,194 @@
 <html lang="pt-br">
 <head>
   <meta charset="UTF-8">
-  <title>Biblioteca Arco-Íris - Página do Usuário</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Biblioteca Arco-Íris - Usuário</title>
   <link rel="icon" href="favicon.ico">
   <link rel="stylesheet" href="CSS/usuario.css">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-LN+7fdVzj6u52u30Kp6M/trliBMCMKTyK833zpbD+pXdCLuTusPj697FH4R/5mcr" crossorigin="anonymous">
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js" integrity="sha384-ndDqU0Gzau9qJ1lfW4pNLlhNTkCfHzAVBReH9diLvGRem5+R9g2FzA8ZGN954O5Q" crossorigin="anonymous"></script>
-
 </head>
-<body>
-  <div>
-    <a class="voltar" href="index.html">Voltar</a>
-  </div>
+<body style="background-image: url(IMG/fundo.png);
+             background-size: cover;
+             background-position: center;
+             background-repeat: no-repeat;" >
   <header class="header">
     <div class="header-title">
       <img src="IMG/logo.png" alt="Logo" style="height: 30px;">
       <span>Biblioteca Arco-Íris</span>
     </div>
-    <div class="search-container">
-      <input type="text" id="searchInput" placeholder="Pesquisar livros..." class="search-input">
-      <button id="searchButton" class="search-button">Buscar</button>
-    </div>
+    <form style="display: flex; align-items: center; gap: 8px;" onsubmit="event.preventDefault();">
+      <input type="text" placeholder="Pesquisar livros..." style="padding: 6px 12px; border-radius: 4px; border: none; font-size: 14px; outline: none;" id="searchInput">
+      <button type="submit" style="background: #ff9000; color: white; border: none; border-radius: 4px; padding: 7px 16px; font-size: 14px; cursor: pointer;">Buscar</button>
+    </form>
     <div class="header-buttons">
       <a href="emprestimos.html" class="header-btn">Meus Empréstimos</a>
       <a href="index.html" class="header-btn">Sair</a>
     </div>
   </header>
 
-  <div class="main-content">
-    <div class="book-grid" id="bookGrid">
-      <!-- Os livros serão inseridos aqui via JavaScript -->
-    </div>
-  </div>
-
-  <!-- Modal -->
-  <div id="bookModal" class="modal">
-    <div class="modal-content">
-      <span class="close-modal">&times;</span>
-      <div class="modal-header">
-        <h2 class="modal-title"></h2>
-        <p class="modal-subtitle"></p>
-      </div>
-      <div class="modal-body">
-        <img class="modal-image" src="" alt="Capa do livro">
-        <div class="modal-info">
-          <div class="modal-description"></div>
-          <div class="modal-details">
-            <p class="modal-autor"></p>
-            <p class="modal-ano"></p>
-            <p class="modal-paginas"></p>
-            <p class="modal-categoria"></p>
-          </div>
-          <button class="emprestar-btn">Emprestar Livro</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal de Agendamento -->
-  <div id="agendamentoModal" class="agendamento-modal">
-    <div class="agendamento-content">
-      <span class="close-modal">&times;</span>
-      <h2>Agendar Retirada</h2>
-      <p>Selecione um horário disponível para retirar o livro:</p>
-      <div class="horarios-grid" id="horariosGrid">
-        <!-- Horários serão inseridos via JavaScript -->
-      </div>
-      <button class="btn-confirmar-agendamento" id="confirmarAgendamento">Confirmar Agendamento</button>
-    </div>
+  <div class="books-container" id="booksContainer">
+    <!-- Os cards de livros serão inseridos aqui pelo JS -->
   </div>
 
   <script>
-    // Verificar se o usuário está logado
-    window.addEventListener('load', function() {
+    // Carregar livros do localStorage ou usar padrão
+    let livros = [];
+    if (localStorage.getItem('livros')) {
+      livros = JSON.parse(localStorage.getItem('livros'));
+      // Adaptar para o formato esperado (caso necessário)
+      livros = livros.map(livro => ({
+        titulo: livro.title || livro.titulo,
+        imagem: livro.image || livro.imagem,
+        disponiveis: livro.estoque !== undefined ? livro.estoque : livro.disponiveis,
+        autor: livro.autor,
+        descricao: livro.descricao
+      }));
+    } else {
+      livros = [
+        { titulo: '1984', imagem: 'IMG/1984.jpg', disponiveis: 5, autor: 'George Orwell', descricao: 'Um romance distópico sobre um regime totalitário que vigia e controla tudo.' },
+        { titulo: 'A Arte da Guerra', imagem: 'IMG/aartedaguerra.jpg', disponiveis: 3, autor: 'Sun Tzu', descricao: 'Um tratado militar chinês sobre estratégia e táticas de guerra.' },
+        { titulo: 'A Cabana', imagem: 'IMG/acabana.jpg', disponiveis: 4, autor: 'William P. Young', descricao: 'Uma história de superação, fé e perdão após uma tragédia familiar.' },
+        { titulo: 'A Culpa é das Estrelas', imagem: 'IMG/aculpaedasestrelas.jpg', disponiveis: 6, autor: 'John Green', descricao: 'Dois adolescentes com câncer se apaixonam e vivem um amor inesquecível.' },
+        { titulo: 'A Menina que Roubava Livros', imagem: 'IMG/ameninaqueroubavalivros.jpg', disponiveis: 2, autor: 'Markus Zusak', descricao: 'Durante a Segunda Guerra Mundial, uma menina encontra consolo nos livros.' },
+        { titulo: 'A Metamorfose', imagem: 'IMG/ametamorfose.webp', disponiveis: 3, autor: 'Franz Kafka', descricao: 'Um homem acorda transformado em um inseto monstruoso.' },
+        { titulo: 'A Revolução dos Bichos', imagem: 'IMG/arevolucaodosbichos.jpg', disponiveis: 4, autor: 'George Orwell', descricao: 'Uma sátira sobre o poder e a corrupção em uma fazenda de animais.' },
+        { titulo: 'As Crônicas de Nárnia', imagem: 'IMG/ascronicasdenarnia.jpg', disponiveis: 2, autor: 'C. S. Lewis', descricao: 'Uma série de aventuras fantásticas em um mundo mágico.' },
+        { titulo: 'Memórias Póstumas de Brás Cubas', imagem: 'IMG/asmemoriaspostumasdebrascuba.jpg', disponiveis: 1, autor: 'Machado de Assis', descricao: 'A vida e reflexões de Brás Cubas, narradas após sua morte.' },
+        { titulo: 'Capitães da Areia', imagem: 'IMG/capitaesdaareia.jpg', disponiveis: 2, autor: 'Jorge Amado', descricao: 'A história de meninos de rua em Salvador.' },
+        { titulo: 'Cem Anos de Solidão', imagem: 'IMG/cemanosdesolidao.jpg', disponiveis: 3, autor: 'Gabriel García Márquez', descricao: 'A saga da família Buendía na fictícia Macondo.' },
+        { titulo: 'Dom Casmurro', imagem: 'IMG/domcasmurro.webp', disponiveis: 2, autor: 'Machado de Assis', descricao: 'Bentinho narra sua vida e o ciúme por Capitu.' },
+        { titulo: 'Dom Quixote', imagem: 'IMG/domquixote.jpg', disponiveis: 2, autor: 'Miguel de Cervantes', descricao: 'As aventuras do cavaleiro Dom Quixote e seu fiel escudeiro Sancho Pança.' },
+        { titulo: 'Elon Musk', imagem: 'IMG/elonmusk.jpg', disponiveis: 1, autor: 'Ashlee Vance', descricao: 'A biografia do empreendedor Elon Musk.' },
+        { titulo: 'Grande Sertão: Veredas', imagem: 'IMG/grandesertaoveredas.jpg', disponiveis: 2, autor: 'João Guimarães Rosa', descricao: 'A saga de Riobaldo no sertão brasileiro.' },
+        { titulo: 'Harry Potter e a Pedra Filosofal', imagem: 'IMG/harrypotereapedrafilosofal.jpg', disponiveis: 3, autor: 'J.K. Rowling', descricao: 'O início da jornada de Harry Potter no mundo da magia.' },
+        { titulo: 'O Alquimista', imagem: 'IMG/oalquimista.jpg', disponiveis: 2, autor: 'Paulo Coelho', descricao: 'Um jovem pastor parte em busca de um tesouro e de si mesmo.' },
+        { titulo: 'O Código Da Vinci', imagem: 'IMG/ocodigodavinci.jpg', disponiveis: 2, autor: 'Dan Brown', descricao: 'Um thriller envolvendo simbologia, arte e religião.' },
+        { titulo: 'O Cortiço', imagem: 'IMG/ocortico.jpg', disponiveis: 2, autor: 'Aluísio Azevedo', descricao: 'A vida dos moradores de um cortiço no Rio de Janeiro.' },
+        { titulo: 'O Diário de Anne Frank', imagem: 'IMG/odiariodeannnefrank.jpg', disponiveis: 1, autor: 'Anne Frank', descricao: 'O relato emocionante de uma jovem judia durante a Segunda Guerra.' },
+        { titulo: 'O Hobbit', imagem: 'IMG/ohobbit.jpg', disponiveis: 2, autor: 'J.R.R. Tolkien', descricao: 'A aventura de Bilbo Bolseiro em busca de um tesouro guardado por um dragão.' },
+        { titulo: 'O Nome do Vento', imagem: 'IMG/onomedovento.jpg', disponiveis: 2, autor: 'Patrick Rothfuss', descricao: 'A história de Kvothe, um homem lendário.' },
+        { titulo: 'O Príncipe', imagem: 'IMG/oprincipe.jpg', disponiveis: 1, autor: 'Nicolau Maquiavel', descricao: 'Um tratado político sobre poder e liderança.' },
+        { titulo: 'Orgulho e Preconceito', imagem: 'IMG/orgulhoepreconceito.jpg', disponiveis: 2, autor: 'Jane Austen', descricao: 'O romance entre Elizabeth Bennet e Mr. Darcy.' },
+        { titulo: 'O Senhor dos Anéis', imagem: 'IMG/osenhordosaneis.webp', disponiveis: 2, autor: 'J.R.R. Tolkien', descricao: 'A épica jornada para destruir o Um Anel.' },
+        { titulo: 'Percy Jackson e o Ladrão de Raios', imagem: 'IMG/percyjacksoneoladraoderaios.jpg', disponiveis: 2, autor: 'Rick Riordan', descricao: 'O início das aventuras do semideus Percy Jackson.' },
+        { titulo: 'Vidas Secas', imagem: 'IMG/vidassecas.jpg', disponiveis: 1, autor: 'Graciliano Ramos', descricao: 'A luta de uma família sertaneja contra a seca.' },
+        { titulo: 'Macunaíma', imagem: 'IMG/macunaima.jpg', disponiveis: 1, autor: 'Mário de Andrade', descricao: 'A saga do herói sem nenhum caráter.' }
+      ];
+    }
+
+    function renderBooks(filter = '') {
+      const container = document.getElementById('booksContainer');
+      container.innerHTML = '';
+      livros.filter(livro => livro.titulo.toLowerCase().includes(filter.toLowerCase())).forEach((livro, idx) => {
+        container.innerHTML += `
+          <div class="book-card">
+            <img src="${livro.imagem}" alt="${livro.titulo}" class="book-cover">
+            <div class="book-title">${livro.titulo}</div>
+            <button class="ver-mais-btn" onclick="abrirModalLivro(${idx})">Ver mais</button>
+            <div style="color: white; font-size: 13px; margin-top: 6px;">Disponíveis: ${livro.disponiveis}</div>
+          </div>
+        `;
+      });
+    }
+
+    // Modal HTML
+    document.body.insertAdjacentHTML('beforeend', `
+      <div id="modalLivro" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center;">
+        <div style="background:white; border-radius:10px; max-width:400px; width:90vw; padding:30px 20px 20px 20px; position:relative; box-shadow:0 4px 24px rgba(0,0,0,0.2);">
+          <span id="fecharModalLivro" style="position:absolute; top:10px; right:18px; font-size:28px; color:#888; cursor:pointer;">&times;</span>
+          <img id="modalLivroImg" src="" alt="" style="width:120px; height:160px; object-fit:cover; border-radius:5px; display:block; margin:0 auto 10px auto;">
+          <h2 id="modalLivroTitulo" style="text-align:center; margin:10px 0 5px 0; font-size:22px;"></h2>
+          <div id="modalLivroAutor" style="text-align:center; color:#666; font-size:15px; margin-bottom:10px;"></div>
+          <div id="modalLivroDescricao" style="font-size:15px; color:#333; margin-bottom:18px; text-align:center;"></div>
+          <div style="text-align:center;">
+            <button id="btnEmprestarLivro" style="background:#ff9000; color:white; border:none; border-radius:5px; padding:10px 30px; font-size:16px; cursor:pointer;">Emprestar livro</button>
+            <div id="modalLivroEstoque" style="margin-top:10px; color:#888; font-size:14px;"></div>
+          </div>
+        </div>
+      </div>
+    `);
+
+    let livroAtualIdx = null;
+    window.abrirModalLivro = function(idx) {
+      livroAtualIdx = idx;
+      const livro = livros[idx];
+      document.getElementById('modalLivroImg').src = livro.imagem;
+      document.getElementById('modalLivroTitulo').textContent = livro.titulo;
+      document.getElementById('modalLivroAutor').textContent = 'Autor: ' + livro.autor;
+      document.getElementById('modalLivroDescricao').textContent = livro.descricao;
+      document.getElementById('modalLivroEstoque').textContent = 'Disponíveis: ' + livro.disponiveis;
+      const btn = document.getElementById('btnEmprestarLivro');
+      btn.disabled = livro.disponiveis < 1;
+      btn.textContent = livro.disponiveis > 0 ? 'Emprestar livro' : 'Indisponível';
+      document.getElementById('modalLivro').style.display = 'flex';
+    };
+    document.getElementById('fecharModalLivro').onclick = function() {
+      document.getElementById('modalLivro').style.display = 'none';
+    };
+    document.getElementById('modalLivro').onclick = function(e) {
+      if (e.target === this) this.style.display = 'none';
+    };
+    document.getElementById('btnEmprestarLivro').onclick = function() {
+      if (livroAtualIdx === null) return;
+      if (livros[livroAtualIdx].disponiveis < 1) return;
       const usuarioLogado = JSON.parse(localStorage.getItem('usuarioLogado'));
       if (!usuarioLogado) {
-        window.location.href = 'login.html';
+        alert('Faça login para emprestar livros.');
         return;
       }
-
-      // Carregar e exibir os livros
-      carregarLivros();
-    });
-
-    // Função para carregar e exibir os livros
-    function carregarLivros() {
-      const livros = JSON.parse(localStorage.getItem('livros') || '[]');
-      const bookGrid = document.getElementById('bookGrid');
-      
-      // Limpar o grid
-      bookGrid.innerHTML = '';
-      
-      // Criar cards para cada livro
-      livros.forEach(livro => {
-        const card = document.createElement('div');
-        card.className = 'book-card';
-        if (livro.estoque <= 0) {
-          card.classList.add('indisponivel');
-        }
-        
-        card.innerHTML = `
-          <div class="book-content">
-            <img src="${livro.image}" alt="${livro.title}" class="book-thumb">
-            <div class="book-title">${livro.title}</div>
-          </div>
-          <button class="ver-mais-btn">Ver mais</button>
-          <div class="estoque-info">Disponíveis: ${livro.estoque}</div>
-        `;
-        
-        // Adicionar eventos aos botões
-        const verMaisBtn = card.querySelector('.ver-mais-btn');
-        const bookContent = card.querySelector('.book-content');
-        
-        verMaisBtn.addEventListener('click', (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          openModal(livro.title, livro.image);
-        });
-        
-        bookContent.addEventListener('click', () => {
-          openModal(livro.title, livro.image);
-        });
-        
-        bookGrid.appendChild(card);
-      });
-    }
-
-    // Função para processar o empréstimo
-    function processarEmprestimo(title, imgSrc) {
-      const livros = JSON.parse(localStorage.getItem('livros') || '[]');
-      const livro = livros.find(l => l.title === title);
-      const usuarioLogado = JSON.parse(localStorage.getItem('usuarioLogado'));
-      const users = JSON.parse(localStorage.getItem('users')) || [];
-      const user = users.find(u => u.id === usuarioLogado.id);
-      
-      if (!livro || !user) return;
-
-      // Verificar se o usuário tem multas pendentes
-      const emprestimosAtivos = user.loans ? user.loans.filter(e => !e.returned) : [];
-      const temMultaPendente = emprestimosAtivos.some(e => e.status === 'atrasado' && e.debtAmount > 0);
-      
-      if (temMultaPendente) {
-        alert('Você possui multas pendentes. Por favor, pague suas multas antes de fazer um novo empréstimo.');
-        window.location.href = 'emprestimos.html';
-        return;
-      }
-
-      if (livro.estoque <= 0) {
-        openAgendamentoModal(title, imgSrc);
-      } else {
-        // Verificar limite de empréstimos
-        if (emprestimosAtivos.length >= 5) {
-          alert('Você deve devolver um livro para fazer o empréstimo de outro livro.');
-          return;
-        }
-
-        const livroJaEmprestado = emprestimosAtivos.some(e => e.bookTitle === title);
-        if (livroJaEmprestado) {
-          alert('Você já possui um exemplar deste livro emprestado.');
-          return;
-        }
-        
-        const hoje = new Date();
-        const dataDevolucao = new Date(hoje);
-        dataDevolucao.setDate(hoje.getDate() + 15);
-        
-        const novoEmprestimo = {
-          id: Date.now(),
-          userId: user.id,
-          titulo: title,
-          bookTitle: title,
-          bookImage: imgSrc,
-          imagem: imgSrc,
-          loanDate: hoje.toISOString(),
-          dueDate: dataDevolucao.toISOString(),
-          dataEmprestimo: hoje.toLocaleDateString('pt-BR'),
-          dataDevolucao: dataDevolucao.toLocaleDateString('pt-BR'),
-          status: 'emprestado',
-          returned: false,
-          renovado: false,
-          debtAmount: 0
-        };
-        
-        // Atualizar estoque do livro
-        livro.estoque--;
-        const livrosAtualizados = JSON.parse(localStorage.getItem('livros') || '[]');
-        const livroIndex = livrosAtualizados.findIndex(l => l.title === title);
-        if (livroIndex !== -1) {
-          livrosAtualizados[livroIndex].estoque = livro.estoque;
-          localStorage.setItem('livros', JSON.stringify(livrosAtualizados));
-        }
-        
-        // Salvar na lista geral de empréstimos
-        const emprestimos = JSON.parse(localStorage.getItem('emprestimos') || '[]');
-        emprestimos.push(novoEmprestimo);
-        localStorage.setItem('emprestimos', JSON.stringify(emprestimos));
-
-        // Salvar na lista de empréstimos do usuário
-        if (!user.loans) user.loans = [];
-        user.loans.push(novoEmprestimo);
-        
-        // Atualizar usuário no localStorage
-        const userIndex = users.findIndex(u => u.id === user.id);
-        if (userIndex !== -1) {
-          users[userIndex] = user;
-          localStorage.setItem('users', JSON.stringify(users));
-        }
-        
-        // Atualizar usuário logado
-        localStorage.setItem('usuarioLogado', JSON.stringify(user));
-        
-        alert(`Livro "${title}" emprestado com sucesso!\nVerifique seus empréstimos ativos.`);
-        window.location.href = 'emprestimos.html';
-      }
-    }
-
-    // Função para abrir o modal
-    function openModal(title, imgSrc) {
-      const modal = document.getElementById('bookModal');
-      const livros = JSON.parse(localStorage.getItem('livros') || '[]');
-      const livro = livros.find(l => l.title === title) || {
-        autor: 'Informação não disponível',
-        ano: 'Informação não disponível',
-        paginas: 'Informação não disponível',
-        categoria: 'Informação não disponível',
-        descricao: 'Descrição em breve...',
-        estoque: 0
-      };
-
-      modal.querySelector('.modal-title').textContent = title;
-      modal.querySelector('.modal-subtitle').textContent = `por ${livro.autor}`;
-      modal.querySelector('.modal-image').src = imgSrc;
-      modal.querySelector('.modal-description').textContent = livro.descricao;
-      modal.querySelector('.modal-autor').textContent = `Autor: ${livro.autor}`;
-      modal.querySelector('.modal-ano').textContent = `Ano de Publicação: ${livro.ano}`;
-      modal.querySelector('.modal-paginas').textContent = `Número de Páginas: ${livro.paginas}`;
-      modal.querySelector('.modal-categoria').textContent = `Categoria: ${livro.categoria}`;
-      
-      const emprestarBtn = modal.querySelector('.emprestar-btn');
-      if (livro.estoque <= 0) {
-        emprestarBtn.textContent = 'Agendar Livro';
-        emprestarBtn.classList.add('agendar-btn');
-      } else {
-        emprestarBtn.textContent = 'Emprestar Livro';
-        emprestarBtn.classList.remove('agendar-btn');
-      }
-
-      // Remover evento antigo e adicionar novo
-      const newEmprestarBtn = emprestarBtn.cloneNode(true);
-      emprestarBtn.parentNode.replaceChild(newEmprestarBtn, emprestarBtn);
-      newEmprestarBtn.onclick = () => processarEmprestimo(title, imgSrc);
-      
-      modal.style.display = 'block';
-    }
-
-    // Fechar o modal
-    document.querySelector('.close-modal').addEventListener('click', () => {
-      document.getElementById('bookModal').style.display = 'none';
-    });
-
-    // Fechar o modal ao clicar fora dele
-    window.addEventListener('click', (e) => {
-      const modal = document.getElementById('bookModal');
-      if (e.target === modal) {
-        modal.style.display = 'none';
-      }
-    });
-
-    // Função para abrir o modal de agendamento
-    function openAgendamentoModal(title, imgSrc) {
-      const modal = document.getElementById('agendamentoModal');
-      const horariosGrid = document.getElementById('horariosGrid');
-      horariosGrid.innerHTML = '';
-
-      // Mostrar apenas os horários de funcionamento
-      const horariosFuncionamento = [
-        'Segunda a Sexta: 9h às 17h',
-        'Sábado: 9h às 13h',
-        'Domingo: Fechado'
-      ];
-
-      // Criar elementos para mostrar os horários
-      horariosFuncionamento.forEach(horario => {
-        const div = document.createElement('div');
-        div.className = 'horario-info';
-        div.textContent = horario;
-        div.style.padding = '10px';
-        div.style.marginBottom = '10px';
-        div.style.backgroundColor = '#f5f5f5';
-        div.style.borderRadius = '5px';
-        div.style.textAlign = 'center';
-        horariosGrid.appendChild(div);
-      });
-
-      // Configurar botão de confirmar
-      document.getElementById('confirmarAgendamento').onclick = () => {
-        const novoAgendamento = {
-          id: Date.now(),
-          titulo: title,
-          imagem: imgSrc,
-          dataAgendamento: new Date().toLocaleDateString('pt-BR'),
-          status: 'busca_pendente'
-        };
-
-        // Salvar agendamento
-        const agendamentos = JSON.parse(localStorage.getItem('agendamentos') || '[]');
-        agendamentos.push(novoAgendamento);
-        localStorage.setItem('agendamentos', JSON.stringify(agendamentos));
-
-        alert('Agendamento realizado com sucesso!\nVocê será notificado quando o livro estiver disponível.');
-        modal.style.display = 'none';
-        window.location.href = 'emprestimos.html';
-      };
-
-      modal.style.display = 'block';
-    }
-
-    // Fechar modal de agendamento
-    document.querySelector('.agendamento-modal .close-modal').addEventListener('click', () => {
-      document.getElementById('agendamentoModal').style.display = 'none';
-    });
-
-    // Fechar modal ao clicar fora
-    window.addEventListener('click', (e) => {
-      const modal = document.getElementById('agendamentoModal');
-      if (e.target === modal) {
-        modal.style.display = 'none';
-      }
-    });
-
-    // Adicionar evento de empréstimo/agendamento
-    document.querySelector('.emprestar-btn').addEventListener('click', function() {
-      const title = document.querySelector('.modal-title').textContent;
-      const imgSrc = document.querySelector('.modal-image').src;
-      const livro = livros.find(l => l.title === title);
-      
-      if (!livro) return;
-
-      // Verificar limite de empréstimos
       const emprestimos = JSON.parse(localStorage.getItem('emprestimos') || '[]');
-      const emprestimosAtivos = emprestimos.filter(e => e.status !== 'devolvido');
-      
+      // Verificar se o usuário já tem 5 empréstimos ativos
+      const emprestimosAtivos = emprestimos.filter(e => e.userId === usuarioLogado.id && !e.returned && e.status !== 'devolvido');
       if (emprestimosAtivos.length >= 5) {
-        alert('Você deve devolver um livro para fazer o empréstimo de outro livro.');
+        alert('Você só pode ter até 5 empréstimos ativos por vez.');
         return;
       }
-
-      // Verificar se já tem o mesmo livro emprestado
-      const livroJaEmprestado = emprestimosAtivos.some(e => e.titulo === title);
-      if (livroJaEmprestado) {
-        alert('Você já possui um exemplar deste livro emprestado.');
+      // Verificar se o usuário já tem este livro emprestado
+      const jaTemEsteLivro = emprestimosAtivos.some(e => (e.bookTitle || e.titulo) === livros[livroAtualIdx].titulo && e.status !== 'devolvido' && !e.returned);
+      if (jaTemEsteLivro) {
+        alert('Você já possui este livro emprestado. Devolva antes de pegar novamente.');
         return;
       }
-      
+      livros[livroAtualIdx].disponiveis--;
+      // Atualizar estoque no localStorage
+      if (localStorage.getItem('livros')) {
+        let livrosStorage = JSON.parse(localStorage.getItem('livros'));
+        let livroStorage = livrosStorage.find(l => (l.title || l.titulo) === livros[livroAtualIdx].titulo);
+        if (livroStorage) {
+          if (livroStorage.estoque !== undefined) {
+            livroStorage.estoque--;
+          } else if (livroStorage.disponiveis !== undefined) {
+            livroStorage.disponiveis--;
+          }
+          localStorage.setItem('livros', JSON.stringify(livrosStorage));
+        }
+      }
+      renderBooks(document.getElementById('searchInput').value);
+      window.abrirModalLivro(livroAtualIdx);
       const hoje = new Date();
-      const dataDevolucao = new Date(hoje);
-      dataDevolucao.setDate(hoje.getDate() + 15);
-      
+      const devolucao = new Date();
+      devolucao.setDate(hoje.getDate() + 7); // 7 dias de empréstimo
       const novoEmprestimo = {
         id: Date.now(),
-        titulo: title,
-        imagem: imgSrc,
+        userId: usuarioLogado.id,
+        bookTitle: livros[livroAtualIdx].titulo,
+        bookImage: livros[livroAtualIdx].imagem,
+        loanDate: hoje.toISOString(),
+        dueDate: devolucao.toISOString(),
         dataEmprestimo: hoje.toLocaleDateString('pt-BR'),
-        dataDevolucao: dataDevolucao.toLocaleDateString('pt-BR'),
-        status: livro.estoque <= 0 ? 'agendado' : 'emprestado',
+        dataDevolucao: devolucao.toLocaleDateString('pt-BR'),
+        status: 'emprestado',
+        returned: false,
+        debtAmount: 0,
         renovado: false
       };
-      
-      if (livro.estoque > 0) {
-        livro.estoque--;
-        // Atualizar estoque no localStorage para todas as páginas
-        const livrosAtualizados = JSON.parse(localStorage.getItem('livros') || '[]');
-        const livroIndex = livrosAtualizados.findIndex(l => l.title === title);
-        if (livroIndex !== -1) {
-          livrosAtualizados[livroIndex].estoque = livro.estoque;
-          localStorage.setItem('livros', JSON.stringify(livrosAtualizados));
-        }
-      }
-      
       emprestimos.push(novoEmprestimo);
       localStorage.setItem('emprestimos', JSON.stringify(emprestimos));
-      
-      const mensagem = livro.estoque <= 0 
-        ? `Livro "${title}" agendado com sucesso!\nVocê será notificado quando estiver disponível.`
-        : `Livro "${title}" emprestado com sucesso!\nVerifique seus empréstimos ativos.`;
-      
-      alert(mensagem);
-      window.location.href = 'emprestimos.html';
-    });
+      alert('Livro emprestado com sucesso!');
+    };
 
-    // Adicionar evento para fechar com ESC
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') {
-        document.getElementById('bookModal').style.display = 'none';
-      }
-    });
-
-    // Função para fazer logout
-    document.querySelector('a[href="index.html"]').addEventListener('click', function(e) {
-      e.preventDefault();
-      localStorage.removeItem('usuarioLogado');
-      window.location.href = 'index.html';
-    });
-
-    // Adicionar função de pesquisa
-    function pesquisarLivros(termo) {
-      const livros = JSON.parse(localStorage.getItem('livros') || '[]');
-      const bookGrid = document.getElementById('bookGrid');
-      
-      // Limpar o grid
-      bookGrid.innerHTML = '';
-      
-      // Filtrar livros que correspondem ao termo de pesquisa
-      const livrosFiltrados = livros.filter(livro => 
-        livro.title.toLowerCase().includes(termo.toLowerCase()) ||
-        (livro.autor && livro.autor.toLowerCase().includes(termo.toLowerCase())) ||
-        (livro.categoria && livro.categoria.toLowerCase().includes(termo.toLowerCase()))
-      );
-      
-      if (livrosFiltrados.length === 0) {
-        bookGrid.innerHTML = `
-          <div class="no-results">
-            <h3>Nenhum livro encontrado</h3>
-            <p>Tente pesquisar com outros termos</p>
-          </div>
-        `;
-        return;
-      }
-      
-      // Criar cards para cada livro filtrado
-      livrosFiltrados.forEach(livro => {
-        const card = document.createElement('div');
-        card.className = 'book-card';
-        if (livro.estoque <= 0) {
-          card.classList.add('indisponivel');
-        }
-        
-        card.innerHTML = `
-          <div class="book-content">
-            <img src="${livro.image}" alt="${livro.title}" class="book-thumb">
-            <div class="book-title">${livro.title}</div>
-          </div>
-          <button class="ver-mais-btn">Ver mais</button>
-          <div class="estoque-info">Disponíveis: ${livro.estoque}</div>
-        `;
-        
-        // Adicionar eventos aos botões
-        const verMaisBtn = card.querySelector('.ver-mais-btn');
-        const bookContent = card.querySelector('.book-content');
-        
-        verMaisBtn.addEventListener('click', (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          openModal(livro.title, livro.image);
-        });
-        
-        bookContent.addEventListener('click', () => {
-          openModal(livro.title, livro.image);
-        });
-        
-        bookGrid.appendChild(card);
-      });
-    }
-
-    // Adicionar eventos de pesquisa
-    document.getElementById('searchButton').addEventListener('click', () => {
-      const termo = document.getElementById('searchInput').value.trim();
-      if (termo) {
-        pesquisarLivros(termo);
-      } else {
-        carregarLivros(); // Se o campo estiver vazio, mostrar todos os livros
-      }
-    });
-
-    document.getElementById('searchInput').addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') {
-        const termo = e.target.value.trim();
-        if (termo) {
-          pesquisarLivros(termo);
-        } else {
-          carregarLivros();
-        }
-      }
-    });
-
-    // Limpar pesquisa quando o campo for limpo
-    document.getElementById('searchInput').addEventListener('input', (e) => {
-      if (e.target.value.trim() === '') {
-        carregarLivros();
-      }
+    renderBooks();
+    document.getElementById('searchInput').addEventListener('input', function() {
+      renderBooks(this.value);
     });
   </script>
 </body>
