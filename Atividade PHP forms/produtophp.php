@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cadastro de Produto</title>
+    <link rel="stylesheet" href="estilizatab.css" />
+</head>
+<body>
+    <form id="meuForm" name="meuForm" action="validandoproduto.php">
+        <table align="center">
+            <tr>
+                <td><img src="Imagens/logo.png" /></td>
+                <th>Cadastro de Produto</th>
+            </tr>
+            <tr>
+                <td><center>Nome do Livro:</center></td>
+                <td><input type="text" id="nomeLivro" name="nomeLivro" /></td>
+            </tr>
+            <tr>
+                <td><center>Data de Publicação:</center></td>
+                <td><input type="text" id="dataPublicacao" name="dataPublicacao" /></td>
+            </tr>
+            <tr>
+                <td><center>Classificação:</center></td>
+                <td><input type="text" id="classificacao" name="classificacao" /></td>
+            </tr>
+            <tr>
+                <td><center>Autor:</center></td>
+                <td><input type="text" id="autor" name="autor" /></td>
+            </tr>
+            <tr>
+                <td><center>N° de Páginas:</center></td>
+                <td><input type="text" id="paginas" name="paginas" /></td>
+            </tr>
+            <tr>
+                <td><center>Sinopse:</center></td>
+                <td><input type="text" id="sinopse" name="sinopse" /></td>
+            </tr>
+            <tr>
+                <td><center>Categoria:</center></td>
+                <td><input type="text" id="categoria" name="categoria" /></td>
+            </tr>
+            <tr>
+                <td colspan="2"><center><button type="submit">Salvar</button></center></td>
+            </tr>
+        </table>
+    </form>
+    <center>
+        <address>
+            Desenvolvimento de Sistemas / Estudante / Marcos Paulo Fernandes
+        </address>
+    </center>
+
+    <script src="validando2.js"></script>
+</body>
+</html>
