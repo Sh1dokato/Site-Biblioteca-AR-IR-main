@@ -1,9 +1,5 @@
 body {
-  background-image: url('IMG/fundo.png');
-  background-repeat: no-repeat;
-  background-position: center center;
-  background-attachment: fixed;
-  background-size: cover;
+  background-color: #ffffff;
   margin: 0;
   font-family: Arial, sans-serif;
   min-height: 100vh;

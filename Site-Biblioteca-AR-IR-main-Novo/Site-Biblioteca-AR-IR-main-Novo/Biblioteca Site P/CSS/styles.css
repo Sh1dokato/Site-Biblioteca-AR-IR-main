@@ -1,7 +1,5 @@
 body {
-  background: url('../IMG/fundo.png') no-repeat center center fixed !important;
-  background-size: cover !important;
-  margin: 0;
+  background-color: #000000;
   font-family: Arial, sans-serif;
   min-height: 100vh;
   display: flex;
