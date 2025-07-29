@@ -137,6 +137,39 @@
       });
     }
 
+    // Função para gerar datas disponíveis (próximos 30 dias)
+    function gerarDatasDisponiveis() {
+      const datas = [];
+      const hoje = new Date();
+      
+      for (let i = 1; i <= 30; i++) {
+        const data = new Date(hoje);
+        data.setDate(hoje.getDate() + i);
+        
+        // Verificar se é um dia útil (segunda a sexta) ou sábado
+        const diaSemana = data.getDay();
+        if (diaSemana >= 1 && diaSemana <= 6) { // Segunda (1) a Sábado (6)
+          datas.push({
+            data: data.toISOString().split('T')[0],
+            diaSemana: data.getDay(),
+            horarios: diaSemana === 6 ? ['13:00', '14:00', '15:00', '16:00', '17:00'] : ['10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00']
+          });
+        }
+      }
+      
+      return datas;
+    }
+
+    // Função para verificar se um horário já está agendado
+    function verificarHorarioDisponivel(data, horario, livroTitulo) {
+      const agendamentos = JSON.parse(localStorage.getItem('agendamentos') || '[]');
+      return !agendamentos.some(agendamento => 
+        agendamento.data === data && 
+        agendamento.horario === horario && 
+        agendamento.livroTitulo === livroTitulo
+      );
+    }
+
     // Modal HTML
     document.body.insertAdjacentHTML('beforeend', `
       <div id="modalLivro" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center;">
@@ -154,7 +187,51 @@
       </div>
     `);
 
+    // Modal de Agendamento HTML
+    document.body.insertAdjacentHTML('beforeend', `
+      <div id="modalAgendamento" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.5); z-index:10000; align-items:center; justify-content:center;">
+        <div style="background:white; border-radius:10px; max-width:500px; width:90vw; padding:30px 20px 20px 20px; position:relative; box-shadow:0 4px 24px rgba(0,0,0,0.2); max-height:80vh; overflow-y:auto;">
+          <span id="fecharModalAgendamento" style="position:absolute; top:10px; right:18px; font-size:28px; color:#888; cursor:pointer;">&times;</span>
+          <h2 style="text-align:center; margin:0 0 20px 0; color:#333; font-size:20px;">Agendar Livro</h2>
+          <div style="margin-bottom:20px;">
+            <img id="modalAgendamentoImg" src="" alt="" style="width:80px; height:100px; object-fit:cover; border-radius:5px; display:block; margin:0 auto 10px auto;">
+            <h3 id="modalAgendamentoTitulo" style="text-align:center; margin:10px 0; color:#333;"></h3>
+          </div>
+          
+          <div style="margin-bottom:20px;">
+            <label style="display:block; margin-bottom:8px; color:#333; font-weight:600;">Selecione a Data:</label>
+            <select id="selectData" style="width:100%; padding:10px; border:2px solid #e0e0e0; border-radius:5px; font-size:16px; margin-bottom:15px;">
+              <option value="">Escolha uma data...</option>
+            </select>
+          </div>
+          
+          <div style="margin-bottom:20px;">
+            <label style="display:block; margin-bottom:8px; color:#333; font-weight:600;">Selecione o Horário:</label>
+            <select id="selectHorario" style="width:100%; padding:10px; border:2px solid #e0e0e0; border-radius:5px; font-size:16px; margin-bottom:15px;">
+              <option value="">Primeiro escolha uma data...</option>
+            </select>
+          </div>
+          
+          <div style="background:#f8f9fa; padding:15px; border-radius:8px; margin-bottom:20px;">
+            <h4 style="margin:0 0 10px 0; color:#333;">Horários de Funcionamento:</h4>
+            <div style="font-size:14px; color:#666;">
+              <div>📅 <strong>Segunda a Sexta:</strong> 10:00 às 18:00</div>
+              <div>📅 <strong>Sábado:</strong> 13:00 às 18:00</div>
+              <div>❌ <strong>Domingo:</strong> Fechado</div>
+            </div>
+          </div>
+          
+          <div style="text-align:center;">
+            <button id="btnConfirmarAgendamento" style="background:#ff9000; color:white; border:none; border-radius:5px; padding:12px 30px; font-size:16px; cursor:pointer; margin-right:10px;">Confirmar Agendamento</button>
+            <button id="btnCancelarAgendamento" style="background:#6c757d; color:white; border:none; border-radius:5px; padding:12px 20px; font-size:16px; cursor:pointer;">Cancelar</button>
+          </div>
+        </div>
+      </div>
+    `);
+
     let livroAtualIdx = null;
+    let datasDisponiveis = [];
+
     window.abrirModalLivro = function(idx) {
       livroAtualIdx = idx;
       const livro = livros[idx];
@@ -163,25 +240,134 @@
       document.getElementById('modalLivroAutor').textContent = 'Autor: ' + livro.autor;
       document.getElementById('modalLivroDescricao').textContent = livro.descricao;
       document.getElementById('modalLivroEstoque').textContent = 'Disponíveis: ' + livro.disponiveis;
+      
       const btn = document.getElementById('btnEmprestarLivro');
-      btn.disabled = livro.disponiveis < 1;
-      btn.textContent = livro.disponiveis > 0 ? 'Emprestar livro' : 'Indisponível';
+      if (livro.disponiveis > 0) {
+        btn.disabled = false;
+        btn.textContent = 'Emprestar livro';
+        btn.onclick = function() {
+          emprestarLivro();
+        };
+      } else {
+        btn.disabled = false;
+        btn.textContent = 'Agendar Livro';
+        btn.onclick = function() {
+          abrirModalAgendamento();
+        };
+      }
+      
       document.getElementById('modalLivro').style.display = 'flex';
     };
-    document.getElementById('fecharModalLivro').onclick = function() {
+
+    function abrirModalAgendamento() {
+      const livro = livros[livroAtualIdx];
+      document.getElementById('modalAgendamentoImg').src = livro.imagem;
+      document.getElementById('modalAgendamentoTitulo').textContent = livro.titulo;
+      
+      // Gerar datas disponíveis
+      datasDisponiveis = gerarDatasDisponiveis();
+      
+      // Preencher select de datas
+      const selectData = document.getElementById('selectData');
+      selectData.innerHTML = '<option value="">Escolha uma data...</option>';
+      datasDisponiveis.forEach(data => {
+        const dataFormatada = new Date(data.data).toLocaleDateString('pt-BR', {
+          weekday: 'long',
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric'
+        });
+        selectData.innerHTML += `<option value="${data.data}">${dataFormatada}</option>`;
+      });
+      
       document.getElementById('modalLivro').style.display = 'none';
+      document.getElementById('modalAgendamento').style.display = 'flex';
+    }
+
+    // Event listeners para o modal de agendamento
+    document.getElementById('fecharModalAgendamento').onclick = function() {
+      document.getElementById('modalAgendamento').style.display = 'none';
     };
-    document.getElementById('modalLivro').onclick = function(e) {
+
+    document.getElementById('btnCancelarAgendamento').onclick = function() {
+      document.getElementById('modalAgendamento').style.display = 'none';
+    };
+
+    document.getElementById('modalAgendamento').onclick = function(e) {
       if (e.target === this) this.style.display = 'none';
     };
-    document.getElementById('btnEmprestarLivro').onclick = function() {
+
+    // Atualizar horários quando uma data for selecionada
+    document.getElementById('selectData').addEventListener('change', function() {
+      const dataSelecionada = this.value;
+      const selectHorario = document.getElementById('selectHorario');
+      
+      if (!dataSelecionada) {
+        selectHorario.innerHTML = '<option value="">Primeiro escolha uma data...</option>';
+        return;
+      }
+      
+      const dataInfo = datasDisponiveis.find(d => d.data === dataSelecionada);
+      if (!dataInfo) return;
+      
+      selectHorario.innerHTML = '<option value="">Escolha um horário...</option>';
+      dataInfo.horarios.forEach(horario => {
+        if (verificarHorarioDisponivel(dataSelecionada, horario, livros[livroAtualIdx].titulo)) {
+          selectHorario.innerHTML += `<option value="${horario}">${horario}</option>`;
+        }
+      });
+    });
+
+    // Confirmar agendamento
+    document.getElementById('btnConfirmarAgendamento').onclick = function() {
+      const dataSelecionada = document.getElementById('selectData').value;
+      const horarioSelecionado = document.getElementById('selectHorario').value;
+      
+      if (!dataSelecionada || !horarioSelecionado) {
+        alert('Por favor, selecione uma data e um horário.');
+        return;
+      }
+      
+      const usuarioLogado = JSON.parse(localStorage.getItem('usuarioLogado'));
+      if (!usuarioLogado) {
+        alert('Faça login para agendar livros.');
+        return;
+      }
+      
+      const livro = livros[livroAtualIdx];
+      const agendamentos = JSON.parse(localStorage.getItem('agendamentos') || '[]');
+      
+      const novoAgendamento = {
+        id: Date.now(),
+        userId: usuarioLogado.id,
+        userName: usuarioLogado.name,
+        livroTitulo: livro.titulo,
+        livroImagem: livro.imagem,
+        data: dataSelecionada,
+        horario: horarioSelecionado,
+        status: 'agendado',
+        dataAgendamento: new Date().toISOString(),
+        observacoes: ''
+      };
+      
+      agendamentos.push(novoAgendamento);
+      localStorage.setItem('agendamentos', JSON.stringify(agendamentos));
+      
+      alert(`Agendamento confirmado!\n\nLivro: ${livro.titulo}\nData: ${new Date(dataSelecionada).toLocaleDateString('pt-BR')}\nHorário: ${horarioSelecionado}\n\nCompareça na biblioteca no horário agendado para retirar o livro.`);
+      
+      document.getElementById('modalAgendamento').style.display = 'none';
+    };
+
+    function emprestarLivro() {
       if (livroAtualIdx === null) return;
       if (livros[livroAtualIdx].disponiveis < 1) return;
+      
       const usuarioLogado = JSON.parse(localStorage.getItem('usuarioLogado'));
       if (!usuarioLogado) {
         alert('Faça login para emprestar livros.');
         return;
       }
+      
       const emprestimos = JSON.parse(localStorage.getItem('emprestimos') || '[]');
       // Verificar se o usuário já tem 5 empréstimos ativos
       const emprestimosAtivos = emprestimos.filter(e => e.userId === usuarioLogado.id && !e.returned && e.status !== 'devolvido');
@@ -195,6 +381,7 @@
         alert('Você já possui este livro emprestado. Devolva antes de pegar novamente.');
         return;
       }
+      
       livros[livroAtualIdx].disponiveis--;
       // Atualizar estoque no localStorage
       if (localStorage.getItem('livros')) {
@@ -209,11 +396,14 @@
           localStorage.setItem('livros', JSON.stringify(livrosStorage));
         }
       }
+      
       renderBooks(document.getElementById('searchInput').value);
       window.abrirModalLivro(livroAtualIdx);
+      
       const hoje = new Date();
       const devolucao = new Date();
       devolucao.setDate(hoje.getDate() + 7); // 7 dias de empréstimo
+      
       const novoEmprestimo = {
         id: Date.now(),
         userId: usuarioLogado.id,
@@ -228,9 +418,18 @@
         debtAmount: 0,
         renovado: false
       };
+      
       emprestimos.push(novoEmprestimo);
       localStorage.setItem('emprestimos', JSON.stringify(emprestimos));
       alert('Livro emprestado com sucesso!');
+    }
+
+    document.getElementById('fecharModalLivro').onclick = function() {
+      document.getElementById('modalLivro').style.display = 'none';
+    };
+    
+    document.getElementById('modalLivro').onclick = function(e) {
+      if (e.target === this) this.style.display = 'none';
     };
 
     renderBooks();

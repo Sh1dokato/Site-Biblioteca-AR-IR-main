@@ -43,29 +43,12 @@
                     <p>Usuários Ativos</p>
                 </div>
             </div>
-            <div class="stat-card">
-                <div class="stat-icon">📊</div>
-                <div class="stat-content">
-                    <h3 id="taxaEmprestimo">0%</h3>
-                    <p>Taxa de Empréstimo</p>
-                </div>
-            </div>
         </div>
 
         <div class="charts-grid">
             <div class="chart-container">
                 <h2>Livros Mais Emprestados</h2>
                 <canvas id="livrosPopularesChart"></canvas>
-            </div>
-            
-            <div class="chart-container">
-                <h2>Empréstimos por Mês</h2>
-                <canvas id="emprestimosMensaisChart"></canvas>
-            </div>
-            
-            <div class="chart-container">
-                <h2>Distribuição por Categoria</h2>
-                <canvas id="categoriasChart"></canvas>
             </div>
             
             <div class="chart-container">
@@ -180,19 +163,15 @@
             const totalLivros = livros.length;
             const livrosEmprestados = emprestimos.filter(e => e.status === 'emprestado').length;
             const totalUsuarios = usuarios.length;
-            const taxaEmprestimo = totalLivros > 0 ? Math.round((livrosEmprestados / totalLivros) * 100) : 0;
 
             document.getElementById('totalLivros').textContent = totalLivros;
             document.getElementById('livrosEmprestados').textContent = livrosEmprestados;
             document.getElementById('totalUsuarios').textContent = totalUsuarios;
-            document.getElementById('taxaEmprestimo').textContent = taxaEmprestimo + '%';
         }
 
         // Atualizar gráficos
         function updateCharts() {
             updateLivrosPopularesChart();
-            updateEmprestimosMensaisChart();
-            updateCategoriasChart();
             updateStatusEmprestimosChart();
         }
 
@@ -262,106 +241,7 @@
             });
         }
 
-        // Gráfico de empréstimos mensais
-        function updateEmprestimosMensaisChart() {
-            const ctx = document.getElementById('emprestimosMensaisChart').getContext('2d');
-            
-            // Agrupar empréstimos por mês
-            const emprestimosPorMes = {};
-            emprestimos.forEach(emprestimo => {
-                const data = new Date(emprestimo.dataEmprestimo);
-                const mesAno = `${data.getMonth() + 1}/${data.getFullYear()}`;
-                
-                if (emprestimosPorMes[mesAno]) {
-                    emprestimosPorMes[mesAno]++;
-                } else {
-                    emprestimosPorMes[mesAno] = 1;
-                }
-            });
 
-            const labels = Object.keys(emprestimosPorMes).sort();
-            const data = labels.map(mes => emprestimosPorMes[mes]);
-
-            new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Empréstimos',
-                        data: data,
-                        borderColor: '#4CAF50',
-                        backgroundColor: 'rgba(76, 175, 80, 0.1)',
-                        borderWidth: 3,
-                        fill: true,
-                        tension: 0.4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                stepSize: 1
-                            }
-                        }
-                    }
-                }
-            });
-        }
-
-        // Gráfico de categorias
-        function updateCategoriasChart() {
-            const ctx = document.getElementById('categoriasChart').getContext('2d');
-            
-            // Contar livros por categoria
-            const livrosPorCategoria = {};
-            livros.forEach(livro => {
-                if (livrosPorCategoria[livro.categoria]) {
-                    livrosPorCategoria[livro.categoria]++;
-                } else {
-                    livrosPorCategoria[livro.categoria] = 1;
-                }
-            });
-
-            const labels = Object.keys(livrosPorCategoria);
-            const data = Object.values(livrosPorCategoria);
-
-            new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        data: data,
-                        backgroundColor: [
-                            '#FF6B6B',
-                            '#4ECDC4',
-                            '#45B7D1',
-                            '#96CEB4',
-                            '#FFEAA7',
-                            '#DDA0DD',
-                            '#98D8C8',
-                            '#F7DC6F'
-                        ]
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'bottom'
-                        }
-                    }
-                }
-            });
-        }
 
         // Gráfico de status dos empréstimos
         function updateStatusEmprestimosChart() {

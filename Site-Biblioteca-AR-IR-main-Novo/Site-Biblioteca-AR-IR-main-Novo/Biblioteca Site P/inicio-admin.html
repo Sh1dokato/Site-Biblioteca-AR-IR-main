@@ -19,19 +19,11 @@
             <span>Biblioteca Arco-Íris - Painel Administrativo</span>
         </div>
         <div class="header-buttons">
-            <button class="donations-btn" onclick="toggleDonationsPanel()">
-                <span>Doações Pendentes</span>
-                <span id="donationsCount" style="background: white; color: #ff9000; padding: 2px 6px; border-radius: 10px; font-size: 12px;">0</span>
-            </button>
-            <button class="donations-btn" onclick="toggleDevolucoesPanel()">
-                <span>Devoluções Pendentes</span>
-                <span id="devolucoesCount" style="background: white; color: #ff9000; padding: 2px 6px; border-radius: 10px; font-size: 12px;">0</span>
-            </button>
-
-            <div class="menu">
-                <a href="fornecedores.html" class="botao-for" style="text-decoration: none;">Fornecedores</a>
-                <div class="dropdown">
-                    <a href="cadastrar-fornecedores.html">Cadastrar fornecedores</a>
+            <div class="dropdown-menu">
+                <a href="fornecedores.html" class="header-btn dropdown-trigger">Fornecedores ▼</a>
+                <div class="dropdown-content">
+                    <a href="fornecedores.html" class="dropdown-item">👥 Ver Fornecedores</a>
+                    <a href="cadastrar-fornecedores.html" class="dropdown-item">➕ Cadastrar Fornecedor</a>
                 </div>
             </div>
             
@@ -41,7 +33,21 @@
                 </button>
             </a>
             
-            <a href="usuarios.html" class="header-btn">Usuários</a>
+            <div class="dropdown-menu">
+                <a href="usuarios.html" class="header-btn dropdown-trigger">Usuários ▼</a>
+                <div class="dropdown-content">
+                    <a href="usuarios.html" class="dropdown-item">👥 Gerenciar Usuários</a>
+                    <a href="agendamentos.html" class="dropdown-item">📅 Agendamentos</a>
+                    <button class="dropdown-item-btn" onclick="toggleDonationsPanel()">
+                        <span>🎁 Doações Pendentes</span>
+                        <span class="count-badge" id="donationsCount">0</span>
+                    </button>
+                    <button class="dropdown-item-btn" onclick="toggleDevolucoesPanel()">
+                        <span>📚 Devoluções Pendentes</span>
+                        <span class="count-badge" id="devolucoesCount">0</span>
+                    </button>
+                </div>
+            </div>
             <a href="index.html" class="header-btn">Sair</a>
         </div>
     </header>

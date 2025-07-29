@@ -2,212 +2,246 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Biblioteca Arco-Íris - Gerenciar Fornecedores</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fornecedores - Biblioteca Arco-Íris</title>
     <link rel="icon" href="favicon.ico">
     <link rel="stylesheet" href="CSS/fornecedores.css">
 </head>
 <body>
+    <div>
+        <a class="voltar" href="inicio-admin.html">Voltar</a>
+    </div>
+    
     <header class="header">
         <div class="header-title">
             <img src="IMG/logo.png" alt="Logo" style="height: 30px;">
-            <span>Biblioteca Arco-Íris - Gerenciar Fornecedores</span>
-        </div>
-        
-        <div class="header-buttons">
-            <a href="inicio-admin.html" class="header-btn">Voltar</a>
-            <a href="index.html" class="header-btn">Sair</a>
+            <span>Biblioteca Arco-Íris - Gestão de Fornecedores</span>
         </div>
     </header>
-    <div class="users-container">
-        <div class="users-grid">
-            <h1 class="tituloFornecedor">Fornecedores</h1>
-            <div class="search-bar">
-                <div class="search-input-container">
-                    <input type="text" class="search-input" placeholder="Pesquisar por nome, CPF ou telefone..." id="searchInput">
-                    <span class="search-icon">🔍</span>
+
+    <div class="container">
+        <div class="page-header">
+            <h1>Gestão de Fornecedores</h1>
+            <button class="add-supplier-btn" onclick="abrirModalAdicionar()">
+                <span>+</span> Adicionar Fornecedor
+            </button>
+        </div>
+
+        <div class="stats-overview">
+            <div class="stat-card">
+                <div class="stat-icon">🏢</div>
+                <div class="stat-content">
+                    <h3 id="totalFornecedores">0</h3>
+                    <p>Total de Fornecedores</p>
                 </div>
             </div>
-            <table class="users-table">
+            <div class="stat-card">
+                <div class="stat-icon">📚</div>
+                <div class="stat-content">
+                    <h3 id="totalDoacoes">0</h3>
+                    <p>Total de Doações</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">⭐</div>
+                <div class="stat-content">
+                    <h3 id="fornecedoresAtivos">0</h3>
+                    <p>Fornecedores Ativos</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">📊</div>
+                <div class="stat-content">
+                    <h3 id="mediaDoacoes">0</h3>
+                    <p>Média de Doações</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="search-filter-section">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Pesquisar fornecedores...">
+                <button class="search-btn">🔍</button>
+            </div>
+            <div class="filter-buttons">
+                <button class="filter-btn active" data-filter="todos">Todos</button>
+                <button class="filter-btn" data-filter="ativos">Ativos</button>
+                <button class="filter-btn" data-filter="com-doacoes">Com Doações</button>
+                <button class="filter-btn" data-filter="top-fornecedores">Top Fornecedores</button>
+            </div>
+        </div>
+
+        <div class="suppliers-table-container">
+            <div class="table-wrapper">
+                <table id="suppliersTable">
                 <thead>
                     <tr>
-                        <th class="nomeFornecedor">Nome</th>
-                        <th class="cpfFornecedor">CPF</th>
-                        <th class="telefoneFornecedor">Telefone</th>
-                        <th class="doacoesFornecedor">Doações</th>
+                            <th>ID</th>
+                            <th>Nome</th>
+                            <th>CPF/CNPJ</th>
+                            <th>Telefone</th>
+                            <th>Doações</th>
+                            <th>Status</th>
+                            <th>Data de Cadastro</th>
+                            <th>Ações</th>
                     </tr>
                 </thead>
-                <tbody id="usersTableBody">
-                    <!-- Os usuários serão inseridos aqui via JavaScript -->
+                    <tbody id="suppliersTableBody">
+                        <!-- Fornecedores serão inseridos aqui pelo JavaScript -->
                 </tbody>
             </table>
+            </div>
         </div>
     </div>
 
-    <!-- Modal para editar usuário -->
-    <div id="editModal" class="modal">
+    <!-- Modal para adicionar/editar fornecedor -->
+    <div id="supplierModal" class="modal">
         <div class="modal-content">
-            <span class="close-modal" onclick="closeModal()">&times;</span>
-            <h2 class="modal-title">Editar Fornecedor</h2>
-            <form id="editForm" class="modal-form">
-                <input type="hidden" id="editUserId">
+            <span class="close" onclick="fecharModal()">&times;</span>
+            <h2 id="modalTitle">Adicionar Fornecedor</h2>
+            <form id="supplierForm">
                 <div class="form-group">
-                    <label for="editName">Nome Completo</label>
-                    <input type="text" id="editName" required pattern="[A-Za-zÀ-ÿ\s]+" title="Apenas letras são permitidas">
+                    <label for="supplierName">Nome Completo:</label>
+                    <input type="text" id="supplierName" required>
                 </div>
                 <div class="form-group">
-                    <label for="editPhone">Telefone</label>
-                    <input type="tel" id="editPhone" required pattern="[0-9]+" maxlength="11" title="Apenas números são permitidos">
+                    <label for="supplierDocument">CPF/CNPJ:</label>
+                    <input type="text" id="supplierDocument" required>
+                </div>
+                <div class="form-group">
+                    <label for="supplierPhone">Telefone:</label>
+                    <input type="tel" id="supplierPhone" required>
+                </div>
+                <div class="form-group">
+                    <label for="supplierEmail">Email:</label>
+                    <input type="email" id="supplierEmail">
+                </div>
+                <div class="form-group">
+                    <label for="supplierStatus">Status:</label>
+                    <select id="supplierStatus">
+                        <option value="ativo">Ativo</option>
+                        <option value="inativo">Inativo</option>
+                    </select>
                 </div>
                 <div class="form-actions">
-                <button type="submit">Salvar Alterações</button>
-                    <button type="button" class="btn-delete" onclick="deleteUser()">Excluir Fornecedor</button>
+                    <button type="button" class="btn-cancel" onclick="fecharModal()">Cancelar</button>
+                    <button type="submit" class="btn-save">Salvar</button>
                 </div>
             </form>
-            
+        </div>
+    </div>
+
+    <!-- Modal de confirmação -->
+    <div id="confirmModal" class="modal">
+        <div class="modal-content confirm-modal">
+            <h3 id="confirmTitle">Confirmar Ação</h3>
+            <p id="confirmMessage">Tem certeza que deseja realizar esta ação?</p>
+            <div class="confirm-actions">
+                <button class="btn-cancel" onclick="fecharConfirmModal()">Cancelar</button>
+                <button class="btn-confirm" onclick="confirmarAcao()">Confirmar</button>
+            </div>
         </div>
     </div>
 
     <script>
-        // Função para formatar telefone (formato: (XX) XXXXX-XXXX)
-        function formatPhone(phone) {
-            // Remover todos os caracteres não numéricos
-            const cleanNumber = phone.replace(/\D/g, '');
-            // Garantir que temos 11 dígitos
-            if (cleanNumber.length === 11) {
-                return `(${cleanNumber.slice(0, 2)}) ${cleanNumber.slice(2, 7)}-${cleanNumber.slice(7)}`;
-            }
-            return phone; // Retorna o número original se não tiver 11 dígitos
-        }
+        let fornecedores = [];
+        let fornecedorEditando = null;
+        let acaoConfirmacao = null;
 
-        // Função para gerar telefone aleatório (agora começando com 47)
-        function generatePhone() {
-            return '479' + Array.from({length: 8}, () => Math.floor(Math.random() * 10)).join('');
-        }
-
-        // Função para gerar CPF aleatório
-        function generateCPF() {
-            const num = Array.from({length: 9}, () => Math.floor(Math.random() * 10)).join('');
-            return num + '00';
-        }
-
-       
-        // Carregar usuários do localStorage
-        function loadUsersFromStorage() {
-            const storedUsers = JSON.parse(localStorage.getItem('users')) || [];
-            if (storedUsers.length > 0) {
-                // Se houver usuários salvos, usar eles
-                users = storedUsers;
-            } else {
-                // Se não houver usuários salvos, salvar a lista inicial
-                localStorage.setItem('users', JSON.stringify(users));
-            }
-        }
-
-        // Carregar usuários ao iniciar a página
-        loadUsersFromStorage();
-
-        // Função para salvar usuários no localStorage
-        function saveUsersToStorage() {
-            localStorage.setItem('users', JSON.stringify(users));
-        }
-
-        // Função para verificar se um empréstimo está atrasado
-        function isLoanLate(dueDate) {
-            return new Date(dueDate) < new Date();
-        }
-
-        // Função para formatar data
-        function formatDate(dateString) {
-            const date = new Date(dateString);
-            return date.toLocaleDateString('pt-BR');
-        }
-
-        // Função para obter a classe e texto do status do usuário
-        
-
-        let currentFilter = 'all';
-
-        function filterUsers(filterType) {
-            currentFilter = filterType;
+        // Inicializar dados
+        function initializeData() {
+            fornecedores = JSON.parse(localStorage.getItem('fornecedores') || '[]');
             
-            // Atualizar estilo dos botões
-            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
-            document.getElementById('filter' + filterType.charAt(0).toUpperCase() + filterType.slice(1)).classList.add('active');
+            // Se não houver fornecedores, criar alguns de exemplo
+            if (fornecedores.length === 0) {
+                const fornecedoresExemplo = [
+                    {
+                        id: 1,
+                        name: "Editora Livros & Cia",
+                        document: "12.345.678/0001-90",
+                        phone: "(47) 3333-4444",
+                        email: "contato@livroscia.com",
+                        status: "ativo",
+                        dataCadastro: "2024-01-15",
+                        doacoes: 15
+                    },
+                    {
+                        id: 2,
+                        name: "João Silva",
+                        document: "123.456.789-00",
+                        phone: "(47) 99999-8888",
+                        email: "joao@email.com",
+                        status: "ativo",
+                        dataCadastro: "2024-02-10",
+                        doacoes: 8
+                    },
+                    {
+                        id: 3,
+                        name: "Maria Santos",
+                        document: "987.654.321-00",
+                        phone: "(47) 88888-7777",
+                        email: "maria@email.com",
+                        status: "inativo",
+                        dataCadastro: "2024-01-20",
+                        doacoes: 3
+                    }
+                ];
+                
+                localStorage.setItem('fornecedores', JSON.stringify(fornecedoresExemplo));
+                fornecedores = fornecedoresExemplo;
+            }
             
-            updateUsersTable(document.getElementById('searchInput').value);
+            updateStats();
+            renderSuppliers();
         }
 
-        // Função para formatar CPF (formato: XXX.***.***-XX)
-        function formatCPF(cpf) {
-            return `${cpf.substring(0, 3)}.***.***-${cpf.substring(9, 11)}`;
+        // Atualizar estatísticas
+        function updateStats() {
+            const totalFornecedores = fornecedores.length;
+            const fornecedoresAtivos = fornecedores.filter(f => f.status === 'ativo').length;
+            const totalDoacoes = fornecedores.reduce((sum, f) => sum + (f.doacoes || 0), 0);
+            const mediaDoacoes = totalFornecedores > 0 ? Math.round(totalDoacoes / totalFornecedores) : 0;
+
+            document.getElementById('totalFornecedores').textContent = totalFornecedores;
+            document.getElementById('fornecedoresAtivos').textContent = fornecedoresAtivos;
+            document.getElementById('totalDoacoes').textContent = totalDoacoes;
+            document.getElementById('mediaDoacoes').textContent = mediaDoacoes;
         }
 
-        // Função atualizada para filtrar usuários
-        function updateUsersTable(searchTerm = '') {
-            const tbody = document.getElementById('usersTableBody');
-            let filteredUsers = users;
+        // Renderizar tabela de fornecedores
+        function renderSuppliers(filter = '') {
+            const tbody = document.getElementById('suppliersTableBody');
+            
+            let fornecedoresFiltrados = fornecedores.filter(fornecedor => 
+                fornecedor.name.toLowerCase().includes(filter.toLowerCase()) ||
+                fornecedor.document.toLowerCase().includes(filter.toLowerCase()) ||
+                fornecedor.phone.toLowerCase().includes(filter.toLowerCase())
+            );
 
-            // Aplicar filtro selecionado
-            if (currentFilter === 'admin') {
-                filteredUsers = users.filter(user => user.isAdmin);
-            } else if (currentFilter === 'debt') {
-                filteredUsers = users.filter(user => user.hasDebt);
-            }
-
-            // Aplicar termo de busca
-            if (searchTerm) {
-                filteredUsers = filteredUsers.filter(user => 
-                    Object.values(user).some(value => 
-                        value.toString().toLowerCase().includes(searchTerm.toLowerCase())
-                    )
-                );
-            }
-
-            // Ordenar usuários: admins primeiro, depois usuários com multa, depois os demais
-            filteredUsers.sort((a, b) => {
-                if (a.isAdmin && !b.isAdmin) return -1;
-                if (!a.isAdmin && b.isAdmin) return 1;
-                
-                if (!a.isAdmin && !b.isAdmin) {
-                    if (a.hasDebt && !b.hasDebt) return -1;
-                    if (!a.hasDebt && b.hasDebt) return 1;
-                }
-                
-                return a.name.localeCompare(b.name);
-            });
-
-            tbody.innerHTML = filteredUsers.map(user => {
-                const statusInfo = getUserStatusInfo(user);
-                const rowClass = user.isAdmin ? 'admin-row' : (user.hasDebt ? 'debt-row' : '');
-                
-                // Verificar se o usuário tem empréstimos não devolvidos
-                const hasUnreturnedBooks = (user.loans || []).some(loan => !loan.returned);
+            tbody.innerHTML = fornecedoresFiltrados.map(fornecedor => {
+                const dataCadastro = new Date(fornecedor.dataCadastro).toLocaleDateString('pt-BR');
+                const statusClass = fornecedor.status === 'ativo' ? 'status-ativo' : 'status-inativo';
                 
                 return `
-                    <tr class="${rowClass}">
-                        <td>
-                            <div class="user-status">
-                                <span class="status-circle ${statusInfo.circleClass}"></span>
-                                <span class="user-type ${statusInfo.typeClass}">${statusInfo.text}</span>
-                            </div>
-                        </td>
-                        <td>${user.name}</td>
-                        <td>${formatCPF(user.cpf)}</td>
-                        <td>${formatPhone(user.phone)}</td>
-                        <td>${user.type}</td>
-                        <td class="status-${user.status.toLowerCase()}">${user.status}</td>
-                        <td class="user-actions">
-                            <button class="user-btn btn-edit" onclick="editUser(${user.id})">
-                                <span class="btn-icon">✏️</span>
-                                Editar
+                    <tr>
+                        <td>${fornecedor.id}</td>
+                        <td>${fornecedor.name}</td>
+                        <td>${fornecedor.document}</td>
+                        <td>${fornecedor.phone}</td>
+                        <td>${fornecedor.doacoes || 0}</td>
+                        <td class="${statusClass}">${fornecedor.status}</td>
+                        <td>${dataCadastro}</td>
+                        <td class="actions">
+                            <button class="action-btn edit" onclick="editarFornecedor(${fornecedor.id})" title="Editar">
+                                ✏️
                             </button>
-                            <button class="user-btn btn-block" onclick="toggleUserStatus(${user.id})">
-                                <span class="btn-icon">${user.status === 'Ativo' ? '🔒' : '🔓'}</span>
-                                ${user.status === 'Ativo' ? 'Bloquear' : 'Desbloquear'}
+                            <button class="action-btn ${fornecedor.status === 'ativo' ? 'block' : 'unblock'}" 
+                                    onclick="toggleStatus(${fornecedor.id})" 
+                                    title="${fornecedor.status === 'ativo' ? 'Desativar' : 'Ativar'}">
+                                ${fornecedor.status === 'ativo' ? '🚫' : '✅'}
                             </button>
-                            <button class="user-btn btn-delete" onclick="confirmDeleteUser(${user.id})">
-                                <span class="btn-icon">🗑️</span>
-                                Excluir
+                            <button class="action-btn delete" onclick="excluirFornecedor(${fornecedor.id})" title="Excluir">
+                                🗑️
                             </button>
                         </td>
                     </tr>
@@ -215,305 +249,204 @@
             }).join('');
         }
 
-        // Função para mostrar o modal de edição
-        function editUser(id) {
-            const user = users.find(u => u.id === id);
-            if (user) {
-                document.getElementById('editUserId').value = user.id;
-                document.getElementById('editName').value = user.name;
-                document.getElementById('editPhone').value = user.phone;
-                document.getElementById('editStatus').value = user.status;
-                document.getElementById('editRole').value = user.isAdmin ? 'admin' : 'user';
-                
-                // Desabilitar mudança de cargo para o Admin Principal
-                const roleSelect = document.getElementById('editRole');
-                if (user.cpf === '99999999999') {
-                    roleSelect.disabled = true;
-                } else {
-                    roleSelect.disabled = false;
-                }
-                
-                // Atualizar a lista de empréstimos
-                const loansTable = document.querySelector('.loans-table tbody');
-                const userLoans = user.loans || [];
-                
-                loansTable.innerHTML = userLoans.map(loan => `
-                    <tr>
-                        <td>${loan.bookTitle}</td>
-                        <td>${formatDate(loan.loanDate)}</td>
-                        <td>${formatDate(loan.dueDate)}</td>
-                        <td>${isLoanLate(loan.dueDate) ? 'Atrasado' : 'Em dia'}</td>
-                        <td>
-                            ${!loan.returned ? '<button class="btn-return" onclick="returnBook(' + loan.id + ')">Devolver</button>' : 'Devolvido'}
-                        </td>
-                    </tr>
-                `).join('') || '<tr><td colspan="5">Nenhum empréstimo ativo</td></tr>';
-                
-                document.getElementById('editModal').style.display = 'block';
-            }
+        // Abrir modal para adicionar fornecedor
+        function abrirModalAdicionar() {
+            fornecedorEditando = null;
+            document.getElementById('modalTitle').textContent = 'Adicionar Fornecedor';
+            document.getElementById('supplierForm').reset();
+            document.getElementById('supplierModal').style.display = 'block';
         }
 
-        // Função para lidar com o submit do formulário
-        document.getElementById('editForm').addEventListener('submit', function(e) {
+        // Editar fornecedor
+        function editarFornecedor(id) {
+            fornecedorEditando = fornecedores.find(f => f.id === id);
+            if (!fornecedorEditando) return;
+
+            document.getElementById('modalTitle').textContent = 'Editar Fornecedor';
+            document.getElementById('supplierName').value = fornecedorEditando.name;
+            document.getElementById('supplierDocument').value = fornecedorEditando.document;
+            document.getElementById('supplierPhone').value = fornecedorEditando.phone;
+            document.getElementById('supplierEmail').value = fornecedorEditando.email || '';
+            document.getElementById('supplierStatus').value = fornecedorEditando.status;
+            document.getElementById('supplierModal').style.display = 'block';
+        }
+
+        // Fechar modal
+        function fecharModal() {
+            document.getElementById('supplierModal').style.display = 'none';
+            fornecedorEditando = null;
+        }
+
+        // Salvar fornecedor
+        document.getElementById('supplierForm').addEventListener('submit', function(e) {
             e.preventDefault();
-            const userId = parseInt(document.getElementById('editUserId').value);
-            const userIndex = users.findIndex(u => u.id === userId);
             
-            if (userIndex !== -1) {
-                const user = users[userIndex];
-                const newRole = document.getElementById('editRole').value;
-                const oldIsAdmin = user.isAdmin;
-                const oldName = user.name; // Guardar o nome antigo
-                
-                // Não permitir alterar o cargo do Admin Principal
-                if (user.cpf === '99999999999') {
-                    alert('Não é possível alterar o cargo do Administrador Principal.');
-                    return;
-                }
+            const supplierData = {
+                name: document.getElementById('supplierName').value,
+                document: document.getElementById('supplierDocument').value,
+                phone: document.getElementById('supplierPhone').value,
+                email: document.getElementById('supplierEmail').value,
+                status: document.getElementById('supplierStatus').value
+            };
 
-                // --- NOVA VERIFICAÇÃO: Impedir promoção para admin se houver multa pendente ---
-                if (newRole === 'admin' && user.hasDebt) {
-                    alert(`O usuário ${user.name} possui multas pendentes e não pode ser promovido a Administrador.`);
-                    // Manter o cargo antigo no formulário
-                    document.getElementById('editRole').value = oldIsAdmin ? 'admin' : 'usuario';
-                    return; // Interrompe o salvamento da alteração de cargo
-                }
-                // --- FIM DA NOVA VERIFICAÇÃO ---
-
-                // Atualizar informações do usuário
-                user.name = document.getElementById('editName').value;
-                user.phone = document.getElementById('editPhone').value;
-                user.login = user.phone; // Atualiza o login para o novo telefone
-                user.status = document.getElementById('editStatus').value;
-                
-                // Atualizar cargo (esta linha só será alcançada se a verificação acima passar)
-                user.isAdmin = newRole === 'admin';
-                user.type = newRole === 'admin' ? 'Admin' : 'Usuário';
-                
-                // Atualizar o nome do usuário nas solicitações de devolução pendentes
-                let pendingReturns = JSON.parse(localStorage.getItem('solicitacoesDevolucao')) || [];
-                pendingReturns = pendingReturns.map(returnRequest => {
-                    if (returnRequest.userId === userId) {
-                        return {
-                            ...returnRequest,
-                            userName: user.name // Atualizar o nome do usuário
-                        };
-                    }
-                    return returnRequest;
-                });
-                localStorage.setItem('solicitacoesDevolucao', JSON.stringify(pendingReturns));
-                
-                // Salvar alterações no localStorage
-                saveUsersToStorage();
-                
-                updateUsersTable(document.getElementById('searchInput').value);
-                closeModal();
-                
-                // Mostrar mensagem de confirmação
-                if (oldIsAdmin !== user.isAdmin) {
-                    alert(`Usuário ${user.name} foi ${user.isAdmin ? 'promovido a Administrador' : 'rebaixado a Usuário'} com sucesso!`);
+            if (fornecedorEditando) {
+                // Editar fornecedor existente
+                Object.assign(fornecedorEditando, supplierData);
                 } else {
-                    alert('Usuário atualizado com sucesso!');
-                }
+                // Adicionar novo fornecedor
+                const novoFornecedor = {
+                    ...supplierData,
+                    id: Date.now(),
+                    dataCadastro: new Date().toISOString().split('T')[0],
+                    doacoes: 0
+                };
+                fornecedores.push(novoFornecedor);
             }
+
+            localStorage.setItem('fornecedores', JSON.stringify(fornecedores));
+            updateStats();
+            renderSuppliers(document.getElementById('searchInput').value);
+            fecharModal();
         });
 
-        // Função para fechar modal
-        function closeModal() {
-            document.getElementById('editModal').style.display = 'none';
-        }
+        // Toggle status do fornecedor
+        function toggleStatus(id) {
+            const fornecedor = fornecedores.find(f => f.id === id);
+            if (!fornecedor) return;
 
-        // Atualizar event listener da pesquisa
-        document.getElementById('searchInput').addEventListener('input', (e) => {
-            updateUsersTable(e.target.value);
-        });
-
-        // Close modal when clicking outside
-        window.onclick = function(event) {
-            const modal = document.getElementById('editModal');
-            if (event.target === modal) {
-                closeModal();
-            }
-        }
-
-        // Inicialização
-        window.addEventListener('load', () => {
-            document.getElementById('filterAll').classList.add('active');
-            updateUsersTable();
-        });
-
-        // Função para alternar o status do usuário
-        function toggleUserStatus(id) {
-            const userIndex = users.findIndex(u => u.id === id);
-            if (userIndex !== -1) {
-                users[userIndex].status = users[userIndex].status === 'Ativo' ? 'Bloqueado' : 'Ativo';
-                // Salvar alterações no localStorage
-                saveUsersToStorage();
-                updateUsersTable(document.getElementById('searchInput').value);
-            }
-        }
-
-        // Atualizar as funções de exclusão de usuário
-        function confirmDeleteUser(userId) {
-            const user = users.find(u => u.id === userId);
-            if (!user) return;
-
-            // Não permitir excluir o admin principal
-            if (user.cpf === '99999999999') {
-                alert('Não é possível excluir o Administrador Principal.');
-                return;
-            }
-
-            // Verificar se o usuário tem empréstimos ativos
-            const hasActiveLoans = (user.loans || []).some(loan => !loan.returned);
-            if (hasActiveLoans) {
-                alert('Não é possível excluir um usuário com empréstimos ativos.');
-                return;
-            }
-
-            if (confirm(`Tem certeza que deseja excluir o usuário ${user.name}? Esta ação não pode ser desfeita.`)) {
-                deleteUser(userId);
-            }
-        }
-
-        function deleteUser(userId) {
-            try {
-                const userIndex = users.findIndex(user => user.id === userId);
-                if (userIndex !== -1) {
-                    // Remover o usuário da lista
-                    users.splice(userIndex, 1);
-                    
-                    // Salvar alterações no localStorage
-                    saveUsersToStorage();
-                    
-                    // Atualizar a tabela
-                    updateUsersTable(document.getElementById('searchInput').value);
-                    
-                    // Fechar o modal se estiver aberto
-                    closeModal();
-                    
-                    // Mostrar mensagem de sucesso
-                    alert('Usuário excluído com sucesso!');
-                }
-            } catch (error) {
-                console.error('Erro ao excluir usuário:', error);
-                alert('Ocorreu um erro ao excluir o usuário. Por favor, tente novamente.');
-            }
-        }
-
-        // Atualizar o botão de excluir no modal
-        document.querySelector('.form-actions button[onclick="deleteUser()"]').onclick = function() {
-            const userId = parseInt(document.getElementById('editUserId').value);
-            confirmDeleteUser(userId);
-        };
-
-        // Função para devolver livro
-        function returnBook(loanId) {
-            const userId = parseInt(document.getElementById('editUserId').value);
-            const user = users.find(u => u.id === userId);
+            const novaAcao = fornecedor.status === 'ativo' ? 'desativar' : 'ativar';
+            const novaStatus = fornecedor.status === 'ativo' ? 'inativo' : 'ativo';
             
-            if (user) {
-                const loan = user.loans.find(l => l.id === loanId);
-                if (loan) {
-                    // Marcar o empréstimo como devolvido
-                    loan.returned = true;
-                    loan.status = 'devolvido';
+            mostrarConfirmacao(
+                `Deseja ${novaAcao} o fornecedor "${fornecedor.name}"?`,
+                () => {
+                    fornecedor.status = novaStatus;
+                    localStorage.setItem('fornecedores', JSON.stringify(fornecedores));
+                    updateStats();
+                    renderSuppliers(document.getElementById('searchInput').value);
+                }
+            );
+        }
 
-                    // Atualizar o livro no estoque
-                    const livros = JSON.parse(localStorage.getItem('livros') || '[]');
-                    const livro = livros.find(l => l.title === loan.bookTitle);
-                    if (livro) {
-                        livro.estoque++;
-                        localStorage.setItem('livros', JSON.stringify(livros));
-                    }
+        // Excluir fornecedor
+        function excluirFornecedor(id) {
+            const fornecedor = fornecedores.find(f => f.id === id);
+            if (!fornecedor) return;
 
-                    // Atualizar a lista geral de empréstimos
-                    const emprestimos = JSON.parse(localStorage.getItem('emprestimos') || '[]');
-                    const emprestimoIndex = emprestimos.findIndex(e => e.id === loanId);
-                    if (emprestimoIndex !== -1) {
-                        emprestimos[emprestimoIndex] = loan;
-                        localStorage.setItem('emprestimos', JSON.stringify(emprestimos));
-                    }
+            mostrarConfirmacao(
+                `Deseja excluir o fornecedor "${fornecedor.name}"? Esta ação não pode ser desfeita.`,
+                () => {
+                    fornecedores = fornecedores.filter(f => f.id !== id);
+                    localStorage.setItem('fornecedores', JSON.stringify(fornecedores));
+                    updateStats();
+                    renderSuppliers(document.getElementById('searchInput').value);
+                }
+            );
+        }
 
-                    // Remover da lista de devoluções pendentes se existir
-                    let pendingReturns = JSON.parse(localStorage.getItem('solicitacoesDevolucao')) || [];
-                    pendingReturns = pendingReturns.filter(r => r.emprestimoId !== loanId);
-                    localStorage.setItem('solicitacoesDevolucao', JSON.stringify(pendingReturns));
-                    
-                    // Salvar alterações no localStorage
-                    saveUsersToStorage();
+        // Mostrar modal de confirmação
+        function mostrarConfirmacao(mensagem, acao) {
+            document.getElementById('confirmMessage').textContent = mensagem;
+            document.getElementById('confirmModal').style.display = 'block';
+            acaoConfirmacao = acao;
+        }
 
-                    // Atualizar a tabela de empréstimos
-                    const loansTable = document.querySelector('.loans-table tbody');
-                    const userLoans = user.loans || [];
-                    
-                    loansTable.innerHTML = userLoans.map(loan => `
-                        <tr>
-                            <td>${loan.bookTitle}</td>
-                            <td>${formatDate(loan.loanDate)}</td>
-                            <td>${formatDate(loan.dueDate)}</td>
-                            <td>${loan.returned ? 'Devolvido' : (isLoanLate(loan.dueDate) ? 'Atrasado' : 'Em dia')}</td>
-                            <td>
-                                ${loan.returned ? 'Devolvido' : '<button class="btn-return" onclick="returnBook(' + loan.id + ')">Devolver</button>'}
+        // Fechar modal de confirmação
+        function fecharConfirmModal() {
+            document.getElementById('confirmModal').style.display = 'none';
+            acaoConfirmacao = null;
+        }
+
+        // Confirmar ação
+        function confirmarAcao() {
+            if (acaoConfirmacao) {
+                acaoConfirmacao();
+            }
+            fecharConfirmModal();
+        }
+
+        // Filtros
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                
+                const filter = this.dataset.filter;
+                let fornecedoresFiltrados = [...fornecedores];
+                
+                switch(filter) {
+                    case 'ativos':
+                        fornecedoresFiltrados = fornecedores.filter(f => f.status === 'ativo');
+                        break;
+                    case 'com-doacoes':
+                        fornecedoresFiltrados = fornecedores.filter(f => (f.doacoes || 0) > 0);
+                        break;
+                    case 'top-fornecedores':
+                        fornecedoresFiltrados = fornecedores
+                            .filter(f => (f.doacoes || 0) > 0)
+                            .sort((a, b) => (b.doacoes || 0) - (a.doacoes || 0))
+                            .slice(0, 10);
+                        break;
+                }
+                
+                renderSuppliersFiltrados(fornecedoresFiltrados);
+            });
+        });
+
+        function renderSuppliersFiltrados(fornecedoresFiltrados) {
+            const tbody = document.getElementById('suppliersTableBody');
+            
+            tbody.innerHTML = fornecedoresFiltrados.map(fornecedor => {
+                const dataCadastro = new Date(fornecedor.dataCadastro).toLocaleDateString('pt-BR');
+                const statusClass = fornecedor.status === 'ativo' ? 'status-ativo' : 'status-inativo';
+                
+                return `
+                    <tr>
+                        <td>${fornecedor.id}</td>
+                        <td>${fornecedor.name}</td>
+                        <td>${fornecedor.document}</td>
+                        <td>${fornecedor.phone}</td>
+                        <td>${fornecedor.doacoes || 0}</td>
+                        <td class="${statusClass}">${fornecedor.status}</td>
+                        <td>${dataCadastro}</td>
+                        <td class="actions">
+                            <button class="action-btn edit" onclick="editarFornecedor(${fornecedor.id})" title="Editar">
+                                ✏️
+                            </button>
+                            <button class="action-btn ${fornecedor.status === 'ativo' ? 'block' : 'unblock'}" 
+                                    onclick="toggleStatus(${fornecedor.id})" 
+                                    title="${fornecedor.status === 'ativo' ? 'Desativar' : 'Ativar'}">
+                                ${fornecedor.status === 'ativo' ? '🚫' : '✅'}
+                            </button>
+                            <button class="action-btn delete" onclick="excluirFornecedor(${fornecedor.id})" title="Excluir">
+                                🗑️
+                            </button>
                             </td>
                         </tr>
-                    `).join('') || '<tr><td colspan="5">Nenhum empréstimo ativo</td></tr>';
-
-                    alert('Livro devolvido com sucesso!');
-                }
-            }
+                `;
+            }).join('');
         }
 
-        // Função para confirmar devolução (será chamada pelo admin)
-        function confirmReturn(returnId) {
-            let pendingReturns = JSON.parse(localStorage.getItem('solicitacoesDevolucao')) || [];
-            const returnRequest = pendingReturns.find(r => r.id === returnId);
+        // Pesquisa
+        document.getElementById('searchInput').addEventListener('input', function() {
+            renderSuppliers(this.value);
+        });
+
+        // Fechar modais ao clicar fora
+        window.onclick = function(event) {
+            const supplierModal = document.getElementById('supplierModal');
+            const confirmModal = document.getElementById('confirmModal');
             
-            if (returnRequest) {
-                // Encontrar o usuário e atualizar o status do empréstimo
-                const user = users.find(u => u.id === returnRequest.userId);
-                if (user) {
-                    const loan = user.loans.find(l => l.bookTitle === returnRequest.bookTitle);
-                    if (loan) {
-                        loan.returned = true;
-                        loan.status = 'devolvido';
-                        
-                        // Remover da lista de devoluções pendentes
-                        pendingReturns = pendingReturns.filter(r => r.id !== returnId);
-                        localStorage.setItem('solicitacoesDevolucao', JSON.stringify(pendingReturns));
-                        localStorage.setItem('users', JSON.stringify(users));
-                        
-                        alert('Devolução confirmada com sucesso!');
-                        updateUsersTable(document.getElementById('searchInput').value);
-                    }
-                }
+            if (event.target === supplierModal) {
+                fecharModal();
+            }
+            if (event.target === confirmModal) {
+                fecharConfirmModal();
             }
         }
 
-        // Função para rejeitar devolução (será chamada pelo admin)
-        function rejectReturn(returnId) {
-            let pendingReturns = JSON.parse(localStorage.getItem('solicitacoesDevolucao')) || [];
-            const returnRequest = pendingReturns.find(r => r.id === returnId);
-            
-            if (returnRequest) {
-                // Encontrar o usuário e atualizar o status do empréstimo
-                const user = users.find(u => u.id === returnRequest.userId);
-                if (user) {
-                    const loan = user.loans.find(l => l.bookTitle === returnRequest.bookTitle);
-                    if (loan) {
-                        loan.status = 'ativo';
-                        
-                        // Remover da lista de devoluções pendentes
-                        pendingReturns = pendingReturns.filter(r => r.id !== returnId);
-                        localStorage.setItem('solicitacoesDevolucao', JSON.stringify(pendingReturns));
-                        localStorage.setItem('users', JSON.stringify(users));
-                        
-                        alert('Devolução rejeitada!');
-                        updateUsersTable(document.getElementById('searchInput').value);
-                    }
-                }
-            }
-        }
+        // Inicializar quando a página carregar
+        window.addEventListener('load', initializeData);
     </script>
 </body>
 </html> 
