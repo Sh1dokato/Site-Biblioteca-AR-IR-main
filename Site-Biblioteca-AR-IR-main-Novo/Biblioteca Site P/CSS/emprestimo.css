@@ -1,0 +1,700 @@
+body {
+    background: url('../IMG/fundo.png') no-repeat center center fixed !important;
+    background-size: cover !important;
+    margin: 0;
+    font-family: Arial, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+  
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.1);
+    z-index: 0;
+  }
+  
+  .container {
+    width: 100%;
+    max-width: 600px;
+    padding: 20px;
+    position: relative;
+    z-index: 1;
+  }
+  
+.header {
+    background: #333;
+    padding: 10px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+  }
+
+  .header-title {
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .header-buttons {
+    display: flex;
+    gap: 10px;
+  }
+
+  .header-btn {
+    background: #ff9100;
+    color: white;
+    padding: 8px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    text-decoration: none;
+    font-size: 14px;
+  }
+
+  .emprestimos-container {
+    margin-top: 70px;
+    padding: 20px;
+    background: #ff9000;
+    border-radius: 15px;
+  }
+
+  .emprestimo-card {
+    background: #ffb347;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    transition: all 0.3s ease;
+  }
+
+  .emprestimo-card.removendo {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+
+  .book-thumb {
+    width: 80px;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 5px;
+  }
+
+  .book-info {
+    flex: 1;
+  }
+
+  .book-title {
+    font-size: 18px;
+    font-weight: bold;
+    color: white;
+    margin-bottom: 5px;
+  }
+
+  .book-details {
+    color: white;
+    font-size: 14px;
+  }
+
+  .status {
+    padding: 5px 10px;
+    border-radius: 15px;
+    font-size: 12px;
+    font-weight: bold;
+    margin-bottom: 10px;
+  }
+
+  .status.emprestado {
+    background: #4CAF50;
+    color: white;
+  }
+
+  .status.atrasado {
+    background: #f44336;
+    color: white;
+  }
+
+  .status.agendado {
+    background: #2196F3;
+    color: white;
+  }
+
+  .status.pendente {
+    background-color: #ff9000;
+    color: white;
+  }
+
+  .status.busca_pendente {
+    background: #9C27B0;
+    color: white;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 40px;
+    color: white;
+  }
+
+  .empty-state h2 {
+    margin-bottom: 20px;
+  }
+
+  .actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 150px;
+  }
+
+  .btn-renovar, .btn-devolver {
+    padding: 8px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    font-weight: bold;
+  }
+
+  .btn-renovar {
+    background: #4CAF50;
+    color: white;
+  }
+
+  .btn-renovar:hover {
+    background: #45a049;
+    transform: translateY(-2px);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  }
+
+  .info-renovacao {
+    color: #666;
+    font-size: 12px;
+    font-style: italic;
+    margin: 5px 0;
+    text-align: center;
+    padding: 5px;
+    background: rgba(255, 144, 0, 0.1);
+    border-radius: 5px;
+    border-left: 3px solid #ff9000;
+  }
+
+  .info-renovacao.renovado {
+    background: rgba(76, 175, 80, 0.1);
+    border-left-color: #4CAF50;
+    color: #4CAF50;
+  }
+
+  .btn-devolver {
+    background: #f44336;
+    color: white;
+  }
+
+  .btn-devolver:hover {
+    background: #da190b;
+    transform: translateY(-2px);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  }
+
+  .btn-devolver.pendente {
+    background-color: #ff9000;
+    cursor: not-allowed;
+  }
+
+  .btn-devolver.pendente:hover {
+    background-color: #ff9000;
+    transform: none;
+  }
+
+  .multa-info {
+    background: rgba(244, 67, 54, 0.1);
+    padding: 15px;
+    border-radius: 8px;
+    margin: 10px 0;
+    border: 1px solid #ff4444;
+  }
+
+  .multa-info p {
+    color: #ff4444;
+    margin: 5px 0;
+    font-size: 14px;
+    font-weight: bold;
+  }
+
+  .btn-pagar-multa {
+    background: #ff4444;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    margin-top: 10px;
+    transition: all 0.3s ease;
+    width: 100%;
+  }
+
+  .btn-pagar-multa:hover {
+    background: #ff2222;
+    transform: translateY(-2px);
+    box-shadow: 0 2px 8px rgba(255, 68, 68, 0.3);
+  }
+
+  .status.multa_pendente {
+    background: #ff4444;
+    color: white;
+  }
+
+  .agendamento-info {
+    color: white;
+    font-size: 14px;
+    margin-top: 5px;
+  }
+
+  /* Modal de Pagamento */
+  .modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    z-index: 1000;
+  }
+
+  .modal-content {
+    background-color: #fff;
+    margin: 3% auto;
+    padding: 30px 25px;
+    width: 90%;
+    max-width: 500px;
+    border-radius: 10px;
+    position: relative;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  /* Scroll personalizado para o modal padrão */
+  .modal-content::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .modal-content::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+  }
+
+  .modal-content::-webkit-scrollbar-thumb {
+    background: #ff9000;
+    border-radius: 4px;
+  }
+
+  .modal-content::-webkit-scrollbar-thumb:hover {
+    background: #fa9108;
+  }
+
+  .close-modal {
+    position: absolute;
+    right: 20px;
+    top: 15px;
+    font-size: 24px;
+    cursor: pointer;
+    color: #666;
+  }
+
+  .modal-title {
+    font-size: 20px;
+    color: #333;
+    margin-bottom: 20px;
+  }
+
+  .payment-options {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+  }
+
+  .payment-option {
+    flex: 1;
+    padding: 15px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.3s;
+  }
+
+  .payment-option:hover {
+    border-color: #ff9000;
+  }
+
+  .payment-option.selected {
+    border-color: #ff9000;
+    background: rgba(255, 144, 0, 0.1);
+  }
+
+  .payment-option img {
+    width: 40px;
+    height: 40px;
+    margin-bottom: 10px;
+  }
+
+  .btn-confirmar {
+    background: #ff9000;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 100%;
+    font-size: 16px;
+    transition: background-color 0.3s;
+  }
+
+  .btn-confirmar:hover {
+    background: #ff7b00;
+  }
+
+  .btn-cancelar {
+    background: #f44336;
+    color: white;
+    padding: 8px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    font-weight: bold;
+    display: block;
+    margin: 15px auto 0 auto;
+    width: fit-content;
+  }
+
+  .btn-cancelar:hover {
+    background: #da190b;
+    transform: translateY(-2px);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  }
+
+  .payment-option[data-method="doacao"] {
+    background: rgba(76, 175, 80, 0.1);
+    border-color: #4CAF50;
+  }
+
+  .payment-option[data-method="doacao"]:hover {
+    background: rgba(76, 175, 80, 0.2);
+  }
+
+  .payment-option[data-method="doacao"].selected {
+    background: rgba(76, 175, 80, 0.3);
+    border-color: #4CAF50;
+  }
+
+  /* Modal mais alto quando PIX for selecionado */
+  .modal-content.pix-selected {
+    margin: 1% auto;
+    max-height: 95vh;
+    overflow-y: auto;
+    position: relative;
+    top: 0;
+  }
+
+  /* Scroll personalizado para o modal */
+  .modal-content.pix-selected::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .modal-content.pix-selected::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+  }
+
+  .modal-content.pix-selected::-webkit-scrollbar-thumb {
+    background: #ff9000;
+    border-radius: 4px;
+  }
+
+  .modal-content.pix-selected::-webkit-scrollbar-thumb:hover {
+    background: #fa9108;
+  }
+  .qrcode-image{
+    margin-top: 0px;
+    width: 170px;
+    height: 170px;
+  }
+
+  /* Garantir que o conteúdo do modal tenha espaço para scroll */
+  .modal-content .payment-options {
+    margin-bottom: 30px;
+  }
+
+  .modal-content .qrcode-container {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+  }
+
+  /* Adicionar padding interno para melhor scroll */
+  .modal-content.pix-selected {
+    padding: 30px 20px;
+  }
+
+  /* Responsividade para telas menores */
+  @media (max-height: 600px) {
+    .modal-content {
+      margin: 1% auto;
+      max-height: 98vh;
+    }
+    
+    .modal-content.pix-selected {
+      margin: 0.5% auto;
+      max-height: 99vh;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .modal-content {
+      width: 95%;
+      margin: 2% auto;
+      padding: 15px;
+    }
+    
+    .modal-content.pix-selected {
+      margin: 1% auto;
+      padding: 20px 15px;
+    }
+  }
+
+
+    .emprestimos-container {
+      max-width: 1200px;
+      margin: 80px auto 20px;
+      padding: 20px;
+    }
+
+    .emprestimo-card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      display: flex;
+      gap: 20px;
+      align-items: center;
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeInUp 0.5s ease forwards;
+    }
+
+    @keyframes fadeInUp {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .emprestimo-card.atrasado {
+      border: 2px solid #f44336;
+    }
+
+    .book-image {
+      width: 120px;
+      height: 180px;
+      object-fit: cover;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      background-color: #f5f5f5;
+    }
+
+    .emprestimo-info {
+      flex: 1;
+    }
+
+    .emprestimo-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      align-items: flex-end;
+    }
+
+    .emprestimo-info h3 {
+      margin: 0 0 10px 0;
+      color: #333;
+      font-size: 18px;
+    }
+
+    .emprestimo-info p {
+      margin: 5px 0;
+      color: #666;
+    }
+
+    .status {
+      font-weight: bold;
+    }
+
+    .multa {
+      color: #f44336 !important;
+      font-weight: bold;
+    }
+
+    .devolver-btn {
+      background: #4CAF50;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.3s ease;
+    }
+
+    .devolver-btn:hover {
+      background: #388E3C;
+      transform: translateY(-2px);
+    }
+
+    .devolver-btn.pendente {
+      background: #d17400;
+      cursor: not-allowed;
+      opacity: 0.8;
+    }
+
+    .devolver-btn.pendente:hover {
+      transform: none;
+      background: #d17400;
+    }
+
+    .pagar-multa-btn {
+      background: #f44336;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      margin-top: 10px;
+      width: 100%;
+    }
+
+    .pagar-multa-btn:hover {
+      background: #d32f2f;
+      transform: translateY(-2px);
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px;
+      background: #f9f9f9;
+      border-radius: 12px;
+      margin-top: 20px;
+    }
+
+    .empty-state h2 {
+      color: #666;
+      margin-bottom: 20px;
+    }
+
+    .header-btn {
+      background: #ff9000;
+      color: white;
+      text-decoration: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      transition: all 0.3s ease;
+    }
+
+    .header-btn:hover {
+      background: #e67e00;
+      transform: translateY(-2px);
+    }
+
+    /* Estilos para o contêiner do QR code */
+    .qrcode-container {
+        display: none; /* Initially hidden */
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        padding: 20px;
+        border: 1px solid #eee;
+        border-radius: 8px;
+        margin-top: 20px;
+        background-color: #fff; /* Ensure it stands out if modal has background */
+    }
+
+    .qrcode-container h3 {
+        color: #333;
+        margin-top: 0;
+        margin-bottom: 15px;
+        font-size: 20px;
+    }
+
+    .qrcode-image {
+        max-width: 250px; /* Limit image size */
+        height: auto;
+        border: 1px solid #ddd;
+        padding: 5px;
+        background-color: white;
+        margin-bottom: 15px;
+    }
+
+    .qrcode-container p {
+        color: #555;
+        font-size: 16px;
+        margin-bottom: 20px;
+    }
+
+    .qrcode-container span {
+        font-weight: bold;
+        color: #ff4444; /* Use a color for the amount */
+    }
+
+    .btn-close-qrcode {
+        background-color: #6c757d; /* Gray color for close button */
+        color: white;
+        padding: 8px 15px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: background-color 0.3s ease;
+    }
+
+    .btn-close-qrcode:hover {
+        background-color: #5a6268;
+    }
+
+    /* Estilos para doação pendente */
+    .doacao-pendente {
+        background: rgba(255, 193, 7, 0.2);
+        border: 2px solid #ffc107;
+        border-radius: 8px;
+        padding: 10px;
+        margin-top: 10px;
+        text-align: center;
+    }
+
+    .doacao-pendente p {
+        margin: 0;
+        color: #856404;
+        font-weight: bold;
+        font-size: 14px;
+    }
