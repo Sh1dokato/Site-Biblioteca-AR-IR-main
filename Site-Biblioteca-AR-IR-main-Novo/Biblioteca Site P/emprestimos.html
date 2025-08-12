@@ -67,6 +67,20 @@
       carregarEmprestimos();
     });
 
+    // Listener para quando uma doação for confirmada pelo admin
+    window.addEventListener('doacaoConfirmada', function(event) {
+      const usuarioLogado = JSON.parse(localStorage.getItem('usuarioLogado'));
+      if (usuarioLogado && usuarioLogado.id === event.detail.userId) {
+        // Recarregar empréstimos se for o usuário afetado
+        carregarEmprestimos();
+      }
+    });
+
+    // Listener para quando a página ganhar foco (usuário voltar para a aba)
+    window.addEventListener('focus', function() {
+      carregarEmprestimos();
+    });
+
     function carregarEmprestimos() {
       const usuarioLogado = JSON.parse(localStorage.getItem('usuarioLogado'));
       const emprestimos = JSON.parse(localStorage.getItem('emprestimos') || '[]');
@@ -81,10 +95,28 @@
       meusEmprestimos.forEach(emprestimo => {
         const statusClass = `status ${emprestimo.status}`;
         const multa = emprestimo.debtAmount && emprestimo.debtAmount > 0 ? `<div class='multa-info'><p>Multa pendente: R$ ${emprestimo.debtAmount.toFixed(2)}</p><button class='btn-pagar-multa' onclick='abrirModalMulta(${emprestimo.id})'>Pagar Multa</button></div>` : '';
+        const doacaoPendente = usuarioLogado.hasPendingDonation ? `<div class='doacao-pendente'><p>⚠️ Você tem uma doação de item de higiene pendente de aprovação</p></div>` : '';
         // Se já está aguardando aprovação, desabilita botão
         const aguardando = emprestimo.status === 'aguardando_devolucao';
         const btnDevolver = `<button class='devolver-btn${emprestimo.debtAmount > 0 || aguardando ? ' pendente' : ''}' ${emprestimo.debtAmount > 0 || aguardando ? 'disabled' : ''} onclick='devolverEmprestimo(${emprestimo.id})'>${aguardando ? 'Aguardando aprovação' : 'Devolver'}</button>`;
-        const btnRenovar = emprestimo.status === 'emprestado' && !emprestimo.renovado ? `<button class='btn-renovar' onclick='renovarEmprestimo(${emprestimo.id})'>Renovar</button>` : '';
+        // Verificar se já se passaram 7 dias desde o empréstimo
+        const dataEmprestimo = new Date(emprestimo.loanDate || emprestimo.dataEmprestimo);
+        const hoje = new Date();
+        const diasPassados = Math.floor((hoje - dataEmprestimo) / (1000 * 60 * 60 * 24));
+        const podeRenovar = emprestimo.status === 'emprestado' && !emprestimo.renovado && diasPassados >= 6;
+        
+        const btnRenovar = podeRenovar ? `<button class='btn-renovar' onclick='renovarEmprestimo(${emprestimo.id})'>Renovar</button>` : '';
+        
+        // Informação sobre quando poderá renovar
+        let infoRenovacao = '';
+        if (!podeRenovar && emprestimo.status === 'emprestado' && !emprestimo.renovado) {
+          if (diasPassados < 6) {
+            const diasRestantes = 6 - diasPassados;
+            infoRenovacao = `<p class='info-renovacao'>Renovação disponível em ${diasRestantes} ${diasRestantes === 1 ? 'dia' : 'dias'}</p>`;
+          }
+        } else if (emprestimo.renovado) {
+          infoRenovacao = `<p class='info-renovacao renovado'>Empréstimo já renovado</p>`;
+        }
         container.innerHTML += `
           <div class='emprestimo-card${emprestimo.status === 'atrasado' ? ' atrasado' : ''}'>
             <img src='${emprestimo.bookImage || emprestimo.imagem}' alt='${emprestimo.bookTitle || emprestimo.titulo}' class='book-image'>
@@ -94,9 +126,11 @@
               <p>Data do Empréstimo: ${emprestimo.dataEmprestimo || new Date(emprestimo.loanDate).toLocaleDateString('pt-BR')}</p>
               <p>Data de Devolução: ${emprestimo.dataDevolucao || new Date(emprestimo.dueDate).toLocaleDateString('pt-BR')}</p>
               ${multa}
+              ${doacaoPendente}
             </div>
             <div class='emprestimo-actions'>
               ${btnRenovar}
+              ${infoRenovacao}
               ${btnDevolver}
             </div>
           </div>
@@ -129,14 +163,22 @@
       document.getElementById('modalMulta').style.display = 'block';
       document.getElementById('multaInfo').innerHTML = `<p>Valor da multa: <b>R$ ${emprestimo.debtAmount.toFixed(2)}</b></p>`;
       document.getElementById('qrcodeContainer').style.display = 'none';
+      
+      // Remover classe pix-selected ao abrir o modal
+      const modalContent = document.querySelector('.modal-content');
+      modalContent.classList.remove('pix-selected');
     }
     window.abrirModalMulta = abrirModalMulta;
 
     document.getElementById('closeModalMulta').onclick = function() {
       document.getElementById('modalMulta').style.display = 'none';
+      const modalContent = document.querySelector('.modal-content');
+      modalContent.classList.remove('pix-selected');
     };
     document.getElementById('cancelarPagamento').onclick = function() {
       document.getElementById('modalMulta').style.display = 'none';
+      const modalContent = document.querySelector('.modal-content');
+      modalContent.classList.remove('pix-selected');
     };
     document.getElementById('closeQrcode').onclick = function() {
       document.getElementById('qrcodeContainer').style.display = 'none';
@@ -147,24 +189,75 @@
       opt.onclick = function() {
         document.querySelectorAll('.payment-option').forEach(o => o.classList.remove('selected'));
         this.classList.add('selected');
+        
+        const modalContent = document.querySelector('.modal-content');
+        
         if (this.dataset.method === 'pix') {
           document.getElementById('qrcodeContainer').style.display = 'block';
+          modalContent.classList.add('pix-selected');
         } else {
           document.getElementById('qrcodeContainer').style.display = 'none';
+          modalContent.classList.remove('pix-selected');
         }
       };
     });
 
     document.getElementById('confirmarPagamento').onclick = function() {
       if (!emprestimoMultaId) return;
+      
+      const selectedMethod = document.querySelector('.payment-option.selected');
+      if (!selectedMethod) {
+        alert('Por favor, selecione um método de pagamento.');
+        return;
+      }
+
       const emprestimos = JSON.parse(localStorage.getItem('emprestimos') || '[]');
       const emprestimo = emprestimos.find(e => e.id === emprestimoMultaId);
       if (!emprestimo) return;
-      emprestimo.debtAmount = 0;
-      localStorage.setItem('emprestimos', JSON.stringify(emprestimos));
-      document.getElementById('modalMulta').style.display = 'none';
-      carregarEmprestimos();
-      alert('Multa paga com sucesso!');
+
+      if (selectedMethod.dataset.method === 'doacao') {
+        // Processar doação
+        const usuarioLogado = JSON.parse(localStorage.getItem('usuarioLogado'));
+        const pendingDonations = JSON.parse(localStorage.getItem('pendingDonations') || '[]');
+        
+        // Criar nova doação pendente
+        const novaDoacao = {
+          id: Date.now(),
+          userId: usuarioLogado.id,
+          userName: usuarioLogado.nome,
+          bookTitle: emprestimo.bookTitle || emprestimo.titulo,
+          bookImage: emprestimo.bookImage || emprestimo.imagem,
+          debtAmount: emprestimo.debtAmount,
+          date: new Date().toISOString().split('T')[0],
+          status: 'pendente'
+        };
+        
+        pendingDonations.push(novaDoacao);
+        localStorage.setItem('pendingDonations', JSON.stringify(pendingDonations));
+        
+        // Marcar usuário como tendo doação pendente
+        const users = JSON.parse(localStorage.getItem('users') || '[]');
+        const userIndex = users.findIndex(u => u.id === usuarioLogado.id);
+        if (userIndex !== -1) {
+          users[userIndex].hasPendingDonation = true;
+          localStorage.setItem('users', JSON.stringify(users));
+        }
+        
+        // Atualizar usuário logado
+        usuarioLogado.hasPendingDonation = true;
+        localStorage.setItem('usuarioLogado', JSON.stringify(usuarioLogado));
+        
+        document.getElementById('modalMulta').style.display = 'none';
+        carregarEmprestimos();
+        alert('Solicitação de doação de item de higiene enviada! Aguarde aprovação do administrador.');
+      } else {
+        // Processar pagamento normal
+        emprestimo.debtAmount = 0;
+        localStorage.setItem('emprestimos', JSON.stringify(emprestimos));
+        document.getElementById('modalMulta').style.display = 'none';
+        carregarEmprestimos();
+        alert('Multa paga com sucesso!');
+      }
     };
 
     // Função para solicitar devolução
@@ -200,6 +293,8 @@
       const modal = document.getElementById('modalMulta');
       if (event.target === modal) {
         modal.style.display = 'none';
+        const modalContent = document.querySelector('.modal-content');
+        modalContent.classList.remove('pix-selected');
       }
     };
   </script>

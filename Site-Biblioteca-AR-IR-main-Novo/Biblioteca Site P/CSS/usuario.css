@@ -85,35 +85,62 @@ body::before {
   background: #ffaa33;
 }
 
-/* Carrossel */
+/* Carrossel melhorado com cores do site */
 .carousel-container {
   width: 100%;
-  max-width: 800px;
+  max-width: 900px;
   margin: 0 auto;
   margin-top: 80px;
-  margin-bottom: 20px;
+  margin-bottom: 30px;
   overflow: hidden;
   position: relative;
-  background-color: #FF9000;
-  padding: 20px;
-  border-radius: 10px;
+  background: linear-gradient(135deg, #ff9000 0%, #ffaa33 50%, #ff7b00 100%);
+  padding: 25px;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(255, 144, 0, 0.3);
+  border: 3px solid rgba(255, 255, 255, 0.2);
+}
+
+.carousel-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, rgba(255, 255, 255, 0.1) 0%, transparent 50%, rgba(255, 255, 255, 0.1) 100%);
+  border-radius: 20px;
+  pointer-events: none;
 }
 
 .carousel {
   display: flex;
-  gap: 15px;
-  animation: scroll 20s linear infinite;
+  gap: 20px;
+  animation: scroll 25s linear infinite;
   width: max-content;
-  padding-left: 15px;
-  padding-right: 15px;
+  padding-left: 20px;
+  padding-right: 20px;
+  position: relative;
+  z-index: 1;
 }
 
 .carousel img {
-  width: 100px;
-  height: 130px;
+  width: 120px;
+  height: 160px;
   object-fit: cover;
-  border-radius: 8px;
+  border-radius: 12px;
   flex-shrink: 0;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+  border: 3px solid rgba(255, 255, 255, 0.8);
+  transition: all 0.3s ease;
+  filter: brightness(0.9);
+}
+
+.carousel img:hover {
+  transform: scale(1.05) translateY(-5px);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+  filter: brightness(1.1);
+  border-color: #fff;
 }
 
 @keyframes scroll {
@@ -121,7 +148,70 @@ body::before {
     transform: translateX(0);
   }
   100% {
-    transform: translateX(calc(-50% + 15px));
+    transform: translateX(calc(-50% + 20px));
+  }
+}
+
+/* Indicadores de progresso do carrossel */
+.carousel-container::after {
+  content: '';
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 4px;
+  background: linear-gradient(90deg, 
+      rgba(255, 255, 255, 0.8) 0%, 
+      rgba(255, 255, 255, 0.8) 20%, 
+      rgba(255, 255, 255, 0.3) 20%, 
+      rgba(255, 255, 255, 0.3) 100%);
+  border-radius: 2px;
+  overflow: hidden;
+  animation: progress 25s linear infinite;
+}
+
+@keyframes progress {
+  0% {
+    background: linear-gradient(90deg, 
+        rgba(255, 255, 255, 0.8) 0%, 
+        rgba(255, 255, 255, 0.8) 0%, 
+        rgba(255, 255, 255, 0.3) 0%, 
+        rgba(255, 255, 255, 0.3) 100%);
+  }
+  100% {
+    background: linear-gradient(90deg, 
+        rgba(255, 255, 255, 0.8) 0%, 
+        rgba(255, 255, 255, 0.8) 100%, 
+        rgba(255, 255, 255, 0.3) 100%, 
+        rgba(255, 255, 255, 0.3) 100%);
+  }
+}
+
+/* Efeito de brilho nas bordas */
+.carousel-container {
+  position: relative;
+}
+
+.carousel-container::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: linear-gradient(45deg, #ff9000, #ffaa33, #ff7b00, #ff9000);
+  border-radius: 22px;
+  z-index: -1;
+  animation: borderGlow 3s ease-in-out infinite alternate;
+}
+
+@keyframes borderGlow {
+  0% {
+    opacity: 0.7;
+  }
+  100% {
+    opacity: 1;
   }
 }
 

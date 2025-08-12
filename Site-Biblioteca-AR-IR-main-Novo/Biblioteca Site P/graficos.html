@@ -43,8 +43,15 @@
                     <p>Usuários Ativos</p>
                 </div>
             </div>
+            <div class="stat-card">
+                <div class="stat-icon">📊</div>
+                <div class="stat-content">
+                    <h3 id="taxaEmprestimo">0%</h3>
+                    <p>Taxa de Empréstimo</p>
+                </div>
+            </div>
         </div>
-        
+
         <div class="charts-grid">
             <div class="chart-container">
                 <h2>Livros Mais Emprestados</h2>
@@ -55,8 +62,16 @@
                 <h2>Empréstimos por Mês</h2>
                 <canvas id="emprestimosMensaisChart"></canvas>
             </div>
-            <p id="taxaEmprestimo" style="display: none;">0%</p>
             
+            <div class="chart-container">
+                <h2>Distribuição por Categoria</h2>
+                <canvas id="categoriasChart"></canvas>
+            </div>
+            
+            <div class="chart-container">
+                <h2>Status dos Empréstimos</h2>
+                <canvas id="statusEmprestimosChart"></canvas>
+            </div>
         </div>
 
         <div class="data-tables">

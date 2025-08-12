@@ -19,19 +19,11 @@
             <span>Biblioteca Arco-Íris - Painel Administrativo</span>
         </div>
         <div class="header-buttons">
-            <button class="donations-btn" onclick="toggleDonationsPanel()">
-                <span>Doações Pendentes</span>
-                <span id="donationsCount" style="background: white; color: #ff9000; padding: 2px 6px; border-radius: 10px; font-size: 12px;">0</span>
-            </button>
-            <button class="donations-btn" onclick="toggleDevolucoesPanel()">
-                <span>Devoluções Pendentes</span>
-                <span id="devolucoesCount" style="background: white; color: #ff9000; padding: 2px 6px; border-radius: 10px; font-size: 12px;">0</span>
-            </button>
-
-            <div class="menu">
-                <a href="fornecedores.html" class="botao-for" style="text-decoration: none;">Fornecedores</a>
-                <div class="dropdown">
-                    <a href="cadastrar-fornecedores.html">Cadastrar fornecedores</a>
+            <div class="dropdown-menu">
+                <a href="fornecedores.html" class="header-btn dropdown-trigger">Fornecedores ▼</a>
+                <div class="dropdown-content">
+                    <a href="fornecedores.html" class="dropdown-item">👥 Ver Fornecedores</a>
+                    <a href="cadastrar-fornecedores.html" class="dropdown-item">➕ Cadastrar Fornecedor</a>
                 </div>
             </div>
             
@@ -41,7 +33,21 @@
                 </button>
             </a>
             
-            <a href="usuarios.html" class="header-btn">Usuários</a>
+            <div class="dropdown-menu">
+                <a href="usuarios.html" class="header-btn dropdown-trigger">Usuários ▼</a>
+                <div class="dropdown-content">
+                    <a href="usuarios.html" class="dropdown-item">👥 Gerenciar Usuários</a>
+                    <a href="agendamentos.html" class="dropdown-item">📅 Agendamentos</a>
+                    <button class="dropdown-item-btn" onclick="toggleDonationsPanel()">
+                        <span>🎁 Doações Pendentes</span>
+                        <span class="count-badge" id="donationsCount">0</span>
+                    </button>
+                    <button class="dropdown-item-btn" onclick="toggleDevolucoesPanel()">
+                        <span>📚 Devoluções Pendentes</span>
+                        <span class="count-badge" id="devolucoesCount">0</span>
+                    </button>
+                </div>
+            </div>
             <a href="index.html" class="header-btn">Sair</a>
         </div>
     </header>
@@ -243,8 +249,10 @@
             donationsList.innerHTML = pendingDonations.map(donation => `
                 <div class="donation-card" data-id="${donation.id}">
                     <div class="donation-info">
-                        <strong>Usuário:</strong> ${donation.user}<br>
-                        <strong>Livro:</strong> ${donation.book}<br>
+                        <strong>Usuário:</strong> ${donation.userName || donation.user}<br>
+                        <strong>Livro com Multa:</strong> ${donation.bookTitle || donation.book}<br>
+                        <strong>Valor da Multa:</strong> R$ ${donation.debtAmount ? donation.debtAmount.toFixed(2) : '0.00'}<br>
+                        <strong>Doação:</strong> Item de Higiene<br>
                         <strong>Data:</strong> ${donation.date}
                     </div>
                     <div class="donation-actions">
@@ -275,10 +283,51 @@
             const donationIndex = pendingDonations.findIndex(d => d.id === id);
             
             if (donationIndex !== -1) {
+                const donation = pendingDonations[donationIndex];
+                
+                // Marcar o empréstimo como devolvido e remover a multa
+                const emprestimos = JSON.parse(localStorage.getItem('emprestimos') || '[]');
+                
+                const emprestimoIndex = emprestimos.findIndex(e => {
+                    const matchUserId = e.userId === donation.userId;
+                    const matchTitle = e.bookTitle === donation.bookTitle || e.titulo === donation.bookTitle;
+                    const notReturned = !e.returned && e.status !== 'devolvido';
+                    return matchUserId && matchTitle && notReturned;
+                });
+                
+                if (emprestimoIndex !== -1) {
+                    // Apenas remover a multa, manter o livro com o usuário
+                    emprestimos[emprestimoIndex].debtAmount = 0;
+                    localStorage.setItem('emprestimos', JSON.stringify(emprestimos));
+                }
+                
+                // Remover a doação da lista de pendentes
                 pendingDonations.splice(donationIndex, 1);
                 localStorage.setItem('pendingDonations', JSON.stringify(pendingDonations));
+                
+                // Atualizar status do usuário
+                const users = JSON.parse(localStorage.getItem('users') || '[]');
+                const userIndex = users.findIndex(u => u.id === donation.userId);
+                if (userIndex !== -1) {
+                    users[userIndex].hasPendingDonation = false;
+                    localStorage.setItem('users', JSON.stringify(users));
+                }
+                
+                // Atualizar usuário logado se for o mesmo usuário
+                const usuarioLogado = JSON.parse(localStorage.getItem('usuarioLogado'));
+                if (usuarioLogado && usuarioLogado.id === donation.userId) {
+                    usuarioLogado.hasPendingDonation = false;
+                    localStorage.setItem('usuarioLogado', JSON.stringify(usuarioLogado));
+                }
+                
                 updateDonationsList();
-                alert('Doação confirmada com sucesso!');
+                
+                // Disparar evento para notificar outras páginas sobre a mudança
+                window.dispatchEvent(new CustomEvent('doacaoConfirmada', {
+                    detail: { userId: donation.userId, bookTitle: donation.bookTitle }
+                }));
+                
+                alert('Doação de item de higiene confirmada com sucesso! A multa foi removida e o usuário mantém o livro.');
             }
         }
 
@@ -287,10 +336,29 @@
             const donationIndex = pendingDonations.findIndex(d => d.id === id);
             
             if (donationIndex !== -1) {
+                const donation = pendingDonations[donationIndex];
+                
+                // Remover a doação da lista de pendentes
                 pendingDonations.splice(donationIndex, 1);
                 localStorage.setItem('pendingDonations', JSON.stringify(pendingDonations));
+                
+                // Atualizar status do usuário
+                const users = JSON.parse(localStorage.getItem('users') || '[]');
+                const userIndex = users.findIndex(u => u.id === donation.userId);
+                if (userIndex !== -1) {
+                    users[userIndex].hasPendingDonation = false;
+                    localStorage.setItem('users', JSON.stringify(users));
+                }
+                
+                // Atualizar usuário logado se for o mesmo usuário
+                const usuarioLogado = JSON.parse(localStorage.getItem('usuarioLogado'));
+                if (usuarioLogado && usuarioLogado.id === donation.userId) {
+                    usuarioLogado.hasPendingDonation = false;
+                    localStorage.setItem('usuarioLogado', JSON.stringify(usuarioLogado));
+                }
+                
                 updateDonationsList();
-                alert('Doação rejeitada.');
+                alert('Doação de item de higiene rejeitada. O usuário ainda possui a multa pendente.');
             }
         }
 
