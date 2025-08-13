@@ -11,7 +11,7 @@
 
 - ✅ **Banco de dados** criado automaticamente
 - ✅ **7 tabelas** com estrutura completa
-- ✅ **1 usuário admin** (admin/admin)
+- ✅ **1 usuário admin** (CPF: 11111111111, Senha: 123456)
 - ✅ **28 livros** com informações completas
 - ✅ **3 fornecedores** cadastrados
 - ✅ **Sistema pronto** para criar usuários, empréstimos, agendamentos e doações
@@ -19,8 +19,8 @@
 ## 🔑 Credenciais de Acesso:
 
 **ADMIN:**
-- CPF: `admin`
-- Senha: `admin`
+- CPF: `11111111111`
+- Senha: `123456`
 
 **USUÁRIOS:**
 - Serão criados através do sistema de registro
@@ -37,10 +37,21 @@
 - `usuarios.php` - Gestão de usuários
 - `relatorios.php` - Relatórios e estatísticas
 
-## 🎯 Resultado:
+## 🚨 **IMPORTANTE - Problemas Corrigidos:**
 
-**Sistema 100% funcional** com backend PHP e banco MySQL com estrutura completa e livros cadastrados!
+✅ **Senha do admin agora está hasheada corretamente**
+✅ **Campo `email` adicionado à tabela de usuários**
+✅ **CPF do admin corrigido para formato válido**
+✅ **Campo `tipo_usuario` corrigido para usar `is_admin`**
+✅ **Sistema de login funcionando corretamente**
 
----
+## 🔧 **Como Testar:**
+
+1. **Execute o `biblioteca_completo.sql` no phpMyAdmin**
+2. **Faça login como admin:**
+   - CPF: `11111111111`
+   - Senha: `123456`
+3. **Teste o registro de usuários**
+4. **Teste o login dos usuários registrados**
 
 **Dica:** Execute apenas o `biblioteca_completo.sql` e tudo funcionará automaticamente! 🎉

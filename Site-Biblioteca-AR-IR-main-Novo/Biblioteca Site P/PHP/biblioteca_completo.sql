@@ -19,6 +19,7 @@ CREATE TABLE IF NOT EXISTS usuarios (
     telefone VARCHAR(15) NOT NULL,
     senha VARCHAR(255) NOT NULL,
     nome VARCHAR(100) NOT NULL,
+    email VARCHAR(100),
     is_admin BOOLEAN DEFAULT FALSE,
     ativo BOOLEAN DEFAULT TRUE,
     data_cadastro DATE DEFAULT CURRENT_DATE,
@@ -123,9 +124,9 @@ CREATE TABLE IF NOT EXISTS pagamentos_multa (
 -- INSERIR DADOS INICIAIS
 -- =====================================================
 
--- Inserir usuário administrador
-INSERT INTO usuarios (cpf, telefone, senha, nome, is_admin, ativo, data_cadastro) VALUES 
-('99999999999', '99999999999', 'admin123', 'Administrador', 1, 1, '2025-01-01');
+-- Inserir usuário administrador (senha: admin123)
+INSERT INTO usuarios (cpf, telefone, senha, nome, email, is_admin, ativo, data_cadastro) VALUES 
+('11111111111', '11111111111', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Administrador', 'admin@biblioteca.com', 1, 1, '2025-01-01');
 
 -- Usuários serão criados apenas através do sistema de registro
 
@@ -181,7 +182,7 @@ INSERT INTO fornecedores (nome, cnpj_cpf, telefone, email, ativo, data_cadastro)
 -- =====================================================
 -- ✅ Banco de dados: biblioteca_arco_iris
 -- ✅ 7 tabelas criadas com estrutura completa
--- ✅ 1 usuário admin (admin/admin)
+-- ✅ 1 usuário admin (CPF: 11111111111, Senha: 123456)
 -- ✅ 28 livros com informações completas
 -- ✅ 3 fornecedores cadastrados
 -- ✅ Sistema pronto para criar usuários, empréstimos, agendamentos e doações
@@ -196,5 +197,5 @@ INSERT INTO fornecedores (nome, cnpj_cpf, telefone, email, ativo, data_cadastro)
 -- =====================================================
 -- CREDENCIAIS DE ACESSO
 -- =====================================================
--- ADMIN: CPF: admin, Senha: admin
+-- ADMIN: CPF: 11111111111, Senha: 123456
 -- USUÁRIOS: Serão criados através do sistema de registro

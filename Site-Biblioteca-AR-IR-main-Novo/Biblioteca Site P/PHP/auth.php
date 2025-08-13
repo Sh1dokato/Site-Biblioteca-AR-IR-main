@@ -46,12 +46,12 @@ function fazerLogin() {
             session_start();
             $_SESSION['usuario_id'] = $usuario['id'];
             $_SESSION['usuario_nome'] = $usuario['nome'];
-            $_SESSION['tipo_usuario'] = $usuario['tipo_usuario'];
+            $_SESSION['tipo_usuario'] = $usuario['is_admin'] ? 'admin' : 'usuario';
             
             respostaJson(true, 'Login realizado com sucesso', [
                 'id' => $usuario['id'],
                 'nome' => $usuario['nome'],
-                'tipo_usuario' => $usuario['tipo_usuario']
+                'tipo_usuario' => $usuario['is_admin'] ? 'admin' : 'usuario'
             ]);
         } else {
             respostaJson(false, 'CPF, telefone ou senha incorretos');
@@ -68,6 +68,7 @@ function registrarUsuario() {
     $telefone = limparDados($_POST['telefone'] ?? '');
     $senha = $_POST['senha'] ?? '';
     $nome = limparDados($_POST['nome'] ?? '');
+    $email = limparDados($_POST['email'] ?? '');
     
     if (empty($cpf) || empty($telefone) || empty($senha) || empty($nome)) {
         respostaJson(false, 'Todos os campos são obrigatórios');
@@ -102,8 +103,8 @@ function registrarUsuario() {
         $senha_hash = password_hash($senha, PASSWORD_DEFAULT);
         
         // Inserir novo usuário
-        $stmt = $pdo->prepare("INSERT INTO usuarios (cpf, telefone, senha, nome) VALUES (?, ?, ?, ?)");
-        $stmt->execute([$cpf, $telefone, $senha_hash, $nome]);
+        $stmt = $pdo->prepare("INSERT INTO usuarios (cpf, telefone, senha, nome, email, is_admin, ativo) VALUES (?, ?, ?, ?, ?, 0, 1)");
+        $stmt->execute([$cpf, $telefone, $senha_hash, $nome, $email]);
         
         respostaJson(true, 'Usuário registrado com sucesso');
     } catch (PDOException $e) {
