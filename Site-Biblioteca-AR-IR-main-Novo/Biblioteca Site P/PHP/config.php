@@ -171,3 +171,4 @@ function calcularMulta($dias_atraso) {
     return $dias_atraso * $valor_dia;
 }
 ?>
+

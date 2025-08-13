@@ -264,3 +264,4 @@ FROM usuarios u
 LEFT JOIN emprestimos e ON u.id = e.usuario_id AND e.status IN ('Emprestado', 'Renovado', 'Atrasado')
 GROUP BY u.id
 HAVING emprestimos_atrasados > 0 OR emprestimos_ativos > 0;
+

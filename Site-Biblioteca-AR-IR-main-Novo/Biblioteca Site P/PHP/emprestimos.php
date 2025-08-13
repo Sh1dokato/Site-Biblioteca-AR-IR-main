@@ -470,3 +470,4 @@ switch ($acao) {
 
 echo json_encode($resultado);
 ?>
+
