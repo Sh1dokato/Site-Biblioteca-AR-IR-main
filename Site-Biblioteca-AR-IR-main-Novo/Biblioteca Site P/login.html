@@ -63,46 +63,6 @@
   </div>
 
   <script>
-    // Inicializar usuários padrão
-    const defaultUsers = [
-      { 
-        id: 1, 
-        name: 'Admin Principal', 
-        cpf: '99999999999', 
-        phone: '47991579860',
-        senha: 'admin123',
-        type: 'Admin',
-        status: 'Ativo',
-        isAdmin: true,
-        hasDebt: false,
-        hasPendingDonation: false,
-        loans: []
-      },
-        ]
-
-    // Salvar usuários no localStorage apenas se não existirem
-    if (!localStorage.getItem('users')) {
-    localStorage.setItem('users', JSON.stringify(defaultUsers));
-    } else {
-      // Carregar usuários existentes
-      const existingUsers = JSON.parse(localStorage.getItem('users'));
-      
-      // Adicionar apenas usuários padrão que não existem
-      defaultUsers.forEach(defaultUser => {
-        if (!existingUsers.some(user => user.cpf === defaultUser.cpf)) {
-          existingUsers.push(defaultUser);
-        }
-      });
-      
-      // Salvar a lista atualizada
-      localStorage.setItem('users', JSON.stringify(existingUsers));
-    }
-
-    // Inicializar doações pendentes como array vazio se não existirem
-    if (!localStorage.getItem('pendingDonations')) {
-      localStorage.setItem('pendingDonations', JSON.stringify([]));
-    }
-
     // Funções do modal de ajuda
     function showHelpModal() {
       document.getElementById('helpModal').style.display = 'block';
@@ -124,41 +84,52 @@
     document.getElementById('loginForm').addEventListener('submit', function(e) {
       e.preventDefault();
       
-      // Remover máscaras antes de comparar
-      const cpf = document.querySelector('input[name="cpf"]').value.replace(/\D/g, '');
-      const senha = document.querySelector('input[name="senha"]').value.trim();
-      const telefone = document.querySelector('input[name="telefone"]').value.replace(/\D/g, '');
-
-      // Carregar usuários do localStorage
-      const users = JSON.parse(localStorage.getItem('users'));
+      const formData = new FormData(this);
       
-      // Procurar usuário
-      const user = users.find(u => {
-        return u.cpf === cpf && u.senha === senha && u.phone === telefone;
-      });
+      // Remover máscaras antes de enviar
+      const cpf = formData.get('cpf').replace(/\D/g, '');
+      const telefone = formData.get('telefone').replace(/\D/g, '');
+      
+      // Criar novo FormData com dados limpos
+      const cleanFormData = new FormData();
+      cleanFormData.append('acao', 'login');
+      cleanFormData.append('cpf', cpf);
+      cleanFormData.append('senha', formData.get('senha'));
+      cleanFormData.append('telefone', telefone);
 
-      if (user) {
-        // Salvar informações do usuário logado
-        localStorage.setItem('usuarioLogado', JSON.stringify({
-          id: user.id,
-          nome: user.name,
-          cpf: user.cpf,
-          telefone: user.phone,
-          isAdmin: user.isAdmin,
-          hasDebt: user.hasDebt,
-          hasPendingDonation: user.hasPendingDonation,
-          loans: user.loans
-        }));
+      // Enviar dados para o PHP
+      fetch('PHP/auth.php', {
+        method: 'POST',
+        body: cleanFormData
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          // Salvar informações do usuário logado
+          localStorage.setItem('usuarioLogado', JSON.stringify({
+            id: data.usuario.id,
+            nome: data.usuario.nome,
+            cpf: cpf,
+            telefone: telefone,
+            isAdmin: data.usuario.is_admin,
+            hasDebt: data.usuario.tem_debito,
+            hasPendingDonation: data.usuario.tem_doacao_pendente
+          }));
 
-        // Redirecionar com base no tipo de usuário
-        if (user.isAdmin) {
-          window.location.href = 'inicio-admin.html';
+          // Redirecionar com base no tipo de usuário
+          if (data.usuario.is_admin) {
+            window.location.href = 'inicio-admin.html';
+          } else {
+            window.location.href = 'usuario.html';
+          }
         } else {
-          window.location.href = 'usuario.html';
+          alert('Erro: ' + data.message);
         }
-      } else {
-        alert('CPF, senha ou telefone inválidos!');
-      }
+      })
+      .catch(error => {
+        console.error('Erro:', error);
+        alert('Erro ao conectar com o servidor. Tente novamente.');
+      });
     });
 
     // Função para aplicar máscara de CPF

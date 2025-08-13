@@ -1,473 +1,321 @@
 <?php
 require_once 'config.php';
 
-header('Content-Type: application/json');
+// Permitir CORS
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: POST, GET, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type');
 
-// Função para fazer empréstimo
-function fazerEmprestimo($dados) {
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    exit(0);
+}
+
+$acao = $_POST['acao'] ?? $_GET['acao'] ?? '';
+
+switch ($acao) {
+    case 'criar':
+        criarEmprestimo();
+        break;
+    case 'listar':
+        listarEmprestimos();
+        break;
+    case 'listar_usuario':
+        listarEmprestimosUsuario();
+        break;
+    case 'devolver':
+        devolverLivro();
+        break;
+    case 'pagar_multa':
+        pagarMulta();
+        break;
+    case 'calcular_multa':
+        calcularMulta();
+        break;
+    default:
+        respostaJson(false, 'Ação não reconhecida');
+}
+
+function criarEmprestimo() {
+    global $pdo;
+    
+    $usuario_id = verificarLogin();
+    $livro_id = intval($_POST['livro_id'] ?? 0);
+    $dias_emprestimo = intval($_POST['dias'] ?? 15);
+    
+    if ($livro_id <= 0) {
+        respostaJson(false, 'Livro inválido');
+    }
+    
+    if ($dias_emprestimo < 1 || $dias_emprestimo > 30) {
+        respostaJson(false, 'Período de empréstimo deve ser entre 1 e 30 dias');
+    }
+    
     try {
-        $usuario_id = verificarLogin();
-        $pdo = conectarDB();
-        
-        // Validar dados obrigatórios
-        if (empty($dados['livro_id'])) {
-            return ['success' => false, 'message' => 'ID do livro é obrigatório'];
-        }
-        
-        $livro_id = $dados['livro_id'];
-        
-        // Verificar se livro existe e está disponível
-        $stmt = $pdo->prepare("SELECT id, titulo, disponiveis, estoque FROM livros WHERE id = ? AND status = 'Disponível'");
+        // Verificar se o livro está disponível
+        $stmt = $pdo->prepare("SELECT quantidade_disponivel FROM livros WHERE id = ? AND ativo = 1");
         $stmt->execute([$livro_id]);
         $livro = $stmt->fetch();
         
         if (!$livro) {
-            return ['success' => false, 'message' => 'Livro não encontrado ou indisponível'];
+            respostaJson(false, 'Livro não encontrado');
         }
         
-        if ($livro['disponiveis'] < 1) {
-            return ['success' => false, 'message' => 'Livro não disponível para empréstimo'];
+        if ($livro['quantidade_disponivel'] <= 0) {
+            respostaJson(false, 'Livro não está disponível para empréstimo');
         }
         
-        // Verificar se usuário já tem este livro emprestado
-        $stmt = $pdo->prepare("
-            SELECT id FROM emprestimos 
-            WHERE usuario_id = ? AND livro_id = ? AND status IN ('Emprestado', 'Renovado')
-        ");
+        // Verificar se o usuário já tem este livro emprestado
+        $stmt = $pdo->prepare("SELECT COUNT(*) as total FROM emprestimos WHERE usuario_id = ? AND livro_id = ? AND status IN ('ativo', 'atrasado')");
         $stmt->execute([$usuario_id, $livro_id]);
-        if ($stmt->fetch()) {
-            return ['success' => false, 'message' => 'Você já possui este livro emprestado'];
+        $emprestimo_existente = $stmt->fetch();
+        
+        if ($emprestimo_existente['total'] > 0) {
+            respostaJson(false, 'Você já possui este livro emprestado');
         }
         
-        // Verificar limite de empréstimos
-        $stmt = $pdo->prepare("
-            SELECT COUNT(*) as total FROM emprestimos 
-            WHERE usuario_id = ? AND status IN ('Emprestado', 'Renovado')
-        ");
+        // Verificar se o usuário tem multas pendentes
+        $stmt = $pdo->prepare("SELECT SUM(multa) as total_multa FROM emprestimos WHERE usuario_id = ? AND multa_paga = 0 AND status IN ('devolvido', 'atrasado')");
         $stmt->execute([$usuario_id]);
-        $total_emprestimos = $stmt->fetch()['total'];
+        $multas = $stmt->fetch();
         
-        $config = buscarConfiguracao('max_emprestimos');
-        $limite_emprestimos = $config ? (int)$config : 5;
-        
-        if ($total_emprestimos >= $limite_emprestimos) {
-            return ['success' => false, 'message' => "Você já possui o máximo de $limite_emprestimos empréstimos ativos"];
-        }
-        
-        // Verificar se usuário tem débitos
-        $stmt = $pdo->prepare("SELECT tem_debito FROM usuarios WHERE id = ?");
-        $stmt->execute([$usuario_id]);
-        $usuario = $stmt->fetch();
-        
-        if ($usuario['tem_debito']) {
-            return ['success' => false, 'message' => 'Você possui débitos pendentes. Regularize-os antes de fazer novos empréstimos'];
+        if ($multas['total_multa'] > 0) {
+            respostaJson(false, 'Você possui multas pendentes. Pague-as antes de fazer novos empréstimos.');
         }
         
         // Calcular data de devolução
-        $config_prazo = buscarConfiguracao('prazo_emprestimo');
-        $prazo_dias = $config_prazo ? (int)$config_prazo : 7;
-        $data_devolucao = date('Y-m-d', strtotime("+$prazo_dias days"));
+        $data_devolucao = date('Y-m-d', strtotime("+$dias_emprestimo days"));
         
-        // Inserir empréstimo
-        $stmt = $pdo->prepare("
-            INSERT INTO emprestimos (
-                usuario_id, livro_id, data_emprestimo, data_devolucao_prevista, 
-                status, funcionario_id
-            ) VALUES (?, ?, NOW(), ?, 'Emprestado', ?)
-        ");
+        // Iniciar transação
+        $pdo->beginTransaction();
         
-        $funcionario_id = $_SESSION['is_admin'] ? $_SESSION['usuario_id'] : null;
-        $stmt->execute([$usuario_id, $livro_id, $data_devolucao, $funcionario_id]);
+        // Criar empréstimo
+        $stmt = $pdo->prepare("INSERT INTO emprestimos (usuario_id, livro_id, data_devolucao_prevista) VALUES (?, ?, ?)");
+        $stmt->execute([$usuario_id, $livro_id, $data_devolucao]);
         
-        $emprestimo_id = $pdo->lastInsertId();
-        
-        // Atualizar disponibilidade do livro
-        $stmt = $pdo->prepare("UPDATE livros SET disponiveis = disponiveis - 1 WHERE id = ?");
+        // Atualizar quantidade disponível
+        $stmt = $pdo->prepare("UPDATE livros SET quantidade_disponivel = quantidade_disponivel - 1 WHERE id = ?");
         $stmt->execute([$livro_id]);
         
-        // Log da atividade
-        logAtividade($usuario_id, 'Empréstimo', "Livro '{$livro['titulo']}' emprestado");
+        $pdo->commit();
         
-        return [
-            'success' => true, 
-            'message' => 'Empréstimo realizado com sucesso',
-            'emprestimo_id' => $emprestimo_id,
-            'data_devolucao' => formatarData($data_devolucao)
-        ];
-        
-    } catch (Exception $e) {
-        error_log("Erro ao fazer empréstimo: " . $e->getMessage());
-        return ['success' => false, 'message' => 'Erro interno do servidor'];
+        respostaJson(true, 'Empréstimo realizado com sucesso');
+    } catch (PDOException $e) {
+        $pdo->rollBack();
+        respostaJson(false, 'Erro ao criar empréstimo: ' . $e->getMessage());
     }
 }
 
-// Função para renovar empréstimo
-function renovarEmprestimo($emprestimo_id) {
+function listarEmprestimos() {
+    global $pdo;
+    
+    verificarAdmin();
+    
     try {
-        $usuario_id = verificarLogin();
-        $pdo = conectarDB();
+        $stmt = $pdo->query("
+            SELECT e.*, u.nome as usuario_nome, l.titulo as livro_titulo, l.autor as livro_autor
+            FROM emprestimos e
+            JOIN usuarios u ON e.usuario_id = u.id
+            JOIN livros l ON e.livro_id = l.id
+            ORDER BY e.data_emprestimo DESC
+        ");
+        $emprestimos = $stmt->fetchAll();
         
-        // Verificar se empréstimo existe e pertence ao usuário
+        respostaJson(true, 'Empréstimos listados com sucesso', $emprestimos);
+    } catch (PDOException $e) {
+        respostaJson(false, 'Erro ao listar empréstimos: ' . $e->getMessage());
+    }
+}
+
+function listarEmprestimosUsuario() {
+    global $pdo;
+    
+    $usuario_id = verificarLogin();
+    
+    try {
         $stmt = $pdo->prepare("
-            SELECT e.*, l.titulo 
+            SELECT e.*, l.titulo as livro_titulo, l.autor as livro_autor
             FROM emprestimos e
             JOIN livros l ON e.livro_id = l.id
-            WHERE e.id = ? AND e.usuario_id = ? AND e.status IN ('Emprestado', 'Renovado')
+            WHERE e.usuario_id = ?
+            ORDER BY e.data_emprestimo DESC
+        ");
+        $stmt->execute([$usuario_id]);
+        $emprestimos = $stmt->fetchAll();
+        
+        respostaJson(true, 'Empréstimos listados com sucesso', $emprestimos);
+    } catch (PDOException $e) {
+        respostaJson(false, 'Erro ao listar empréstimos: ' . $e->getMessage());
+    }
+}
+
+function devolverLivro() {
+    global $pdo;
+    
+    $usuario_id = verificarLogin();
+    $emprestimo_id = intval($_POST['emprestimo_id'] ?? 0);
+    
+    if ($emprestimo_id <= 0) {
+        respostaJson(false, 'ID do empréstimo inválido');
+    }
+    
+    try {
+        // Verificar se o empréstimo existe e pertence ao usuário
+        $stmt = $pdo->prepare("
+            SELECT e.*, l.id as livro_id 
+            FROM emprestimos e
+            JOIN livros l ON e.livro_id = l.id
+            WHERE e.id = ? AND e.usuario_id = ? AND e.status IN ('ativo', 'atrasado')
         ");
         $stmt->execute([$emprestimo_id, $usuario_id]);
         $emprestimo = $stmt->fetch();
         
         if (!$emprestimo) {
-            return ['success' => false, 'message' => 'Empréstimo não encontrado ou não pode ser renovado'];
-        }
-        
-        // Verificar limite de renovações
-        $config = buscarConfiguracao('renovacoes_max');
-        $limite_renovacoes = $config ? (int)$config : 2;
-        
-        if ($emprestimo['renovacoes'] >= $limite_renovacoes) {
-            return ['success' => false, 'message' => 'Limite de renovações atingido'];
-        }
-        
-        // Verificar se não está atrasado
-        $dias_atraso = calcularAtraso($emprestimo['data_devolucao_prevista']);
-        if ($dias_atraso > 0) {
-            return ['success' => false, 'message' => 'Não é possível renovar empréstimo em atraso'];
-        }
-        
-        // Calcular nova data de devolução
-        $config_prazo = buscarConfiguracao('prazo_emprestimo');
-        $prazo_dias = $config_prazo ? (int)$config_prazo : 7;
-        $nova_data_devolucao = date('Y-m-d', strtotime("+$prazo_dias days"));
-        
-        // Atualizar empréstimo
-        $stmt = $pdo->prepare("
-            UPDATE emprestimos 
-            SET status = 'Renovado', renovacoes = renovacoes + 1, 
-                data_devolucao_prevista = ?, updated_at = NOW()
-            WHERE id = ?
-        ");
-        $stmt->execute([$nova_data_devolucao, $emprestimo_id]);
-        
-        // Log da atividade
-        logAtividade($usuario_id, 'Renovação', "Empréstimo do livro '{$emprestimo['titulo']}' renovado");
-        
-        return [
-            'success' => true, 
-            'message' => 'Empréstimo renovado com sucesso',
-            'nova_data_devolucao' => formatarData($nova_data_devolucao)
-        ];
-        
-    } catch (Exception $e) {
-        error_log("Erro ao renovar empréstimo: " . $e->getMessage());
-        return ['success' => false, 'message' => 'Erro interno do servidor'];
-    }
-}
-
-// Função para devolver livro
-function devolverLivro($emprestimo_id) {
-    try {
-        $usuario_id = verificarLogin();
-        $pdo = conectarDB();
-        
-        // Verificar se empréstimo existe
-        $stmt = $pdo->prepare("
-            SELECT e.*, l.titulo, l.id as livro_id
-            FROM emprestimos e
-            JOIN livros l ON e.livro_id = l.id
-            WHERE e.id = ? AND e.status IN ('Emprestado', 'Renovado')
-        ");
-        $stmt->execute([$emprestimo_id]);
-        $emprestimo = $stmt->fetch();
-        
-        if (!$emprestimo) {
-            return ['success' => false, 'message' => 'Empréstimo não encontrado ou já devolvido'];
-        }
-        
-        // Verificar se usuário é o dono do empréstimo ou admin
-        if ($emprestimo['usuario_id'] != $usuario_id && !$_SESSION['is_admin']) {
-            return ['success' => false, 'message' => 'Você não tem permissão para devolver este livro'];
+            respostaJson(false, 'Empréstimo não encontrado ou já devolvido');
         }
         
         // Calcular multa se houver atraso
-        $dias_atraso = calcularAtraso($emprestimo['data_devolucao_prevista']);
+        $data_atual = new DateTime();
+        $data_devolucao = new DateTime($emprestimo['data_devolucao_prevista']);
         $multa = 0;
         
-        if ($dias_atraso > 0) {
-            $config = buscarConfiguracao('multa_dia');
-            $valor_dia = $config ? (float)$config : 2.00;
-            $multa = calcularMulta($dias_atraso);
-            
-            // Inserir multa
-            $stmt = $pdo->prepare("
-                INSERT INTO multas (
-                    usuario_id, emprestimo_id, valor, dias_atraso, status
-                ) VALUES (?, ?, ?, ?, 'Pendente')
-            ");
-            $stmt->execute([$emprestimo['usuario_id'], $emprestimo_id, $multa, $dias_atraso]);
-            
-            // Marcar usuário como tendo débito
-            $stmt = $pdo->prepare("UPDATE usuarios SET tem_debito = TRUE WHERE id = ?");
-            $stmt->execute([$emprestimo['usuario_id']]);
+        if ($data_atual > $data_devolucao) {
+            $dias_atraso = $data_atual->diff($data_devolucao)->days;
+            $multa = $dias_atraso * 0.50; // R$ 0,50 por dia de atraso
         }
+        
+        // Iniciar transação
+        $pdo->beginTransaction();
         
         // Atualizar empréstimo
         $stmt = $pdo->prepare("
             UPDATE emprestimos 
-            SET status = 'Devolvido', data_devolucao_real = NOW(), updated_at = NOW()
+            SET status = 'devolvido', 
+                data_devolucao_real = NOW(), 
+                multa = ?
             WHERE id = ?
         ");
-        $stmt->execute([$emprestimo_id]);
+        $stmt->execute([$multa, $emprestimo_id]);
         
-        // Atualizar disponibilidade do livro
-        $stmt = $pdo->prepare("UPDATE livros SET disponiveis = disponiveis + 1 WHERE id = ?");
+        // Atualizar quantidade disponível do livro
+        $stmt = $pdo->prepare("UPDATE livros SET quantidade_disponivel = quantidade_disponivel + 1 WHERE id = ?");
         $stmt->execute([$emprestimo['livro_id']]);
         
-        // Log da atividade
-        $acao = $dias_atraso > 0 ? 'Devolução com atraso' : 'Devolução';
-        logAtividade($usuario_id, $acao, "Livro '{$emprestimo['titulo']}' devolvido");
+        $pdo->commit();
         
         $mensagem = 'Livro devolvido com sucesso';
         if ($multa > 0) {
-            $mensagem .= ". Multa de R$ " . number_format($multa, 2, ',', '.') . " gerada por $dias_atraso dia(s) de atraso";
+            $mensagem .= ". Multa de R$ " . number_format($multa, 2, ',', '.') . " aplicada por atraso.";
         }
         
-        return [
-            'success' => true, 
-            'message' => $mensagem,
+        respostaJson(true, $mensagem, ['multa' => $multa]);
+    } catch (PDOException $e) {
+        $pdo->rollBack();
+        respostaJson(false, 'Erro ao devolver livro: ' . $e->getMessage());
+    }
+}
+
+function pagarMulta() {
+    global $pdo;
+    
+    $usuario_id = verificarLogin();
+    $emprestimo_id = intval($_POST['emprestimo_id'] ?? 0);
+    $metodo_pagamento = $_POST['metodo'] ?? '';
+    
+    if ($emprestimo_id <= 0) {
+        respostaJson(false, 'ID do empréstimo inválido');
+    }
+    
+    if (!in_array($metodo_pagamento, ['pix', 'boleto', 'cartao', 'doacao'])) {
+        respostaJson(false, 'Método de pagamento inválido');
+    }
+    
+    try {
+        // Verificar se o empréstimo existe e tem multa
+        $stmt = $pdo->prepare("
+            SELECT multa, multa_paga 
+            FROM emprestimos 
+            WHERE id = ? AND usuario_id = ? AND status = 'devolvido'
+        ");
+        $stmt->execute([$emprestimo_id, $usuario_id]);
+        $emprestimo = $stmt->fetch();
+        
+        if (!$emprestimo) {
+            respostaJson(false, 'Empréstimo não encontrado');
+        }
+        
+        if ($emprestimo['multa_paga']) {
+            respostaJson(false, 'Multa já foi paga');
+        }
+        
+        if ($emprestimo['multa'] <= 0) {
+            respostaJson(false, 'Não há multa para pagar');
+        }
+        
+        // Iniciar transação
+        $pdo->beginTransaction();
+        
+        // Registrar pagamento
+        $stmt = $pdo->prepare("
+            INSERT INTO pagamentos_multa (emprestimo_id, valor, metodo_pagamento, status) 
+            VALUES (?, ?, ?, 'confirmado')
+        ");
+        $stmt->execute([$emprestimo_id, $emprestimo['multa'], $metodo_pagamento]);
+        
+        // Marcar multa como paga
+        $stmt = $pdo->prepare("UPDATE emprestimos SET multa_paga = 1 WHERE id = ?");
+        $stmt->execute([$emprestimo_id]);
+        
+        $pdo->commit();
+        
+        respostaJson(true, 'Multa paga com sucesso');
+    } catch (PDOException $e) {
+        $pdo->rollBack();
+        respostaJson(false, 'Erro ao pagar multa: ' . $e->getMessage());
+    }
+}
+
+function calcularMulta() {
+    global $pdo;
+    
+    $usuario_id = verificarLogin();
+    $emprestimo_id = intval($_POST['emprestimo_id'] ?? 0);
+    
+    if ($emprestimo_id <= 0) {
+        respostaJson(false, 'ID do empréstimo inválido');
+    }
+    
+    try {
+        $stmt = $pdo->prepare("
+            SELECT multa, multa_paga, data_devolucao_prevista, status
+            FROM emprestimos 
+            WHERE id = ? AND usuario_id = ?
+        ");
+        $stmt->execute([$emprestimo_id, $usuario_id]);
+        $emprestimo = $stmt->fetch();
+        
+        if (!$emprestimo) {
+            respostaJson(false, 'Empréstimo não encontrado');
+        }
+        
+        $multa = $emprestimo['multa'];
+        
+        // Se ainda não foi devolvido, calcular multa potencial
+        if ($emprestimo['status'] === 'ativo' || $emprestimo['status'] === 'atrasado') {
+            $data_atual = new DateTime();
+            $data_devolucao = new DateTime($emprestimo['data_devolucao_prevista']);
+            
+            if ($data_atual > $data_devolucao) {
+                $dias_atraso = $data_atual->diff($data_devolucao)->days;
+                $multa = $dias_atraso * 0.50;
+            }
+        }
+        
+        respostaJson(true, 'Multa calculada com sucesso', [
             'multa' => $multa,
-            'dias_atraso' => $dias_atraso
-        ];
-        
-    } catch (Exception $e) {
-        error_log("Erro ao devolver livro: " . $e->getMessage());
-        return ['success' => false, 'message' => 'Erro interno do servidor'];
+            'multa_paga' => $emprestimo['multa_paga']
+        ]);
+    } catch (PDOException $e) {
+        respostaJson(false, 'Erro ao calcular multa: ' . $e->getMessage());
     }
 }
-
-// Função para listar empréstimos do usuário
-function listarEmprestimosUsuario($filtros = []) {
-    try {
-        $usuario_id = verificarLogin();
-        $pdo = conectarDB();
-        
-        $where = "WHERE e.usuario_id = ?";
-        $params = [$usuario_id];
-        
-        // Filtros
-        if (!empty($filtros['status'])) {
-            $where .= " AND e.status = ?";
-            $params[] = $filtros['status'];
-        }
-        
-        if (!empty($filtros['busca'])) {
-            $where .= " AND (l.titulo LIKE ? OR l.autor LIKE ?)";
-            $busca = "%{$filtros['busca']}%";
-            $params[] = $busca;
-            $params[] = $busca;
-        }
-        
-        // Paginação
-        $pagina = $filtros['pagina'] ?? 1;
-        $por_pagina = $filtros['por_pagina'] ?? 20;
-        $offset = ($pagina - 1) * $por_pagina;
-        
-        // Contar total
-        $stmt = $pdo->prepare("
-            SELECT COUNT(*) as total 
-            FROM emprestimos e
-            JOIN livros l ON e.livro_id = l.id
-            $where
-        ");
-        $stmt->execute($params);
-        $total = $stmt->fetch()['total'];
-        
-        // Buscar empréstimos
-        $stmt = $pdo->prepare("
-            SELECT 
-                e.*,
-                l.titulo,
-                l.autor,
-                l.imagem,
-                DATEDIFF(CURDATE(), e.data_devolucao_prevista) as dias_atraso
-            FROM emprestimos e
-            JOIN livros l ON e.livro_id = l.id
-            $where
-            ORDER BY e.data_emprestimo DESC
-            LIMIT ? OFFSET ?
-        ");
-        
-        $params[] = $por_pagina;
-        $params[] = $offset;
-        $stmt->execute($params);
-        $emprestimos = $stmt->fetchAll();
-        
-        // Processar dados
-        foreach ($emprestimos as &$emprestimo) {
-            $emprestimo['data_emprestimo_formatada'] = formatarDataHora($emprestimo['data_emprestimo']);
-            $emprestimo['data_devolucao_formatada'] = formatarData($emprestimo['data_devolucao_prevista']);
-            $emprestimo['pode_renovar'] = $emprestimo['status'] == 'Emprestado' && $emprestimo['dias_atraso'] <= 0;
-            $emprestimo['pode_devolver'] = in_array($emprestimo['status'], ['Emprestado', 'Renovado']);
-        }
-        
-        return [
-            'success' => true,
-            'emprestimos' => $emprestimos,
-            'total' => $total,
-            'pagina' => $pagina,
-            'por_pagina' => $por_pagina,
-            'total_paginas' => ceil($total / $por_pagina)
-        ];
-        
-    } catch (Exception $e) {
-        error_log("Erro ao listar empréstimos: " . $e->getMessage());
-        return ['success' => false, 'message' => 'Erro interno do servidor'];
-    }
-}
-
-// Função para listar todos os empréstimos (admin)
-function listarTodosEmprestimos($filtros = []) {
-    try {
-        verificarAdmin();
-        $pdo = conectarDB();
-        
-        $where = "WHERE 1=1";
-        $params = [];
-        
-        // Filtros
-        if (!empty($filtros['status'])) {
-            $where .= " AND e.status = ?";
-            $params[] = $filtros['status'];
-        }
-        
-        if (!empty($filtros['usuario'])) {
-            $where .= " AND (u.nome LIKE ? OR u.cpf LIKE ?)";
-            $busca = "%{$filtros['usuario']}%";
-            $params[] = $busca;
-            $params[] = $busca;
-        }
-        
-        if (!empty($filtros['livro'])) {
-            $where .= " AND (l.titulo LIKE ? OR l.autor LIKE ?)";
-            $busca = "%{$filtros['livro']}%";
-            $params[] = $busca;
-            $params[] = $busca;
-        }
-        
-        if (!empty($filtros['data_inicio'])) {
-            $where .= " AND DATE(e.data_emprestimo) >= ?";
-            $params[] = $filtros['data_inicio'];
-        }
-        
-        if (!empty($filtros['data_fim'])) {
-            $where .= " AND DATE(e.data_emprestimo) <= ?";
-            $params[] = $filtros['data_fim'];
-        }
-        
-        // Paginação
-        $pagina = $filtros['pagina'] ?? 1;
-        $por_pagina = $filtros['por_pagina'] ?? 20;
-        $offset = ($pagina - 1) * $por_pagina;
-        
-        // Contar total
-        $stmt = $pdo->prepare("
-            SELECT COUNT(*) as total 
-            FROM emprestimos e
-            JOIN usuarios u ON e.usuario_id = u.id
-            JOIN livros l ON e.livro_id = l.id
-            $where
-        ");
-        $stmt->execute($params);
-        $total = $stmt->fetch()['total'];
-        
-        // Buscar empréstimos
-        $stmt = $pdo->prepare("
-            SELECT 
-                e.*,
-                u.nome as nome_usuario,
-                u.cpf as cpf_usuario,
-                l.titulo,
-                l.autor,
-                DATEDIFF(CURDATE(), e.data_devolucao_prevista) as dias_atraso
-            FROM emprestimos e
-            JOIN usuarios u ON e.usuario_id = u.id
-            JOIN livros l ON e.livro_id = l.id
-            $where
-            ORDER BY e.data_emprestimo DESC
-            LIMIT ? OFFSET ?
-        ");
-        
-        $params[] = $por_pagina;
-        $params[] = $offset;
-        $stmt->execute($params);
-        $emprestimos = $stmt->fetchAll();
-        
-        // Processar dados
-        foreach ($emprestimos as &$emprestimo) {
-            $emprestimo['data_emprestimo_formatada'] = formatarDataHora($emprestimo['data_emprestimo']);
-            $emprestimo['data_devolucao_formatada'] = formatarData($emprestimo['data_devolucao_prevista']);
-            $emprestimo['pode_renovar'] = $emprestimo['status'] == 'Emprestado' && $emprestimo['dias_atraso'] <= 0;
-            $emprestimo['pode_devolver'] = in_array($emprestimo['status'], ['Emprestado', 'Renovado']);
-        }
-        
-        return [
-            'success' => true,
-            'emprestimos' => $emprestimos,
-            'total' => $total,
-            'pagina' => $pagina,
-            'por_pagina' => $por_pagina,
-            'total_paginas' => ceil($total / $por_pagina)
-        ];
-        
-    } catch (Exception $e) {
-        error_log("Erro ao listar todos os empréstimos: " . $e->getMessage());
-        return ['success' => false, 'message' => 'Erro interno do servidor'];
-    }
-}
-
-// Função para buscar configuração
-function buscarConfiguracao($chave) {
-    try {
-        $pdo = conectarDB();
-        $stmt = $pdo->prepare("SELECT valor FROM configuracoes WHERE chave = ?");
-        $stmt->execute([$chave]);
-        $resultado = $stmt->fetch();
-        return $resultado ? $resultado['valor'] : null;
-    } catch (Exception $e) {
-        return null;
-    }
-}
-
-// Processar requisições
-$acao = $_POST['acao'] ?? $_GET['acao'] ?? '';
-
-switch ($acao) {
-    case 'fazer_emprestimo':
-        $resultado = fazerEmprestimo($_POST);
-        break;
-        
-    case 'renovar':
-        $emprestimo_id = $_POST['emprestimo_id'] ?? 0;
-        $resultado = renovarEmprestimo($emprestimo_id);
-        break;
-        
-    case 'devolver':
-        $emprestimo_id = $_POST['emprestimo_id'] ?? 0;
-        $resultado = devolverLivro($emprestimo_id);
-        break;
-        
-    case 'listar_usuario':
-        $resultado = listarEmprestimosUsuario($_GET);
-        break;
-        
-    case 'listar_todos':
-        $resultado = listarTodosEmprestimos($_GET);
-        break;
-        
-    default:
-        $resultado = ['success' => false, 'message' => 'Ação não especificada'];
-}
-
-echo json_encode($resultado);
 ?>
-
