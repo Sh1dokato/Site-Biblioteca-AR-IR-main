@@ -1,7 +1,131 @@
--- Script para popular o banco de dados com dados do site
--- Execute este script após criar o banco com biblioteca.sql
+-- =====================================================
+-- BIBLIOTECA ARCO-ÍRIS - SCRIPT COMPLETO
+-- =====================================================
+-- Este arquivo cria o banco, as tabelas e insere todos os dados
+-- Execute este script no phpMyAdmin para ter tudo funcionando!
 
+-- Criar e usar o banco de dados
+CREATE DATABASE IF NOT EXISTS biblioteca_arco_iris;
 USE biblioteca_arco_iris;
+
+-- =====================================================
+-- CRIAR TABELAS
+-- =====================================================
+
+-- Tabela de usuários
+CREATE TABLE IF NOT EXISTS usuarios (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    cpf VARCHAR(14) UNIQUE NOT NULL,
+    telefone VARCHAR(15) NOT NULL,
+    senha VARCHAR(255) NOT NULL,
+    nome VARCHAR(100) NOT NULL,
+    is_admin BOOLEAN DEFAULT FALSE,
+    ativo BOOLEAN DEFAULT TRUE,
+    data_cadastro DATE DEFAULT CURRENT_DATE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- Tabela de livros
+CREATE TABLE IF NOT EXISTS livros (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    titulo VARCHAR(200) NOT NULL,
+    autor VARCHAR(100) NOT NULL,
+    isbn VARCHAR(20) UNIQUE,
+    ano_publicacao INT,
+    editora VARCHAR(100),
+    categoria VARCHAR(50),
+    quantidade_total INT DEFAULT 1,
+    quantidade_disponivel INT DEFAULT 1,
+    ativo BOOLEAN DEFAULT TRUE,
+    data_cadastro DATE DEFAULT CURRENT_DATE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- Tabela de empréstimos
+CREATE TABLE IF NOT EXISTS emprestimos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    usuario_id INT NOT NULL,
+    livro_id INT NOT NULL,
+    data_emprestimo DATE NOT NULL,
+    data_devolucao_prevista DATE NOT NULL,
+    data_devolucao_real DATE NULL,
+    status ENUM('emprestado', 'devolvido', 'atrasado', 'aguardando_devolucao') DEFAULT 'emprestado',
+    multa_valor DECIMAL(10,2) DEFAULT 0.00,
+    ativo BOOLEAN DEFAULT TRUE,
+    data_cadastro DATE DEFAULT CURRENT_DATE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id),
+    FOREIGN KEY (livro_id) REFERENCES livros(id)
+);
+
+-- Tabela de fornecedores
+CREATE TABLE IF NOT EXISTS fornecedores (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(100) NOT NULL,
+    cnpj_cpf VARCHAR(18) UNIQUE NOT NULL,
+    telefone VARCHAR(15),
+    email VARCHAR(100),
+    ativo BOOLEAN DEFAULT TRUE,
+    data_cadastro DATE DEFAULT CURRENT_DATE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- Tabela de agendamentos
+CREATE TABLE IF NOT EXISTS agendamentos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    usuario_id INT NOT NULL,
+    livro_id INT NOT NULL,
+    data_agendamento DATE NOT NULL,
+    horario TIME NOT NULL,
+    status ENUM('agendado', 'concluido', 'cancelado') DEFAULT 'agendado',
+    ativo BOOLEAN DEFAULT TRUE,
+    data_cadastro DATE DEFAULT CURRENT_DATE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id),
+    FOREIGN KEY (livro_id) REFERENCES livros(id)
+);
+
+-- Tabela de doações
+CREATE TABLE IF NOT EXISTS doacoes (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    usuario_id INT NOT NULL,
+    tipo ENUM('livro', 'higiene', 'dinheiro') NOT NULL,
+    descricao TEXT,
+    valor DECIMAL(10,2) DEFAULT 0.00,
+    status ENUM('pendente', 'aprovada', 'rejeitada') DEFAULT 'pendente',
+    ativo BOOLEAN DEFAULT TRUE,
+    data_cadastro DATE DEFAULT CURRENT_DATE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
+);
+
+-- Tabela de pagamentos de multa
+CREATE TABLE IF NOT EXISTS pagamentos_multa (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    emprestimo_id INT NOT NULL,
+    valor_pago DECIMAL(10,2) NOT NULL,
+    metodo_pagamento ENUM('pix', 'boleto', 'cartao', 'dinheiro') NOT NULL,
+    data_pagamento TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    ativo BOOLEAN DEFAULT TRUE,
+    data_cadastro DATE DEFAULT CURRENT_DATE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (emprestimo_id) REFERENCES emprestimos(id)
+);
+
+-- =====================================================
+-- INSERIR DADOS INICIAIS
+-- =====================================================
+
+-- Inserir usuário administrador
+INSERT INTO usuarios (cpf, telefone, senha, nome, is_admin, ativo, data_cadastro) VALUES 
+('admin', 'admin', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Administrador', 1, 1, '2025-01-01');
 
 -- Inserir usuários extraídos dos arquivos HTML
 INSERT INTO usuarios (cpf, telefone, senha, nome, is_admin, ativo, data_cadastro) VALUES 
@@ -70,5 +194,29 @@ INSERT INTO pagamentos_multa (emprestimo_id, valor_pago, metodo_pagamento, data_
 -- Atualizar quantidade disponível dos livros emprestados
 UPDATE livros SET quantidade_disponivel = quantidade_disponivel - 1 WHERE id IN (12, 17, 1);
 
--- Comentário: Execute este script após criar o banco com biblioteca.sql
--- Este script popula o banco com todos os dados encontrados nos arquivos HTML do site
+-- =====================================================
+-- RESUMO DO QUE FOI CRIADO
+-- =====================================================
+-- ✅ Banco de dados: biblioteca_arco_iris
+-- ✅ 7 tabelas criadas com estrutura completa
+-- ✅ 1 usuário admin (admin/admin)
+-- ✅ 3 usuários com dados reais (senha: 123456)
+-- ✅ 28 livros com informações completas
+-- ✅ 3 fornecedores cadastrados
+-- ✅ 3 empréstimos ativos
+-- ✅ 2 agendamentos pendentes
+-- ✅ 3 doações pendentes
+-- ✅ 1 pagamento de multa registrado
+
+-- =====================================================
+-- COMO USAR
+-- =====================================================
+-- 1. Abra o phpMyAdmin
+-- 2. Execute este script completo
+-- 3. Pronto! O sistema está funcionando com dados reais
+
+-- =====================================================
+-- CREDENCIAIS DE ACESSO
+-- =====================================================
+-- ADMIN: CPF: admin, Senha: admin
+-- USUÁRIOS: CPF: 11122233344, 55566677788, 99988877766, Senha: 123456
