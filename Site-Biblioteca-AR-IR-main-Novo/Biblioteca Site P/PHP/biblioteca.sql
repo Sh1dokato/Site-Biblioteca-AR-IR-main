@@ -103,11 +103,6 @@ CREATE TABLE pagamentos_multa (
 INSERT INTO usuarios (cpf, telefone, senha, nome, tipo_usuario) VALUES 
 ('12345678901', '11999999999', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Administrador', 'admin');
 
--- Inserir alguns usuários de exemplo
-INSERT INTO usuarios (cpf, telefone, senha, nome) VALUES 
-('11122233344', '11888888888', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'João Silva'),
-('55566677788', '11777777777', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Maria Santos'),
-('99988877766', '11666666666', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Pedro Oliveira');
 
 -- Inserir livros de exemplo
 INSERT INTO livros (titulo, autor, isbn, categoria, quantidade_total, quantidade_disponivel) VALUES 
