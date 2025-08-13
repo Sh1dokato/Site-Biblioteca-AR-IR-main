@@ -127,11 +127,7 @@ CREATE TABLE IF NOT EXISTS pagamentos_multa (
 INSERT INTO usuarios (cpf, telefone, senha, nome, is_admin, ativo, data_cadastro) VALUES 
 ('admin', 'admin', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Administrador', 1, 1, '2025-01-01');
 
--- Inserir usuários extraídos dos arquivos HTML
-INSERT INTO usuarios (cpf, telefone, senha, nome, is_admin, ativo, data_cadastro) VALUES 
-('11122233344', '11888888888', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'João Silva', 0, 1, '2025-01-15'),
-('55566677788', '11777777777', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Pedro Costa', 0, 1, '2025-01-20'),
-('99988877766', '11666666666', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Roberta Santos', 0, 0, '2025-01-20');
+-- Usuários serão criados apenas através do sistema de registro
 
 -- Inserir livros extraídos do arquivo registro.html
 INSERT INTO livros (titulo, autor, isbn, ano_publicacao, editora, categoria, quantidade_total, quantidade_disponivel, ativo, data_cadastro) VALUES 
@@ -170,29 +166,15 @@ INSERT INTO fornecedores (nome, cnpj_cpf, telefone, email, ativo, data_cadastro)
 ('João Silva', '123.456.789-00', '(47) 99999-8888', 'joao@email.com', 1, '2025-02-10'),
 ('Roberta Santos', '987.654.321-00', '(47) 88888-7777', 'Roberta@gmail.com', 0, '2025-01-20');
 
--- Inserir empréstimos de exemplo extraídos dos arquivos HTML
-INSERT INTO emprestimos (usuario_id, livro_id, data_emprestimo, data_devolucao_prevista, data_devolucao_real, status, multa_valor, ativo, data_cadastro) VALUES 
-(2, 12, '2024-01-15', '2024-02-15', NULL, 'emprestado', 15.50, 1, NOW()),
-(2, 17, '2024-01-20', '2024-02-20', NULL, 'emprestado', 0.00, 1, NOW()),
-(4, 1, '2024-01-10', '2024-02-10', NULL, 'emprestado', 25.00, 1, NOW());
+-- Empréstimos serão criados através do sistema
 
--- Inserir agendamentos de exemplo
-INSERT INTO agendamentos (usuario_id, livro_id, data_agendamento, horario, status, ativo, data_cadastro) VALUES 
-(2, 15, '2025-01-25', '14:00:00', 'agendado', 1, NOW()),
-(4, 8, '2025-01-26', '16:00:00', 'agendado', 1, NOW());
+-- Agendamentos serão criados através do sistema
 
--- Inserir doações de exemplo
-INSERT INTO doacoes (usuario_id, tipo, descricao, valor, status, ativo, data_cadastro) VALUES 
-(2, 'livro', 'Doação de livro "Dom Casmurro"', 0.00, 'pendente', 1, NOW()),
-(4, 'higiene', 'Doação de itens de higiene', 0.00, 'pendente', 1, NOW()),
-(2, 'dinheiro', 'Doação em dinheiro para a biblioteca', 50.00, 'pendente', 1, NOW());
+-- Doações serão criadas através do sistema
 
--- Inserir pagamentos de multa de exemplo
-INSERT INTO pagamentos_multa (emprestimo_id, valor_pago, metodo_pagamento, data_pagamento, ativo, data_cadastro) VALUES 
-(1, 15.50, 'pix', NOW(), 1, NOW());
+-- Pagamentos de multa serão criados através do sistema
 
--- Atualizar quantidade disponível dos livros emprestados
-UPDATE livros SET quantidade_disponivel = quantidade_disponivel - 1 WHERE id IN (12, 17, 1);
+-- Quantidades serão atualizadas automaticamente pelo sistema
 
 -- =====================================================
 -- RESUMO DO QUE FOI CRIADO
@@ -200,13 +182,9 @@ UPDATE livros SET quantidade_disponivel = quantidade_disponivel - 1 WHERE id IN 
 -- ✅ Banco de dados: biblioteca_arco_iris
 -- ✅ 7 tabelas criadas com estrutura completa
 -- ✅ 1 usuário admin (admin/admin)
--- ✅ 3 usuários com dados reais (senha: 123456)
 -- ✅ 28 livros com informações completas
 -- ✅ 3 fornecedores cadastrados
--- ✅ 3 empréstimos ativos
--- ✅ 2 agendamentos pendentes
--- ✅ 3 doações pendentes
--- ✅ 1 pagamento de multa registrado
+-- ✅ Sistema pronto para criar usuários, empréstimos, agendamentos e doações
 
 -- =====================================================
 -- COMO USAR
@@ -219,4 +197,4 @@ UPDATE livros SET quantidade_disponivel = quantidade_disponivel - 1 WHERE id IN 
 -- CREDENCIAIS DE ACESSO
 -- =====================================================
 -- ADMIN: CPF: admin, Senha: admin
--- USUÁRIOS: CPF: 11122233344, 55566677788, 99988877766, Senha: 123456
+-- USUÁRIOS: Serão criados através do sistema de registro
