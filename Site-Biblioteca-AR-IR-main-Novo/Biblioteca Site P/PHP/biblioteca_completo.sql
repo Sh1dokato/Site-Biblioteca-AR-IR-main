@@ -125,7 +125,7 @@ CREATE TABLE IF NOT EXISTS pagamentos_multa (
 
 -- Inserir usuário administrador
 INSERT INTO usuarios (cpf, telefone, senha, nome, is_admin, ativo, data_cadastro) VALUES 
-('admin', 'admin', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Administrador', 1, 1, '2025-01-01');
+('99999999999', '99999999999', 'admin123', 'Administrador', 1, 1, '2025-01-01');
 
 -- Usuários serão criados apenas através do sistema de registro
 
