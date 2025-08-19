@@ -1,0 +1,111 @@
+Testes{
+    Testes de unidade{
+        testam-se funcoes, metodos ou classe individuais
+    }
+
+    Testes de integração {
+        Verificam a interação entre modulos diferentes
+        Importante para sistemas modulares
+    }
+
+    Testes de sistemas {
+        Avalia o sistema completo
+        unidade
+        integração
+        Sistema
+        Aceitação
+    }
+
+    Teste de Aceitação {
+        Validação feita pelo cliente ou usuario final
+    }
+
+    Teste de regressão {
+        Garantem que alterações no código não afetem o que já funciona. 
+    }
+
+    Testes de usabilidade {
+        Avaliamos a experiência do usuário com a interface
+        interfaces amigáveis e acessíveis
+    }
+
+    Testes de performance{
+        Verificam velocidade, tempo de resposta e uso de recursos.
+    }
+
+    Testes de compatibilidade{
+        Verifica se o software funciona
+        corretamente em diferentes ambientes.
+        Isso inclui dispositivos, navegadores e
+        sistemas operacionais
+    }
+}
+
+Caixas{
+    Caixa Branca{
+        analisa a lógica interna (ideal para devs).
+    }
+    Caixa Preta{
+        testa sem ver o código.
+    }
+    Caixa Cinza{
+        mistura os dois, bom para integração.
+        O Plano de Testes define o que, como e quem testa.
+        Controle via Trello, cronogramas e relatórios.
+        Acompanhamento de execuções e riscos
+    }
+}
+
+Planejamento e balanceamento{
+    Plano de testes{
+        Define o que, como e
+        quem irá testar.
+        Documenta todo o
+        processo.
+    }
+
+    Controle e acompanhamento{
+        Use Trello, cronogramas e
+        relatórios para controlar.
+        Acompanhe as execuções
+        e os riscos.
+    }
+
+    Gerenciamento de riscos{
+        Identifique e mitigue os riscos para garantir o sucesso.
+    }
+}
+
+Automação de Testes{
+    Redução de esforço{
+        Automatize para
+        reduzir o esforço
+        manual.
+    }
+    
+    Aceleração{
+        Acelera os testes recptivos
+    }
+
+    regressão{
+        Ideal para testes de regressão
+    }
+}
+
+Ferramentas populares{
+    Selenium{
+        teste automatizados de interfaces
+    }
+    
+    JMeter{
+        Performance e carga
+    }
+
+    Trello{
+        Organização e Planos
+    }
+
+    Postman{
+        Testes de APIs
+    }
+}
