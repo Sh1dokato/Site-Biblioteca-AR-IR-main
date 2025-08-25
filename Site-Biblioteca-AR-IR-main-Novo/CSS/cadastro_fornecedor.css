@@ -1,0 +1,104 @@
+body {
+    min-height: 100vh;
+    font-family: Arial, sans-serif;
+    padding: 40px 0 24px 0;
+}
+
+form#meuForm {
+    background: rgba(255, 255, 255, 0.85);
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+    padding: 32px 24px 24px 24px;
+    margin: 0 auto;
+    max-width: 480px;
+    width: 100%;
+}
+
+table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 10px;
+    background: none;
+}
+
+th, td {
+    padding: 8px 4px;
+    text-align: left;
+    color: #333;
+    font-size: 15px;
+}
+
+th {
+    font-size: 20px;
+    color: #ff9000;
+    text-align: center;
+    padding-bottom: 10px;
+}
+
+input[type="text"] {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 15px;
+    box-sizing: border-box;
+    margin-top: 2px;
+    margin-bottom: 2px;
+    background: #fafafa;
+    transition: border-color 0.2s;
+}
+
+input[type="text"]:focus {
+    border-color: #ff9000;
+    outline: none;
+    background: #fffbe6;
+}
+
+button[type="submit"] {
+    background: #ff9000;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 10px 32px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    transition: background 0.2s, transform 0.2s;
+}
+
+button[type="submit"]:hover {
+    background: #ffaa33;
+    transform: translateY(-2px);
+}
+
+img {
+    width: 60px;
+    display: block;
+    margin: 0 auto 8px auto;
+}
+
+address {
+    color: white;
+    font-size: 14px;
+    margin-top: 24px;
+    text-shadow: 1px 1px 4px #00000055;
+}
+
+@media (max-width: 600px) {
+    form#meuForm {
+        padding: 16px 4px 12px 4px;
+        max-width: 98vw;
+    }
+    th, td {
+        font-size: 13px;
+    }
+    button[type="submit"] {
+        font-size: 14px;
+        padding: 8px 12px;
+    }
+    img {
+        width: 40px;
+    }
+}
