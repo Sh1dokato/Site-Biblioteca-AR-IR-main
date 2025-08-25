@@ -17,9 +17,9 @@
       </div>
       <p class="subtitle">Já possui cadastro em nossa biblioteca?</p>
       <div class="buttons-container">
-        <a href="login.html" class="btn glow">ENTRAR</a>
-        <a href="pagina-visitante.html" class="btn glow">ENTRAR COMO<br>VISITANTE</a>
-        <a href="registro.html" class="btn glow">REGISTRAR</a>
+        <a href="login.php" class="btn glow">ENTRAR</a>
+        <a href="pagina-visitante.php" class="btn glow">ENTRAR COMO<br>VISITANTE</a>
+        <a href="registro.php" class="btn glow">REGISTRAR</a>
       </div>
     </div>
   </div>

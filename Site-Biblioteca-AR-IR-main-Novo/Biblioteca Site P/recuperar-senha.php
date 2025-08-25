@@ -30,7 +30,7 @@
         </div>
         <button type="submit" class="btn">MUDAR SENHA</button>
         <div class="links" style="display: flex; justify-content: center;">
-          <a href="login.html" class="btn">VOLTAR</a>
+          <a href="login.php" class="btn">VOLTAR</a>
         </div>
       </form>
     </div>
@@ -61,7 +61,7 @@
           localStorage.setItem('users', JSON.stringify(users));
           
         alert('Senha alterada com sucesso!');
-        window.location.href = 'login.html';
+        window.location.href = 'login.php';
         } else {
           alert('CPF ou telefone não encontrados!');
         }

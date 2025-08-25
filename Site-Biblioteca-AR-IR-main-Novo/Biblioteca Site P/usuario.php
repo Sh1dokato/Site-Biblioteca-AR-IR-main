@@ -20,9 +20,9 @@
       <input type="text" placeholder="Pesquisar livros..." style="padding: 8px 16px; border-radius: 4px; border: none; font-size: 16px; outline: none; width: 300px;" id="searchInput">
     </form>
     <div class="header-buttons">
-      <a href="emprestimos.html" class="header-btn">Meus Empréstimos</a>
-      <a href="perfil.html" class="header-btn">Perfil</a>
-      <a href="index.html" class="header-btn">Sair</a>
+      <a href="emprestimos.php" class="header-btn">Meus Empréstimos</a>
+      <a href="perfil.php" class="header-btn">Perfil</a>
+      <a href="index.php" class="header-btn">Sair</a>
     </div>
   </header>
 

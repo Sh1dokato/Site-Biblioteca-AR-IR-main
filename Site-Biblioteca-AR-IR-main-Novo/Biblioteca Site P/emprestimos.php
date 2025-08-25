@@ -13,8 +13,8 @@
       <span>Biblioteca Arco-Íris</span>
     </div>
     <div class="header-buttons">
-      <a href="usuario.html" class="header-btn">Voltar</a>
-      <a href="index.html" class="header-btn">Sair</a>
+      <a href="usuario.php" class="header-btn">Voltar</a>
+      <a href="index.php" class="header-btn">Sair</a>
     </div>
   </header>
   <div class="emprestimos-container" id="emprestimosContainer">
@@ -61,7 +61,7 @@
     window.addEventListener('load', function() {
       const usuarioLogado = JSON.parse(localStorage.getItem('usuarioLogado'));
       if (!usuarioLogado) {
-        window.location.href = 'login.html';
+        window.location.href = 'login.php';
         return;
       }
       carregarEmprestimos();

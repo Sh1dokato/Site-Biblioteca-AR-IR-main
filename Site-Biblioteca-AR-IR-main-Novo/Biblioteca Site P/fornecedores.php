@@ -9,7 +9,7 @@
 </head>
 <body>
     <div>
-        <a class="voltar" href="inicio-admin.html">Voltar</a>
+        <a class="voltar" href="inicio-admin.php">Voltar</a>
     </div>
     
     <header class="header">

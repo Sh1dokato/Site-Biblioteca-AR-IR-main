@@ -13,8 +13,8 @@
       <span>Biblioteca Arco-Íris</span>
     </div>
     <div class="header-buttons">
-      <a href="usuario.html" class="header-btn">Voltar</a>
-      <a href="index.html" class="header-btn">Sair</a>
+      <a href="usuario.php" class="header-btn">Voltar</a>
+      <a href="index.php" class="header-btn">Sair</a>
     </div>
   </header>
 
@@ -59,7 +59,7 @@
 
             <div class="form-actions">
               <button type="submit" class="btn-save">Salvar Alterações</button>
-              <button type="button" class="btn-cancel" onclick="window.location.href='usuario.html'">Cancelar</button>
+              <button type="button" class="btn-cancel" onclick="window.location.href='usuario.php'">Cancelar</button>
             </div>
           </form>
         </div>
@@ -121,7 +121,7 @@
       } else {
         // Se não há usuário logado, redirecionar para login
         alert('Usuário não logado!');
-        window.location.href = 'login.html';
+        window.location.href = 'login.php';
         return;
       }
     }
@@ -263,7 +263,7 @@
        alert('Perfil atualizado com sucesso!');
        
        // Redirecionar para a página do usuário
-       window.location.href = 'usuario.html';
+       window.location.href = 'usuario.php';
      });
 
     // Cancelar salvamento
@@ -284,7 +284,7 @@
       
       if (!usuarioLogado) {
         alert('Você precisa estar logado para acessar esta página!');
-        window.location.href = 'login.html';
+        window.location.href = 'login.php';
         return;
       }
       

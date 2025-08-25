@@ -34,7 +34,7 @@
         </div>
         <button type="submit" class="btn">REGISTRAR</button>
         <div class="links" style="display: flex; justify-content: center;">
-          <a href="login.html" class="btn">VOLTAR</a>
+          <a href="login.php" class="btn">VOLTAR</a>
         </div>
       </form>
     </div>
@@ -60,7 +60,7 @@
         .then(data => {
           if (data.success) {
             alert('Registro realizado com sucesso!');
-            window.location.href = 'login.html';
+            window.location.href = 'login.php';
           } else {
             alert('Erro: ' + data.message);
           }

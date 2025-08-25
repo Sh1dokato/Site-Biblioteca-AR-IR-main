@@ -27,7 +27,7 @@
     </div>
   </div>
 <div>
-  <a class="voltar" href="index.html">Voltar</a>
+  <a class="voltar" href="index.php">Voltar</a>
 </div>
   <div class="container">
     <div class="form-container">
@@ -51,12 +51,12 @@
           <input type="tel" id="telefone" name="telefone" placeholder="Telefone (00) 00000-0000" maxlength="15" required>
         </div>
         <div class="links">
-          <a href="recuperar-senha.html">Esqueceu a senha?</a>
+          <a href="recuperar-senha.php">Esqueceu a senha?</a>
           <button type="submit" class="btn">Entrar</button>
         </div>
         <div class="links" style="display: flex; justify-content: center; gap: 20px;">
           <a href="#" class="btn" id="btnVisitante">ENTRAR COMO VISITANTE</a>
-          <a href="registro.html" class="btn">REGISTRAR <br> USUARIO</a>
+          <a href="registro.php" class="btn">REGISTRAR <br> USUARIO</a>
         </div>
       </form>
     </div>
@@ -118,9 +118,9 @@
 
           // Redirecionar com base no tipo de usuário
           if (data.usuario.is_admin) {
-            window.location.href = 'inicio-admin.html';
+            window.location.href = 'inicio-admin.php';
           } else {
-            window.location.href = 'usuario.html';
+            window.location.href = 'usuario.php';
           }
         } else {
           alert('Erro: ' + data.message);
@@ -164,7 +164,7 @@
     // Botão de visitante
     document.getElementById('btnVisitante').addEventListener('click', function(e) {
       e.preventDefault();
-      window.location.href = 'pagina-visitante.html';
+      window.location.href = 'pagina-visitante.php';
     });
 
     // Função para mostrar/ocultar senha

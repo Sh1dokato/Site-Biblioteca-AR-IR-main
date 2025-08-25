@@ -13,7 +13,7 @@
             ">
    <!-- <form id="meuForm" method="post" name="meuForm" action="PHP/cadastrofornecedor.php">
    -->        
-   <form id="meuForm" method="post" name="meuForm" action="inicio-admin.html"> 
+   <form id="meuForm" method="post" name="meuForm" action="inicio-admin.php"> 
    <table align="center">
             <tr>
                 <td><center><img src="IMG/logo.png" alt="Logo"></center></td>

@@ -8,11 +8,11 @@
 </head>
 <body>
     <div>
-        <a class="voltar" href="index.html">Voltar</a>
+        <a class="voltar" href="index.php">Voltar</a>
       </div>
     <header class="header">
         <div>
-            <a class="voltar" href="index.html">Voltar</a>
+            <a class="voltar" href="index.php">Voltar</a>
           </div>
         <div class="header-title">
             <img src="IMG/logo.png" alt="Logo" style="height: 30px;">
@@ -20,24 +20,24 @@
         </div>
         <div class="header-buttons">
             <div class="dropdown-menu">
-                <a href="fornecedores.html" class="header-btn dropdown-trigger">Fornecedores ▼</a>
+                <a href="fornecedores.php" class="header-btn dropdown-trigger">Fornecedores ▼</a>
                 <div class="dropdown-content">
-                    <a href="fornecedores.html" class="dropdown-item">👥 Ver Fornecedores</a>
-                    <a href="cadastrar-fornecedores.html" class="dropdown-item">➕ Cadastrar Fornecedor</a>
+                    <a href="fornecedores.php" class="dropdown-item">👥 Ver Fornecedores</a>
+                    <a href="cadastrar-fornecedores.php" class="dropdown-item">➕ Cadastrar Fornecedor</a>
                 </div>
             </div>
             
-            <a href="graficos.html" style="text-decoration: none;">
+            <a href="graficos.php" style="text-decoration: none;">
                 <button class="graficos">
                     <span>Gráficos</span>
                 </button>
             </a>
             
             <div class="dropdown-menu">
-                <a href="usuarios.html" class="header-btn dropdown-trigger">Usuários ▼</a>
+                <a href="usuarios.php" class="header-btn dropdown-trigger">Usuários ▼</a>
                 <div class="dropdown-content">
-                    <a href="usuarios.html" class="dropdown-item">👥 Gerenciar Usuários</a>
-                    <a href="agendamentos.html" class="dropdown-item">📅 Agendamentos</a>
+                    <a href="usuarios.php" class="dropdown-item">👥 Gerenciar Usuários</a>
+                    <a href="agendamentos.php" class="dropdown-item">📅 Agendamentos</a>
                     <button class="dropdown-item-btn" onclick="toggleDonationsPanel()">
                         <span>🎁 Doações Pendentes</span>
                         <span class="count-badge" id="donationsCount">0</span>
@@ -48,7 +48,7 @@
                     </button>
                 </div>
             </div>
-            <a href="index.html" class="header-btn">Sair</a>
+            <a href="index.php" class="header-btn">Sair</a>
         </div>
     </header>
 
@@ -109,16 +109,16 @@
         window.addEventListener('load', function() {
             const usuarioLogado = JSON.parse(localStorage.getItem('usuarioLogado'));
             if (!usuarioLogado || !usuarioLogado.isAdmin) {
-                window.location.href = 'login.html';
+                window.location.href = 'login.php';
                 return;
             }
         });
 
         // Função para fazer logout
-        document.querySelector('a[href="index.html"]').addEventListener('click', function(e) {
+        document.querySelector('a[href="index.php"]').addEventListener('click', function(e) {
             e.preventDefault();
             localStorage.removeItem('usuarioLogado');
-            window.location.href = 'index.html';
+            window.location.href = 'index.php';
         });
 
         // Lista de livros
