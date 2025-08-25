@@ -1,3 +1,7 @@
+<?php
+require_once 'PHP/database.php';
+?>
+
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
