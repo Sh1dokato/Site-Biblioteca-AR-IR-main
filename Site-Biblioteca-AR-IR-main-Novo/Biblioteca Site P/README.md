@@ -1,323 +1,190 @@
-# Biblioteca Arco-Íris - Sistema de Gerenciamento
+# 📚 Biblioteca Arco-Íris - Sistema de Gerenciamento
 
-## 📚 Descrição
+## 📋 Descrição
 
-Sistema completo de gerenciamento de biblioteca desenvolvido em PHP com banco de dados MySQL. Permite controle de usuários, livros, empréstimos, multas, fornecedores e agendamentos.
+Sistema completo de gerenciamento de biblioteca desenvolvido em PHP e MySQL, com interface moderna e funcionalidades avançadas para controle de empréstimos, usuários, livros e relatórios.
 
-## 🚀 Funcionalidades
+## ✨ Funcionalidades
 
-### Para Usuários
-- ✅ Cadastro e login de usuários
-- ✅ Visualização do catálogo de livros
-- ✅ Empréstimo de livros
-- ✅ Renovação de empréstimos
-- ✅ Devolução de livros
-- ✅ Visualização de histórico de empréstimos
-- ✅ Pagamento de multas
-- ✅ Sistema de doações (itens de higiene)
+### 👤 Para Usuários:
+- **Cadastro e Login**: Sistema de autenticação seguro
+- **Catálogo de Livros**: Visualização de todos os livros disponíveis
+- **Empréstimos**: Solicitar, renovar e devolver livros
+- **Histórico**: Acompanhar empréstimos ativos e histórico completo
+- **Perfil**: Gerenciar dados pessoais e senha
+- **Sistema de Multas**: Pagamento de multas por atraso
 
-### Para Administradores
-- ✅ Gestão completa de usuários
-- ✅ Gestão de livros e autores
-- ✅ Controle de empréstimos e devoluções
-- ✅ Sistema de multas automático
-- ✅ Gestão de fornecedores
-- ✅ Agendamentos de livros
-- ✅ Relatórios e estatísticas
-- ✅ Gráficos de uso da biblioteca
+### 🔧 Para Administradores:
+- **Dashboard Completo**: Estatísticas em tempo real
+- **Gestão de Usuários**: Cadastro, edição e controle de acesso
+- **Gestão de Livros**: Adicionar, editar e remover livros do acervo
+- **Gestão de Fornecedores**: Controle de parceiros e doações
+- **Agendamentos**: Sistema de reservas de livros
+- **Relatórios**: Gráficos e relatórios detalhados
+- **Configurações**: Personalizar parâmetros do sistema
 
-## 📋 Pré-requisitos
+## 🛠️ Pré-requisitos
 
 - **Servidor Web**: Apache/Nginx
 - **PHP**: 8.0 ou superior
 - **MySQL**: 5.7 ou superior (ou MariaDB 10.2+)
-- **Extensões PHP**:
-  - PDO
-  - PDO_MySQL
-  - JSON
-  - Session
-  - BCMath (para hash de senhas)
+- **Extensões PHP**: PDO, PDO_MySQL, JSON, mbstring
 
-## 🛠️ Instalação
+## 📦 Instalação
 
-### 1. Configuração do Servidor
+### 1. **Configuração do Servidor**
 
-1. **Clone ou baixe o projeto** para a pasta do seu servidor web:
-   ```bash
-   # Se usando XAMPP
-   C:\xampp\htdocs\biblioteca-arco-iris\
-   
-   # Se usando WAMP
-   C:\wamp\www\biblioteca-arco-iris\
-   
-   # Se usando Linux/Apache
-   /var/www/html/biblioteca-arco-iris/
-   ```
+Certifique-se de que seu servidor web está configurado e funcionando.
 
-2. **Inicie o servidor web e MySQL**
+### 2. **Configuração do Banco de Dados**
 
-### 2. Configuração do Banco de Dados
+1. Acesse o phpMyAdmin ou seu cliente MySQL preferido
+2. Execute o arquivo `database.sql` completo
+3. O script irá:
+   - Criar o banco de dados `biblioteca_arco_iris`
+   - Criar todas as tabelas necessárias
+   - Inserir dados de exemplo
+   - Configurar triggers, views e procedures
 
-1. **Acesse o phpMyAdmin** (geralmente em `http://localhost/phpmyadmin`)
+### 3. **Configuração da Aplicação**
 
-2. **Crie um novo banco de dados**:
-   - Nome: `biblioteca_arco_iris`
-   - Collation: `utf8mb4_unicode_ci`
-
-3. **Importe o arquivo SQL**:
-   - Vá na aba "Importar"
-   - Selecione o arquivo `database.sql`
-   - Clique em "Executar"
-
-4. **Verifique se as tabelas foram criadas**:
-   - `usuarios`
-   - `livros`
-   - `autores`
-   - `categorias`
-   - `emprestimos`
-   - `fornecedores`
-   - `agendamentos`
-   - `doacoes`
-   - `multas`
-   - `historico_atividades`
-   - `configuracoes`
-
-### 3. Configuração da Aplicação
-
-1. **Edite o arquivo de configuração**:
+1. Edite o arquivo `config/database.php`:
    ```php
-   // Arquivo: config/database.php
-   
-   // Altere estas configurações conforme seu ambiente:
-   define('DB_HOST', 'localhost');     // Host do MySQL
+   define('DB_HOST', 'localhost');     // Host do banco
    define('DB_NAME', 'biblioteca_arco_iris');  // Nome do banco
-   define('DB_USER', 'root');          // Usuário do MySQL
-   define('DB_PASS', '');              // Senha do MySQL (vazia para XAMPP padrão)
+   define('DB_USER', 'root');          // Usuário do banco
+   define('DB_PASS', '');              // Senha do banco
    ```
 
-2. **Verifique as permissões de pasta** (Linux):
-   ```bash
-   chmod 755 -R /var/www/html/biblioteca-arco-iris/
-   chmod 777 -R /var/www/html/biblioteca-arco-iris/logs/  # Se existir
-   ```
+2. Certifique-se de que as permissões de escrita estão corretas para:
+   - Pasta `IMG/` (para upload de imagens)
+   - Pasta `config/` (para logs)
 
-### 4. Acesso ao Sistema
+### 4. **Acesso ao Sistema**
 
-1. **Acesse o sistema** no navegador:
-   ```
-   http://localhost/biblioteca-arco-iris/
-   ```
+- **URL**: `http://localhost/biblioteca-arco-iris/`
+- **Admin**: 
+  - CPF: `12345678901`
+  - Telefone: `(11) 99999-9999`
+  - Senha: `123456`
 
-2. **Credenciais padrão do administrador**:
-   - **CPF**: 12345678901
-   - **Telefone**: (11) 99999-9999
-   - **Senha**: 123456
+## 🚀 Como Usar
 
-## 📖 Como Usar
+### **Primeiro Acesso (Administrador)**
 
-### Primeiro Acesso
+1. Faça login com as credenciais de administrador
+2. Acesse o painel administrativo
+3. Configure as configurações básicas do sistema
+4. Adicione usuários e livros conforme necessário
 
-1. **Faça login como administrador** com as credenciais padrão
-2. **Configure as configurações do sistema**:
-   - Prazo de empréstimo
-   - Limite de empréstimos por usuário
-   - Valor da multa diária
-   - Horário de funcionamento
+### **Usuários Comuns**
 
-### Cadastro de Usuários
+1. Acesse a página de registro
+2. Crie sua conta com CPF, telefone e senha
+3. Faça login no sistema
+4. Explore o catálogo de livros
+5. Solicite empréstimos
 
-1. **Acesse a página de registro** (`registro.php`)
-2. **Preencha os dados**:
-   - Nome completo
-   - CPF (válido)
-   - Telefone
-   - Senha (mínimo 6 caracteres)
-   - Email (opcional)
+## ⚙️ Configurações do Sistema
 
-### Empréstimo de Livros
+O sistema possui configurações flexíveis que podem ser alteradas:
 
-1. **Faça login** como usuário
-2. **Navegue pelo catálogo** de livros
-3. **Clique em "Ver mais"** no livro desejado
-4. **Clique em "Emprestar livro"**
-5. **Confirme o empréstimo**
+- **Prazo de Empréstimo**: 7 dias (padrão)
+- **Limite de Empréstimos**: 5 livros por usuário
+- **Valor da Multa**: R$ 0,25 por dia de atraso
+- **Dias para Renovação**: 6 dias após o empréstimo
 
-### Gestão Administrativa
+## 🗄️ Estrutura do Banco de Dados
 
-1. **Acesse o painel administrativo** (`inicio-admin.php`)
-2. **Gerencie**:
-   - Usuários
-   - Livros
-   - Empréstimos
-   - Fornecedores
-   - Agendamentos
-   - Relatórios
-
-## 🔧 Configurações do Sistema
-
-### Configurações Disponíveis
-
-- **`prazo_emprestimo_dias`**: Prazo padrão para empréstimo (padrão: 7)
-- **`limite_emprestimos_usuario`**: Máximo de empréstimos por usuário (padrão: 5)
-- **`valor_multa_diaria`**: Valor da multa por dia de atraso (padrão: R$ 2,00)
-- **`dias_para_renovacao`**: Dias mínimos para renovar (padrão: 6)
-- **`nome_biblioteca`**: Nome da biblioteca
-- **`email_contato`**: Email de contato
-- **`horario_funcionamento`**: Horários de funcionamento (JSON)
-
-### Como Alterar Configurações
-
-1. **Via código PHP**:
-   ```php
-   setConfig('prazo_emprestimo_dias', '14', 'Prazo de empréstimo em dias', 'integer');
-   ```
-
-2. **Via banco de dados**:
-   ```sql
-   UPDATE configuracoes 
-   SET valor = '14' 
-   WHERE chave = 'prazo_emprestimo_dias';
-   ```
-
-## 📊 Estrutura do Banco de Dados
-
-### Tabelas Principais
+### **Tabelas Principais:**
 
 - **`usuarios`**: Dados dos usuários e administradores
-- **`livros`**: Catálogo de livros
+- **`livros`**: Catálogo completo de livros
 - **`autores`**: Informações dos autores
 - **`categorias`**: Categorias de livros
 - **`emprestimos`**: Histórico de empréstimos
-- **`fornecedores`**: Fornecedores de livros
-- **`agendamentos`**: Agendamentos de livros
-- **`doacoes`**: Sistema de doações
-- **`multas`**: Controle de multas
+- **`fornecedores`**: Fornecedores e parceiros
+- **`agendamentos`**: Sistema de reservas
+- **`doacoes`**: Controle de doações
+- **`multas`**: Sistema de multas
 - **`historico_atividades`**: Log de atividades
 - **`configuracoes`**: Configurações do sistema
 
-### Relacionamentos
+### **Views Úteis:**
 
-- Usuários → Empréstimos (1:N)
-- Livros → Empréstimos (1:N)
-- Autores → Livros (1:N)
-- Categorias → Livros (1:N)
-- Empréstimos → Multas (1:N)
-- Usuários → Doações (1:N)
-- Fornecedores → Doações (1:N)
+- **`vw_livros_mais_emprestados`**: Ranking de livros populares
+- **`vw_emprestimos_atrasados`**: Empréstimos em atraso
+- **`vw_estatisticas_gerais`**: Estatísticas gerais
+
+### **Procedures:**
+
+- **`RenovarEmprestimo`**: Renovação automática
+- **`CalcularMultas`**: Cálculo automático de multas
 
 ## 🔒 Segurança
 
-### Medidas Implementadas
+- **Hash de Senhas**: Bcrypt com custo 12
+- **Validação de CPF**: Algoritmo oficial brasileiro
+- **Sanitização de Inputs**: Proteção contra XSS
+- **Prepared Statements**: Proteção contra SQL Injection
+- **Controle de Sessão**: Gerenciamento seguro de sessões
+- **Log de Atividades**: Rastreamento completo de ações
 
-- ✅ **Hash de senhas** com bcrypt
-- ✅ **Validação de CPF** brasileiro
-- ✅ **Sanitização de inputs**
-- ✅ **Prepared Statements** para prevenir SQL Injection
-- ✅ **Controle de sessão**
-- ✅ **Log de atividades**
-- ✅ **Validação de permissões**
+## 📊 Relatórios Disponíveis
 
-### Recomendações de Segurança
-
-1. **Altere a senha do administrador** após o primeiro acesso
-2. **Configure HTTPS** em produção
-3. **Mantenha o PHP atualizado**
-4. **Configure firewall** adequadamente
-5. **Faça backups regulares** do banco de dados
-
-## 📈 Relatórios e Estatísticas
-
-### Relatórios Disponíveis
-
-- **Livros mais emprestados**
-- **Empréstimos por período**
-- **Usuários mais ativos**
-- **Multas pendentes**
-- **Estatísticas gerais**
-
-### Como Gerar Relatórios
-
-1. **Acesse o painel administrativo**
-2. **Vá para "Gráficos"**
-3. **Visualize as estatísticas** em tempo real
-4. **Exporte relatórios** quando necessário
+- **Empréstimos por Período**
+- **Livros Mais Emprestados**
+- **Usuários Mais Ativos**
+- **Multas e Pagamentos**
+- **Estatísticas Gerais**
 
 ## 🐛 Solução de Problemas
 
-### Problemas Comuns
+### **Erro de Conexão com Banco**
+- Verifique as credenciais em `config/database.php`
+- Certifique-se de que o MySQL está rodando
+- Verifique se o banco `biblioteca_arco_iris` existe
 
-1. **Erro de conexão com banco**:
-   - Verifique as configurações em `config/database.php`
-   - Confirme se o MySQL está rodando
-   - Verifique usuário e senha do banco
+### **Erro de Permissão**
+- Verifique as permissões das pastas `IMG/` e `config/`
+- Certifique-se de que o servidor web tem permissão de escrita
 
-2. **Página não carrega**:
-   - Verifique se o servidor web está rodando
-   - Confirme se o PHP está instalado
-   - Verifique os logs de erro do servidor
+### **Páginas não Carregam**
+- Verifique se o mod_rewrite está habilitado (Apache)
+- Verifique se o PHP está configurado corretamente
 
-3. **Erro de permissão**:
-   - Verifique as permissões das pastas
-   - Confirme se o usuário do servidor tem acesso
+### **Imagens não Aparecem**
+- Verifique se as imagens estão na pasta `IMG/`
+- Verifique as permissões da pasta de imagens
 
-4. **Caracteres especiais**:
-   - Verifique se o banco está usando UTF-8
-   - Confirme se o PHP está configurado corretamente
+## 📝 Logs e Monitoramento
 
-### Logs de Erro
-
-- **Apache**: `/var/log/apache2/error.log` (Linux)
-- **XAMPP**: `C:\xampp\apache\logs\error.log` (Windows)
-- **PHP**: Configure em `php.ini`
+O sistema registra automaticamente:
+- Logins e logouts
+- Empréstimos e devoluções
+- Alterações de dados
+- Tentativas de acesso inválidas
 
 ## 🔄 Atualizações
 
-### Como Atualizar
-
-1. **Faça backup** do banco de dados
-2. **Faça backup** dos arquivos
-3. **Substitua os arquivos** pelos novos
-4. **Execute scripts de migração** se necessário
-5. **Teste o sistema**
-
-### Backup do Banco
-
-```bash
-# Backup completo
-mysqldump -u root -p biblioteca_arco_iris > backup_$(date +%Y%m%d_%H%M%S).sql
-
-# Restaurar backup
-mysql -u root -p biblioteca_arco_iris < backup.sql
-```
+Para atualizar o sistema:
+1. Faça backup do banco de dados
+2. Substitua os arquivos PHP
+3. Execute scripts de migração se necessário
+4. Teste todas as funcionalidades
 
 ## 📞 Suporte
 
-### Informações de Contato
-
+Para suporte técnico:
 - **Email**: suporte@bibliotecaarcoiris.com
-- **Documentação**: Este README
-- **Issues**: Use o sistema de issues do repositório
-
-### Contribuições
-
-1. **Fork o projeto**
-2. **Crie uma branch** para sua feature
-3. **Commit suas mudanças**
-4. **Push para a branch**
-5. **Abra um Pull Request**
+- **Documentação**: Consulte este README
+- **Issues**: Reporte problemas no repositório
 
 ## 📄 Licença
 
-Este projeto está sob a licença MIT. Veja o arquivo `LICENSE` para mais detalhes.
-
-## 🙏 Agradecimentos
-
-- Comunidade PHP
-- Desenvolvedores do MySQL
-- Contribuidores do projeto
+Este projeto é de uso livre para fins educacionais e comerciais.
 
 ---
 
 **Desenvolvido com ❤️ para a Biblioteca Arco-Íris**
 
-*Última atualização: Janeiro 2025*

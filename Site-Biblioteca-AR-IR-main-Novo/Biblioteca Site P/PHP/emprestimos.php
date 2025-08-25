@@ -478,3 +478,5 @@ function getLivrosMaisEmprestados($limite = 10) {
     return dbFetchAll($sql, [$limite]);
 }
 ?>
+
+

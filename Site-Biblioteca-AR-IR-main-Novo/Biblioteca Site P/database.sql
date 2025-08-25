@@ -2,8 +2,10 @@
 -- BANCO DE DADOS - BIBLIOTECA ARCO-ÍRIS
 -- =====================================================
 
--- Criar banco de dados
-CREATE DATABASE IF NOT EXISTS biblioteca_arco_iris
+-- Criar banco de dados (remover se existir)
+DROP DATABASE IF EXISTS biblioteca_arco_iris;
+
+CREATE DATABASE biblioteca_arco_iris
 CHARACTER SET utf8mb4
 COLLATE utf8mb4_unicode_ci;
 
@@ -12,6 +14,7 @@ USE biblioteca_arco_iris;
 -- =====================================================
 -- TABELA DE USUÁRIOS
 -- =====================================================
+DROP TABLE IF EXISTS usuarios;
 CREATE TABLE usuarios (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nome VARCHAR(100) NOT NULL,
@@ -21,6 +24,8 @@ CREATE TABLE usuarios (
     email VARCHAR(100),
     is_admin BOOLEAN DEFAULT FALSE,
     ativo BOOLEAN DEFAULT TRUE,
+    data_cadastro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    ultimo_acesso TIMESTAMP NULL,
     tem_debito BOOLEAN DEFAULT FALSE,
     tem_doacao_pendente BOOLEAN DEFAULT FALSE,
     total_emprestimos INT DEFAULT 0,
@@ -30,6 +35,7 @@ CREATE TABLE usuarios (
 -- =====================================================
 -- TABELA DE CATEGORIAS DE LIVROS
 -- =====================================================
+DROP TABLE IF EXISTS categorias;
 CREATE TABLE categorias (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nome VARCHAR(50) NOT NULL UNIQUE,
@@ -40,6 +46,7 @@ CREATE TABLE categorias (
 -- =====================================================
 -- TABELA DE AUTORES
 -- =====================================================
+DROP TABLE IF EXISTS autores;
 CREATE TABLE autores (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nome VARCHAR(100) NOT NULL,
@@ -52,6 +59,7 @@ CREATE TABLE autores (
 -- =====================================================
 -- TABELA DE LIVROS
 -- =====================================================
+DROP TABLE IF EXISTS livros;
 CREATE TABLE livros (
     id INT AUTO_INCREMENT PRIMARY KEY,
     titulo VARCHAR(200) NOT NULL,
@@ -77,6 +85,7 @@ CREATE TABLE livros (
 -- =====================================================
 -- TABELA DE FORNECEDORES
 -- =====================================================
+DROP TABLE IF EXISTS fornecedores;
 CREATE TABLE fornecedores (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nome VARCHAR(100) NOT NULL,
@@ -96,6 +105,7 @@ CREATE TABLE fornecedores (
 -- =====================================================
 -- TABELA DE EMPRÉSTIMOS
 -- =====================================================
+DROP TABLE IF EXISTS emprestimos;
 CREATE TABLE emprestimos (
     id INT AUTO_INCREMENT PRIMARY KEY,
     usuario_id INT NOT NULL,
@@ -116,6 +126,7 @@ CREATE TABLE emprestimos (
 -- =====================================================
 -- TABELA DE AGENDAMENTOS
 -- =====================================================
+DROP TABLE IF EXISTS agendamentos;
 CREATE TABLE agendamentos (
     id INT AUTO_INCREMENT PRIMARY KEY,
     usuario_id INT NOT NULL,
@@ -133,6 +144,7 @@ CREATE TABLE agendamentos (
 -- =====================================================
 -- TABELA DE DOAÇÕES
 -- =====================================================
+DROP TABLE IF EXISTS doacoes;
 CREATE TABLE doacoes (
     id INT AUTO_INCREMENT PRIMARY KEY,
     usuario_id INT NOT NULL,
@@ -154,6 +166,7 @@ CREATE TABLE doacoes (
 -- =====================================================
 -- TABELA DE MULTAS
 -- =====================================================
+DROP TABLE IF EXISTS multas;
 CREATE TABLE multas (
     id INT AUTO_INCREMENT PRIMARY KEY,
     emprestimo_id INT NOT NULL,
@@ -170,6 +183,7 @@ CREATE TABLE multas (
 -- =====================================================
 -- TABELA DE HISTÓRICO DE ATIVIDADES
 -- =====================================================
+DROP TABLE IF EXISTS historico_atividades;
 CREATE TABLE historico_atividades (
     id INT AUTO_INCREMENT PRIMARY KEY,
     usuario_id INT,
@@ -185,6 +199,7 @@ CREATE TABLE historico_atividades (
 -- =====================================================
 -- TABELA DE CONFIGURAÇÕES DO SISTEMA
 -- =====================================================
+DROP TABLE IF EXISTS configuracoes;
 CREATE TABLE configuracoes (
     id INT AUTO_INCREMENT PRIMARY KEY,
     chave VARCHAR(50) UNIQUE NOT NULL,
@@ -247,65 +262,47 @@ INSERT INTO categorias (nome, descricao) VALUES
 ('Fantasia Jovem', 'Fantasia para jovens'),
 ('Literatura Infantil', 'Livros para crianças');
 
--- Inserir autores
+-- Inserindo autores
 INSERT INTO autores (nome, biografia, nacionalidade, data_nascimento) VALUES
-('George Orwell', 'Escritor britânico conhecido por suas obras distópicas', 'Britânico', '1903-06-25'),
-('Sun Tzu', 'Estrategista militar chinês da antiguidade', 'Chinês', NULL),
-('William P. Young', 'Escritor canadense autor de "A Cabana"', 'Canadense', '1955-05-11'),
-('John Green', 'Escritor americano de literatura jovem', 'Americano', '1977-08-24'),
-('Markus Zusak', 'Escritor australiano autor de "A Menina que Roubava Livros"', 'Australiano', '1975-06-23'),
-('Franz Kafka', 'Escritor tcheco de língua alemã', 'Tcheco', '1883-07-03'),
-('C.S. Lewis', 'Escritor britânico autor de "As Crônicas de Nárnia"', 'Britânico', '1898-11-29'),
-('Machado de Assis', 'Escritor brasileiro, considerado o maior nome da literatura nacional', 'Brasileiro', '1839-06-21'),
-('Jorge Amado', 'Escritor brasileiro, um dos mais famosos e traduzidos autores brasileiros', 'Brasileiro', '1912-08-10'),
+('Machado de Assis', 'Um dos maiores escritores da literatura brasileira', 'Brasileiro', '1839-06-21'),
+('J.R.R. Tolkien', 'Autor de O Senhor dos Anéis e O Hobbit', 'Sul-Africano/Britânico', '1892-01-03'),
+('George Orwell', 'Escritor e jornalista britânico', 'Britânico', '1903-06-25'),
 ('Gabriel García Márquez', 'Escritor colombiano, Nobel de Literatura', 'Colombiano', '1927-03-06'),
-('Ashlee Vance', 'Jornalista americano especializado em tecnologia', 'Americano', '1977-01-01'),
-('J.K. Rowling', 'Escritora britânica criadora da série Harry Potter', 'Britânica', '1965-07-31'),
-('Mário de Andrade', 'Escritor brasileiro, um dos principais nomes do Modernismo', 'Brasileiro', '1893-10-09'),
-('Paulo Coelho', 'Escritor brasileiro, um dos autores mais vendidos do mundo', 'Brasileiro', '1947-08-24'),
-('Dan Brown', 'Escritor americano de thrillers', 'Americano', '1964-06-22'),
-('Aluísio Azevedo', 'Escritor brasileiro do Naturalismo', 'Brasileiro', '1857-04-14'),
-('Anne Frank', 'Jovem judia que escreveu um diário durante a Segunda Guerra', 'Alemã', '1929-06-12'),
-('J.R.R. Tolkien', 'Escritor britânico criador de "O Senhor dos Anéis"', 'Britânico', '1892-01-03'),
-('Patrick Rothfuss', 'Escritor americano de fantasia', 'Americano', '1973-06-06'),
-('Nicolau Maquiavel', 'Filósofo e escritor italiano do Renascimento', 'Italiano', '1469-05-03'),
-('Jane Austen', 'Escritora britânica do Romantismo', 'Britânica', '1775-12-16'),
-('Rick Riordan', 'Escritor americano de literatura juvenil', 'Americano', '1964-06-05'),
-('Antoine de Saint-Exupéry', 'Escritor francês autor de "O Pequeno Príncipe"', 'Francês', '1900-06-29'),
-('Graciliano Ramos', 'Escritor brasileiro do Modernismo', 'Brasileiro', '1892-10-27'),
-('João Guimarães Rosa', 'Escritor brasileiro, um dos maiores nomes da literatura nacional', 'Brasileiro', '1908-06-27');
+('J.K. Rowling', 'Autora da série Harry Potter', 'Britânica', '1965-07-31'),
+('Sun Tzu', 'General e filósofo chinês', 'Chinês', '0544-01-01'),
+('Antoine de Saint-Exupéry', 'Autor de O Pequeno Príncipe', 'Francês', '1900-06-29'),
+('Markus Zusak', 'Autor de A Menina que Roubava Livros', 'Australiano', '1975-06-23'),
+('Jane Austen', 'Escritora britânica do século XIX', 'Britânica', '1775-12-16'),
+('Dan Brown', 'Autor de O Código Da Vinci', 'Americano', '1964-06-22'),
+('Clarice Lispector', 'Escritora brasileira, uma das mais importantes do século XX', 'Brasileira', '1920-12-10'),
+('Eça de Queirós', 'Escritor português, considerado um dos maiores romancistas realistas', 'Português', '1845-11-25'),
+('Franz Kafka', 'Escritor tcheco de língua alemã, famoso por suas obras existencialistas', 'Tcheco', '1883-07-03'),
+('Ernest Hemingway', 'Escritor e jornalista americano, Prêmio Nobel de Literatura', 'Americano', '1899-07-21'),
+('José Saramago', 'Escritor português, Prêmio Nobel de Literatura', 'Português', '1922-11-16'),
+('Carlos Drummond de Andrade', 'Poeta brasileiro, um dos mais influentes do século XX', 'Brasileiro', '1902-10-31'),
+('Graciliano Ramos', 'Romancista brasileiro, autor de Vidas Secas', 'Brasileiro', '1892-10-27'),
+('Monteiro Lobato', 'Escritor e editor brasileiro, criador do Sítio do Picapau Amarelo', 'Brasileiro', '1882-04-18'),
+('Lygia Fagundes Telles', 'Escritora brasileira, considerada a dama da literatura nacional', 'Brasileira', '1923-04-19'),
+('José de Alencar', 'Romancista brasileiro, um dos maiores representantes do romantismo', 'Brasileiro', '1829-05-01'),
+('Cecília Meireles', 'Poetisa brasileira, uma das maiores da literatura nacional', 'Brasileira', '1901-11-07'),
+('Paulo Coelho', 'Escritor brasileiro, autor de O Alquimista', 'Brasileiro', '1947-08-24'),
+('Rubem Fonseca', 'Escritor brasileiro conhecido por seus contos e romances policiais', 'Brasileiro', '1925-05-11'),
+('Moacyr Scliar', 'Escritor e médico brasileiro, autor de A Mulher que Escreveu a Bíblia', 'Brasileiro', '1937-03-23'),
+('Ashlee Vance', 'Jornalista americano especializado em tecnologia', 'Americano', '1977-01-01');
 
--- Inserir livros
-INSERT INTO livros (titulo, autor_id, categoria_id, isbn, ano_publicacao, numero_paginas, descricao, imagem_capa, estoque_total, estoque_disponivel, preco, editora) VALUES
-('1984', 1, 1, '978-8535909555', 1949, 328, 'Um clássico distópico sobre um regime totalitário.', 'IMG/1984.jpg', 5, 5, 29.90, 'Companhia das Letras'),
-('A Arte da Guerra', 2, 2, '978-8546500923', -500, 273, 'Antigo tratado militar chinês sobre estratégia e tática.', 'IMG/aartedaguerra.jpg', 3, 3, 24.90, 'L&PM'),
-('A Cabana', 3, 3, '978-8543102079', 2007, 240, 'Uma história de superação e fé após uma tragédia.', 'IMG/acabana.jpg', 4, 4, 34.90, 'Arqueiro'),
-('A Culpa é das Estrelas', 4, 4, '978-8543102062', 2012, 288, 'Dois adolescentes se apaixonam enquanto lutam contra o câncer.', 'IMG/aculpaedasestrelas.jpg', 6, 6, 29.90, 'Intrínseca'),
-('A Menina que Roubava Livros', 5, 5, '978-8543102072', 2005, 480, 'A história de uma garota na Alemanha nazista que encontra consolo nos livros.', 'IMG/ameninaqueroubavalivros.jpg', 2, 2, 39.90, 'Intrínseca'),
-('A Metamorfose', 6, 3, '978-8535909556', 1915, 100, 'Um homem acorda transformado em um inseto gigante.', 'IMG/ametamorfose.webp', 3, 3, 19.90, 'Companhia das Letras'),
-('A Revolução dos Bichos', 1, 6, '978-8535909557', 1945, 152, 'Animais de uma fazenda se rebelam contra seus donos humanos.', 'IMG/arevolucaodosbichos.jpg', 4, 4, 24.90, 'Companhia das Letras'),
-('As Crônicas de Nárnia', 7, 7, '978-8543102073', 1950, 768, 'Aventuras mágicas em um mundo fantástico.', 'IMG/ascronicasdenarnia.jpg', 5, 5, 49.90, 'Martins Fontes'),
-('Memórias Póstumas de Brás Cubas', 8, 8, '978-8535909558', 1881, 208, 'Narrativa inovadora de um defunto-autor.', 'IMG/asmemoriaspostumasdebrascuba.jpg', 2, 2, 29.90, 'Companhia das Letras'),
-('Capitães da Areia', 9, 8, '978-8535909559', 1937, 256, 'A vida de meninos de rua em Salvador.', 'IMG/capitaesdaareia.jpg', 3, 3, 34.90, 'Record'),
-('Cem Anos de Solidão', 10, 9, '978-8535909560', 1967, 448, 'A saga da família Buendía em Macondo.', 'IMG/cemanosdesolidao.jpg', 4, 4, 39.90, 'Record'),
-('Dom Casmurro', 8, 4, '978-8535909561', 1899, 256, 'A dúvida sobre a traição de Capitu.', 'IMG/domcasmurro.webp', 2, 2, 29.90, 'Companhia das Letras'),
-('Dom Quixote', 11, 4, '978-8535909562', 1605, 992, 'As aventuras do cavaleiro da triste figura.', 'IMG/domquixote.jpg', 3, 3, 59.90, 'Companhia das Letras'),
-('Elon Musk', 12, 10, '978-8543102074', 2015, 416, 'A vida e carreira do empreendedor Elon Musk.', 'IMG/elonmusk.jpg', 2, 2, 44.90, 'Intrínseca'),
-('Harry Potter e a Pedra Filosofal', 13, 7, '978-8543102075', 1997, 264, 'O início da jornada do jovem bruxo Harry Potter em Hogwarts.', 'IMG/harrypotereapedrafilosofal.jpg', 5, 5, 34.90, 'Rocco'),
-('Macunaíma', 14, 8, '978-8535909563', 1928, 192, 'As aventuras do herói sem nenhum caráter, uma alegoria do povo brasileiro.', 'IMG/macunaima.jpg', 3, 3, 24.90, 'Companhia das Letras'),
-('O Alquimista', 15, 3, '978-8543102076', 1988, 208, 'A jornada de um pastor em busca de seu tesouro pessoal.', 'IMG/oalquimista.jpg', 4, 4, 29.90, 'Paralela'),
-('O Código Da Vinci', 16, 11, '978-8543102077', 2003, 432, 'Um professor de simbologia investiga um assassinato no Museu do Louvre.', 'IMG/ocodigodavinci.jpg', 3, 3, 39.90, 'Sextante'),
-('O Cortiço', 17, 8, '978-8535909564', 1890, 256, 'A vida dos moradores de um cortiço no Rio de Janeiro do século XIX.', 'IMG/ocortico.jpg', 5, 5, 29.90, 'Companhia das Letras'),
-('O Diário de Anne Frank', 18, 10, '978-8543102078', 1947, 352, 'O diário de uma jovem judia durante a ocupação nazista na Holanda.', 'IMG/odiariodeannnefrank.jpg', 3, 3, 34.90, 'Record'),
-('O Hobbit', 19, 7, '978-8543102079', 1937, 336, 'A aventura do hobbit Bilbo Bolseiro em uma jornada para recuperar um tesouro roubado.', 'IMG/ohobbit.jpg', 4, 4, 39.90, 'Martins Fontes'),
-('O Nome do Vento', 20, 7, '978-8543102080', 2007, 656, 'A história do lendário Kvothe, contada por ele mesmo.', 'IMG/onomedovento.jpg', 2, 2, 44.90, 'Arqueiro'),
-('O Príncipe', 21, 12, '978-8535909565', 1532, 176, 'Um tratado sobre política e poder, escrito para Lorenzo de Médici.', 'IMG/oprincipe.jpg', 4, 4, 24.90, 'Companhia das Letras'),
-('Orgulho e Preconceito', 22, 4, '978-8535909566', 1813, 424, 'A história de Elizabeth Bennet e Mr. Darcy em uma sociedade regida por convenções sociais.', 'IMG/orgulhoepreconceito.jpg', 3, 3, 29.90, 'Companhia das Letras'),
-('O Senhor dos Anéis', 19, 7, '978-8543102081', 1954, 1200, 'A épica jornada para destruir o Um Anel e derrotar o Senhor do Escuro.', 'IMG/osenhordosaneis.webp', 2, 2, 69.90, 'Martins Fontes'),
-('Percy Jackson e o Ladrão de Raios', 23, 13, '978-8543102082', 2005, 400, 'Um garoto descobre que é filho de um deus grego e precisa impedir uma guerra entre os deuses.', 'IMG/percyjacksoneoladraoderaios.jpg', 4, 4, 34.90, 'Intrínseca'),
-('O Pequeno Príncipe', 24, 14, '978-8543102083', 1943, 96, 'A história de um príncipe que viaja pelos planetas e aprende sobre amor e amizade.', 'IMG/pequenoprincipe.jpg', 5, 5, 24.90, 'Geração Editorial'),
-('Vidas Secas', 25, 8, '978-8535909567', 1938, 176, 'A saga de uma família de retirantes pelo sertão nordestino.', 'IMG/vidassecas.jpg', 3, 3, 24.90, 'Record'),
-('Grande Sertão: Veredas', 26, 8, '978-8535909568', 1956, 624, 'A saga de Riobaldo no sertão brasileiro.', 'IMG/grandesertaoveredas.jpg', 2, 2, 39.90, 'Nova Fronteira');
+-- Inserindo livros (corrigido)
+INSERT INTO livros (titulo, autor_id, categoria_id, isbn, ano_publicacao, numero_paginas, descricao, imagem_capa, preco, editora) VALUES
+('Dom Casmurro', 1, 8, '978-8535925690', 1899, 256, 'Um dos romances mais conhecidos de Machado de Assis.', 'IMG/domcasmurro.jpg', 29.90, 'Companhia das Letras'),
+('O Senhor dos Anéis', 2, 7, '978-8533613377', 1954, 1216, 'A épica jornada pela Terra-média.', 'IMG/senhoraneis.jpg', 89.90, 'Martins Fontes'),
+('1984', 3, 1, '978-8535914847', 1949, 416, 'Um clássico distópico sobre totalitarismo.', 'IMG/1984.jpg', 39.90, 'Companhia das Letras'),
+('Cem Anos de Solidão', 4, 9, '978-8535932568', 1967, 448, 'A história da família Buendía.', 'IMG/cemanos.jpg', 49.90, 'Record'),
+('Harry Potter e a Pedra Filosofal', 5, 13, '978-8532530781', 1997, 264, 'O início da saga de Harry Potter.', 'IMG/harrypotter1.jpg', 34.90, 'Rocco'),
+('A Arte da Guerra', 6, 2, '978-8537811588', NULL, 160, 'Estratégias militares e de vida.', 'IMG/artedaguerra.jpg', 19.90, 'Lafonte'),
+('O Pequeno Príncipe', 7, 14, '978-8522031443', 1943, 96, 'Um clássico da literatura infantil.', 'IMG/pequenoprincipe.jpg', 24.90, 'Agir'),
+('A Menina que Roubava Livros', 8, 5, '978-8533914847', 2005, 480, 'Uma emocionante história durante a Segunda Guerra.', 'IMG/meninaroubava.jpg', 39.90, 'Intrínseca'),
+('Orgulho e Preconceito', 9, 4, '978-8525419804', 1813, 424, 'Um dos maiores romances da literatura mundial.', 'IMG/orgulho.jpg', 29.90, 'Penguin Companhia'),
+('O Código Da Vinci', 10, 11, '978-8532511667', 2003, 432, 'Um thriller que mistura arte, religião e conspirações.', 'IMG/codigodavinci.jpg', 44.90, 'Sextante'),
+('Elon Musk', 25, 10, '978-8543102074', 2015, 416, 'A vida e carreira do empreendedor Elon Musk.', 'IMG/elonmusk.jpg', 44.90, 'Intrínseca');
 
 -- Inserir usuários (senha: 123456 - hash bcrypt)
 INSERT INTO usuarios (nome, cpf, telefone, senha, email, is_admin) VALUES
@@ -335,6 +332,10 @@ INSERT INTO configuracoes (chave, valor, descricao, tipo) VALUES
 -- =====================================================
 -- TRIGGERS PARA MANTER INTEGRIDADE
 -- =====================================================
+
+-- Remover triggers existentes se houver
+DROP TRIGGER IF EXISTS after_emprestimo_insert;
+DROP TRIGGER IF EXISTS after_emprestimo_update;
 
 -- Trigger para atualizar estoque quando um livro é emprestado
 DELIMITER //
@@ -372,6 +373,11 @@ DELIMITER ;
 -- =====================================================
 -- VIEWS ÚTEIS
 -- =====================================================
+
+-- Remover views existentes se houver
+DROP VIEW IF EXISTS vw_livros_mais_emprestados;
+DROP VIEW IF EXISTS vw_emprestimos_atrasados;
+DROP VIEW IF EXISTS vw_estatisticas_gerais;
 
 -- View para livros mais emprestados
 CREATE VIEW vw_livros_mais_emprestados AS
@@ -422,6 +428,10 @@ SELECT
 -- =====================================================
 -- PROCEDURES ÚTEIS
 -- =====================================================
+
+-- Remover procedures existentes se houver
+DROP PROCEDURE IF EXISTS RenovarEmprestimo;
+DROP PROCEDURE IF EXISTS CalcularMultas;
 
 -- Procedure para renovar empréstimo
 DELIMITER //

@@ -1,6 +1,6 @@
 <?php
 /**
- * Configuração de conexão com o banco de dados
+ * Configuração do Banco de Dados
  * Biblioteca Arco-Íris
  */
 
@@ -11,34 +11,31 @@ define('DB_USER', 'root');
 define('DB_PASS', '');
 define('DB_CHARSET', 'utf8mb4');
 
-// Configurações de timezone
-date_default_timezone_set('America/Sao_Paulo');
+// Iniciar sessão se não estiver ativa
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 /**
- * Classe para gerenciar conexão com o banco de dados
+ * Classe Database - Singleton para conexão com banco de dados
  */
 class Database {
     private static $instance = null;
-    private $connection;
+    private $pdo;
     
     private function __construct() {
         try {
             $dsn = "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=" . DB_CHARSET;
-            $options = [
+            $this->pdo = new PDO($dsn, DB_USER, DB_PASS, [
                 PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
                 PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-                PDO::ATTR_EMULATE_PREPARES => false,
-            ];
-            
-            $this->connection = new PDO($dsn, DB_USER, DB_PASS, $options);
+                PDO::ATTR_EMULATE_PREPARES => false
+            ]);
         } catch (PDOException $e) {
-            throw new Exception("Erro na conexão com o banco de dados: " . $e->getMessage());
+            die("Erro de conexão: " . $e->getMessage());
         }
     }
     
-    /**
-     * Obtém a instância única da classe (Singleton)
-     */
     public static function getInstance() {
         if (self::$instance === null) {
             self::$instance = new self();
@@ -46,157 +43,86 @@ class Database {
         return self::$instance;
     }
     
-    /**
-     * Obtém a conexão PDO
-     */
     public function getConnection() {
-        return $this->connection;
-    }
-    
-    /**
-     * Executa uma consulta SQL
-     */
-    public function query($sql, $params = []) {
-        try {
-            $stmt = $this->connection->prepare($sql);
-            $stmt->execute($params);
-            return $stmt;
-        } catch (PDOException $e) {
-            throw new Exception("Erro na execução da query: " . $e->getMessage());
-        }
-    }
-    
-    /**
-     * Executa uma consulta e retorna uma linha
-     */
-    public function fetchOne($sql, $params = []) {
-        $stmt = $this->query($sql, $params);
-        return $stmt->fetch();
-    }
-    
-    /**
-     * Executa uma consulta e retorna todas as linhas
-     */
-    public function fetchAll($sql, $params = []) {
-        $stmt = $this->query($sql, $params);
-        return $stmt->fetchAll();
-    }
-    
-    /**
-     * Executa uma inserção e retorna o ID do último registro inserido
-     */
-    public function insert($sql, $params = []) {
-        $this->query($sql, $params);
-        return $this->connection->lastInsertId();
-    }
-    
-    /**
-     * Executa uma atualização e retorna o número de linhas afetadas
-     */
-    public function update($sql, $params = []) {
-        $stmt = $this->query($sql, $params);
-        return $stmt->rowCount();
-    }
-    
-    /**
-     * Executa uma exclusão e retorna o número de linhas afetadas
-     */
-    public function delete($sql, $params = []) {
-        $stmt = $this->query($sql, $params);
-        return $stmt->rowCount();
-    }
-    
-    /**
-     * Inicia uma transação
-     */
-    public function beginTransaction() {
-        return $this->connection->beginTransaction();
-    }
-    
-    /**
-     * Confirma uma transação
-     */
-    public function commit() {
-        return $this->connection->commit();
-    }
-    
-    /**
-     * Desfaz uma transação
-     */
-    public function rollback() {
-        return $this->connection->rollback();
-    }
-    
-    /**
-     * Verifica se está em uma transação
-     */
-    public function inTransaction() {
-        return $this->connection->inTransaction();
+        return $this->pdo;
     }
 }
 
 /**
- * Função helper para obter conexão rápida
+ * Funções auxiliares para operações no banco de dados
  */
-function getDB() {
-    return Database::getInstance();
-}
 
-/**
- * Função helper para executar queries
- */
+// Executar query simples
 function dbQuery($sql, $params = []) {
-    return getDB()->query($sql, $params);
+    $pdo = Database::getInstance()->getConnection();
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute($params);
+    return $stmt;
 }
 
-/**
- * Função helper para buscar uma linha
- */
+// Buscar um registro
 function dbFetchOne($sql, $params = []) {
-    return getDB()->fetchOne($sql, $params);
+    $stmt = dbQuery($sql, $params);
+    return $stmt->fetch();
 }
 
-/**
- * Função helper para buscar todas as linhas
- */
+// Buscar todos os registros
 function dbFetchAll($sql, $params = []) {
-    return getDB()->fetchAll($sql, $params);
+    $stmt = dbQuery($sql, $params);
+    return $stmt->fetchAll();
 }
 
-/**
- * Função helper para inserir dados
- */
+// Inserir registro e retornar ID
 function dbInsert($sql, $params = []) {
-    return getDB()->insert($sql, $params);
+    $pdo = Database::getInstance()->getConnection();
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute($params);
+    return $pdo->lastInsertId();
 }
 
-/**
- * Função helper para atualizar dados
- */
+// Atualizar registro
 function dbUpdate($sql, $params = []) {
-    return getDB()->update($sql, $params);
+    $stmt = dbQuery($sql, $params);
+    return $stmt->rowCount();
 }
 
-/**
- * Função helper para deletar dados
- */
+// Deletar registro
 function dbDelete($sql, $params = []) {
-    return getDB()->delete($sql, $params);
+    $stmt = dbQuery($sql, $params);
+    return $stmt->rowCount();
+}
+
+// Iniciar transação
+function dbBeginTransaction() {
+    $pdo = Database::getInstance()->getConnection();
+    return $pdo->beginTransaction();
+}
+
+// Confirmar transação
+function dbCommit() {
+    $pdo = Database::getInstance()->getConnection();
+    return $pdo->commit();
+}
+
+// Reverter transação
+function dbRollback() {
+    $pdo = Database::getInstance()->getConnection();
+    return $pdo->rollback();
 }
 
 /**
- * Função para validar e sanitizar dados de entrada
+ * Funções de validação e sanitização
  */
-function sanitizeInput($data) {
-    if (is_array($data)) {
-        return array_map('sanitizeInput', $data);
+
+// Sanitizar input
+function sanitizeInput($input) {
+    if (is_array($input)) {
+        return array_map('sanitizeInput', $input);
     }
-    return htmlspecialchars(trim($data), ENT_QUOTES, 'UTF-8');
+    return htmlspecialchars(trim($input), ENT_QUOTES, 'UTF-8');
 }
 
-/**
- * Função para validar CPF
- */
+// Validar CPF brasileiro
 function validateCPF($cpf) {
     // Remove caracteres não numéricos
     $cpf = preg_replace('/[^0-9]/', '', $cpf);
@@ -225,147 +151,126 @@ function validateCPF($cpf) {
     return true;
 }
 
-/**
- * Função para validar email
- */
+// Validar email
 function validateEmail($email) {
     return filter_var($email, FILTER_VALIDATE_EMAIL) !== false;
 }
 
 /**
- * Função para gerar hash de senha
+ * Funções de senha
  */
+
+// Hash de senha
 function hashPassword($password) {
-    return password_hash($password, PASSWORD_DEFAULT);
+    return password_hash($password, PASSWORD_BCRYPT, ['cost' => 12]);
 }
 
-/**
- * Função para verificar senha
- */
+// Verificar senha
 function verifyPassword($password, $hash) {
     return password_verify($password, $hash);
 }
 
 /**
- * Função para gerar token único
+ * Funções de token
  */
+
+// Gerar token aleatório
 function generateToken($length = 32) {
-    return bin2hex(random_bytes($length));
+    return bin2hex(random_bytes($length / 2));
 }
 
 /**
- * Função para registrar log de atividades
+ * Funções de log de atividades
  */
+
+// Registrar atividade
 function logActivity($usuario_id, $tipo_acao, $descricao, $dados_json = null) {
-    try {
-        $sql = "INSERT INTO historico_atividades (usuario_id, tipo_acao, descricao, dados_json, ip_address, user_agent) 
-                VALUES (?, ?, ?, ?, ?, ?)";
-        
-        $params = [
-            $usuario_id,
-            $tipo_acao,
-            $descricao,
-            $dados_json ? json_encode($dados_json) : null,
-            $_SERVER['REMOTE_ADDR'] ?? null,
-            $_SERVER['HTTP_USER_AGENT'] ?? null
-        ];
-        
-        return dbInsert($sql, $params);
-    } catch (Exception $e) {
-        error_log("Erro ao registrar atividade: " . $e->getMessage());
-        return false;
-    }
+    $sql = "INSERT INTO historico_atividades (usuario_id, tipo_acao, descricao, dados_json, ip_address, user_agent) 
+            VALUES (?, ?, ?, ?, ?, ?)";
+    
+    $ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+    $user_agent = $_SERVER['HTTP_USER_AGENT'] ?? 'unknown';
+    $dados_json_str = $dados_json ? json_encode($dados_json) : null;
+    
+    return dbInsert($sql, [$usuario_id, $tipo_acao, $descricao, $dados_json_str, $ip, $user_agent]);
 }
 
 /**
- * Função para obter configuração do sistema
+ * Funções de configuração do sistema
  */
-function getConfig($chave, $default = null) {
-    try {
-        $sql = "SELECT valor, tipo FROM configuracoes WHERE chave = ?";
-        $config = dbFetchOne($sql, [$chave]);
-        
-        if (!$config) {
-            return $default;
-        }
-        
-        switch ($config['tipo']) {
-            case 'integer':
-                return (int) $config['valor'];
-            case 'boolean':
-                return (bool) $config['valor'];
-            case 'decimal':
-                return (float) $config['valor'];
-            case 'json':
-                return json_decode($config['valor'], true);
-            default:
-                return $config['valor'];
-        }
-    } catch (Exception $e) {
-        error_log("Erro ao obter configuração: " . $e->getMessage());
-        return $default;
+
+// Obter configuração
+function getConfig($chave, $valor_padrao = null) {
+    $sql = "SELECT valor, tipo FROM configuracoes WHERE chave = ?";
+    $config = dbFetchOne($sql, [$chave]);
+    
+    if (!$config) {
+        return $valor_padrao;
+    }
+    
+    // Converter valor baseado no tipo
+    switch ($config['tipo']) {
+        case 'integer':
+            return (int) $config['valor'];
+        case 'boolean':
+            return (bool) $config['valor'];
+        case 'decimal':
+            return (float) $config['valor'];
+        case 'json':
+            return json_decode($config['valor'], true);
+        default:
+            return $config['valor'];
     }
 }
 
-/**
- * Função para definir configuração do sistema
- */
+// Definir configuração
 function setConfig($chave, $valor, $descricao = null, $tipo = 'string') {
-    try {
-        $sql = "INSERT INTO configuracoes (chave, valor, descricao, tipo) 
-                VALUES (?, ?, ?, ?) 
-                ON DUPLICATE KEY UPDATE 
-                valor = VALUES(valor), 
-                descricao = VALUES(descricao), 
-                tipo = VALUES(tipo)";
-        
-        return dbUpdate($sql, [$chave, $valor, $descricao, $tipo]);
-    } catch (Exception $e) {
-        error_log("Erro ao definir configuração: " . $e->getMessage());
-        return false;
-    }
+    $sql = "INSERT INTO configuracoes (chave, valor, descricao, tipo) 
+            VALUES (?, ?, ?, ?) 
+            ON DUPLICATE KEY UPDATE 
+            valor = VALUES(valor), 
+            descricao = VALUES(descricao), 
+            tipo = VALUES(tipo)";
+    
+    return dbUpdate($sql, [$chave, $valor, $descricao, $tipo]);
 }
 
 /**
- * Função para formatar data para exibição
+ * Funções de formatação
  */
+
+// Formatar data
 function formatDate($date, $format = 'd/m/Y') {
     if (!$date) return '';
     return date($format, strtotime($date));
 }
 
-/**
- * Função para formatar data e hora para exibição
- */
+// Formatar data e hora
 function formatDateTime($datetime, $format = 'd/m/Y H:i') {
     if (!$datetime) return '';
     return date($format, strtotime($datetime));
 }
 
-/**
- * Função para formatar valor monetário
- */
+// Formatar moeda
 function formatMoney($value) {
     return 'R$ ' . number_format($value, 2, ',', '.');
 }
 
 /**
- * Função para verificar se usuário está logado
+ * Funções de sessão e autenticação
  */
+
+// Verificar se usuário está logado
 function isLoggedIn() {
     return isset($_SESSION['usuario_id']) && !empty($_SESSION['usuario_id']);
 }
 
-/**
- * Função para verificar se usuário é administrador
- */
+// Verificar se usuário é admin
 function isAdmin() {
     return isset($_SESSION['is_admin']) && $_SESSION['is_admin'] === true;
 }
 
-/**
- * Função para redirecionar com mensagem
- */
+// Redirecionar com mensagem
 function redirect($url, $message = '', $type = 'success') {
     if ($message) {
         $_SESSION['message'] = $message;
@@ -375,20 +280,21 @@ function redirect($url, $message = '', $type = 'success') {
     exit;
 }
 
-/**
- * Função para exibir mensagem
- */
+// Mostrar mensagem
 function showMessage() {
     if (isset($_SESSION['message'])) {
         $message = $_SESSION['message'];
-        $type = $_SESSION['message_type'] ?? 'info';
-        unset($_SESSION['message'], $_SESSION['message_type']);
+        $type = $_SESSION['message_type'] ?? 'success';
+        
+        // Limpar mensagem da sessão
+        unset($_SESSION['message']);
+        unset($_SESSION['message_type']);
         
         $class = match($type) {
-            'success' => 'alert-success',
             'error' => 'alert-danger',
             'warning' => 'alert-warning',
-            default => 'alert-info'
+            'info' => 'alert-info',
+            default => 'alert-success'
         };
         
         return "<div class='alert $class'>$message</div>";
@@ -396,8 +302,75 @@ function showMessage() {
     return '';
 }
 
-// Iniciar sessão se não estiver ativa
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
+/**
+ * Funções de estatísticas do usuário
+ */
+
+// Obter estatísticas do usuário
+function getEstatisticasUsuario($usuario_id) {
+    $sql = "SELECT 
+                total_emprestimos,
+                total_devolvidos,
+                (SELECT COUNT(*) FROM emprestimos WHERE usuario_id = ? AND status = 'emprestado') as emprestimos_ativos,
+                (SELECT COUNT(*) FROM emprestimos WHERE usuario_id = ? AND status = 'atrasado') as emprestimos_atrasados
+            FROM usuarios 
+            WHERE id = ?";
+    
+    return dbFetchOne($sql, [$usuario_id, $usuario_id, $usuario_id]);
+}
+
+/**
+ * Funções de estatísticas gerais
+ */
+
+// Obter estatísticas de empréstimos
+function getEstatisticasEmprestimos() {
+    $sql = "SELECT 
+                COUNT(*) as total_emprestimos,
+                COUNT(CASE WHEN status = 'emprestado' THEN 1 END) as emprestados,
+                COUNT(CASE WHEN status = 'devolvido' THEN 1 END) as devolvidos,
+                COUNT(CASE WHEN status = 'atrasado' THEN 1 END) as atrasados,
+                SUM(CASE WHEN multa_valor > 0 THEN multa_valor ELSE 0 END) as total_multas
+            FROM emprestimos";
+    
+    return dbFetchOne($sql);
+}
+
+// Calcular multas automaticamente
+function calcularMultasAutomaticas() {
+    $sql = "UPDATE emprestimos SET status = 'atrasado' 
+            WHERE status = 'emprestado' 
+            AND data_devolucao_prevista < CURRENT_DATE";
+    
+    $atrasados = dbUpdate($sql);
+    
+    if ($atrasados > 0) {
+        // Atualizar status de débito dos usuários
+        $sql = "UPDATE usuarios u 
+                SET tem_debito = TRUE 
+                WHERE EXISTS (
+                    SELECT 1 FROM emprestimos e 
+                    WHERE e.usuario_id = u.id 
+                    AND e.status = 'atrasado'
+                )";
+        dbUpdate($sql);
+    }
+    
+    return $atrasados;
+}
+
+// Obter livros mais emprestados
+function getLivrosMaisEmprestados($limite = 10) {
+    $sql = "SELECT l.titulo, a.nome as autor, COUNT(e.id) as total_emprestimos
+            FROM livros l
+            LEFT JOIN autores a ON l.autor_id = a.id
+            LEFT JOIN emprestimos e ON l.id = e.livro_id
+            WHERE l.ativo = TRUE
+            GROUP BY l.id, l.titulo, a.nome
+            ORDER BY total_emprestimos DESC
+            LIMIT ?";
+    
+    return dbFetchAll($sql, [$limite]);
 }
 ?>
+
