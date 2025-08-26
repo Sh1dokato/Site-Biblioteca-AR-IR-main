@@ -1,5 +1,5 @@
 <?php
-require_once 'conexao.php';
+require_once 'PHP/database.php';
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -17,7 +17,7 @@ require_once 'conexao.php';
         <br>
         <span>A</span><span>R</span><span>C</span><span>O</span><span>-</span><span>Í</span><span>R</span><span>I</span><span>S</span>
       </div>
-      <form class="form-box" id="registroForm">
+      <form class="form-box" id="registroForm" method="POST" action="PHP/auth.php">
         <div class="input-group">
           <span class="icon">📚</span>
           <input type="text" name="cpf" placeholder="CPF (somente números)" pattern="\d*" maxlength="11" required>
